@@ -7,7 +7,7 @@ const badgeVariants = cva(
   {
     variants: {
       tone: {
-        neutral: "bg-[var(--cmd-bg-muted)] text-[var(--cmd-fg)]",
+        neutral: "bg-[var(--cmd-bg-muted)] text-[var(--cmd-fg)] border border-[var(--cmd-border)]",
         success:
           "bg-[color-mix(in_oklab,var(--cmd-success)_18%,transparent)] text-[var(--cmd-success)]",
         warning:
@@ -15,7 +15,7 @@ const badgeVariants = cva(
         danger:
           "bg-[color-mix(in_oklab,var(--cmd-danger)_18%,transparent)] text-[var(--cmd-danger)]",
         accent:
-          "bg-[color-mix(in_oklab,var(--cmd-accent)_18%,transparent)] text-[var(--cmd-accent)]",
+          "bg-[linear-gradient(135deg,rgba(59,108,255,0.22),rgba(168,85,247,0.22))] text-[#d7deff] border border-[rgba(109,140,255,0.35)]",
       },
     },
     defaultVariants: {

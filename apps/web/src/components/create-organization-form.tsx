@@ -23,7 +23,7 @@ export function CreateOrganizationForm() {
 
   return (
     <form
-      className="space-y-5 rounded-2xl border border-[var(--cmd-border)] bg-[var(--cmd-bg-elevated)] p-6"
+      className="space-y-5 cmd-glass rounded-2xl p-6"
       onSubmit={(event) => {
         event.preventDefault();
         setError(null);

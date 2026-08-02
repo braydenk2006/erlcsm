@@ -4,17 +4,18 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/cn";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-[var(--cmd-radius)] text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cmd-ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 rounded-[var(--cmd-radius)] text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cmd-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--cmd-bg)] disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         primary:
-          "bg-[var(--cmd-accent)] text-[var(--cmd-accent-fg)] hover:brightness-110 shadow-sm",
-        secondary: "bg-[var(--cmd-bg-muted)] text-[var(--cmd-fg)] hover:bg-[var(--cmd-border)]",
+          "cmd-gradient-fill shadow-[0_10px_30px_rgba(59,108,255,0.28)] hover:brightness-110",
+        secondary:
+          "bg-[var(--cmd-bg-muted)] text-[var(--cmd-fg)] border border-[var(--cmd-border)] hover:border-[rgba(109,140,255,0.45)]",
         ghost: "bg-transparent text-[var(--cmd-fg)] hover:bg-[var(--cmd-bg-muted)]",
         danger: "bg-[var(--cmd-danger)] text-white hover:brightness-110",
         outline:
-          "border border-[var(--cmd-border)] bg-transparent text-[var(--cmd-fg)] hover:bg-[var(--cmd-bg-muted)]",
+          "border border-[var(--cmd-border)] bg-[rgba(255,255,255,0.02)] text-[var(--cmd-fg)] hover:border-[rgba(168,85,247,0.45)] hover:bg-[rgba(139,92,246,0.08)]",
       },
       size: {
         sm: "h-9 px-3",

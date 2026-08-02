@@ -15,7 +15,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-start gap-3 rounded-[var(--cmd-radius)] border border-dashed border-[var(--cmd-border)] bg-[var(--cmd-bg-elevated)] p-6",
+        "cmd-glass flex flex-col items-start gap-3 rounded-[var(--cmd-radius)] border-dashed p-6",
         className,
       )}
     >

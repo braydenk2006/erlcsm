@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge, Button, cn } from "@commandry/ui";
+import { BrandLockup } from "@/components/brand-mark";
 import { OrganizationSwitcher } from "@/components/organization-switcher";
 
 const NAV_ITEMS = [
@@ -84,15 +85,12 @@ export function AppShell({
     <div className="min-h-screen md:grid md:grid-cols-[260px_1fr]">
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-[260px] border-r border-[var(--cmd-border)] bg-[color-mix(in_oklab,var(--cmd-bg-elevated)_92%,transparent)] p-4 backdrop-blur md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 w-[270px] border-r border-[var(--cmd-border)] bg-[rgba(10,12,20,0.88)] p-4 backdrop-blur-xl md:static md:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}
       >
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <p className="font-[family-name:var(--cmd-font-display)] text-2xl">Commandry</p>
-            <p className="text-xs text-[var(--cmd-fg-muted)]">Operations workspace</p>
-          </div>
+        <div className="mb-6 flex items-center justify-between gap-2">
+          <BrandLockup size={34} subtitle="Operations workspace" />
           <Button
             variant="ghost"
             size="icon"
@@ -121,7 +119,7 @@ export function AppShell({
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition",
                   active
-                    ? "bg-[var(--cmd-accent)] text-[var(--cmd-accent-fg)]"
+                    ? "cmd-gradient-fill shadow-[0_8px_24px_rgba(59,108,255,0.25)]"
                     : "text-[var(--cmd-fg-muted)] hover:bg-[var(--cmd-bg-muted)] hover:text-[var(--cmd-fg)]",
                 )}
                 onClick={() => setMobileOpen(false)}
@@ -135,7 +133,7 @@ export function AppShell({
       </aside>
 
       <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[var(--cmd-border)] bg-[color-mix(in_oklab,var(--cmd-bg)_88%,transparent)] px-4 py-3 backdrop-blur md:px-6">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[var(--cmd-border)] bg-[rgba(5,6,10,0.72)] px-4 py-3 backdrop-blur-xl md:px-6">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -148,12 +146,12 @@ export function AppShell({
             </Button>
             <button
               type="button"
-              className="hidden items-center gap-2 rounded-xl border border-[var(--cmd-border)] bg-[var(--cmd-bg-elevated)] px-3 py-2 text-sm text-[var(--cmd-fg-muted)] md:inline-flex"
+              className="cmd-glass hidden items-center gap-2 rounded-xl px-3 py-2 text-sm text-[var(--cmd-fg-muted)] md:inline-flex"
               aria-label="Open command palette"
             >
               <Search className="h-4 w-4" />
               <span>Search or jump…</span>
-              <Badge tone="neutral">⌘K</Badge>
+              <Badge tone="accent">⌘K</Badge>
             </button>
           </div>
           <div className="flex items-center gap-3 text-sm">
@@ -170,7 +168,7 @@ export function AppShell({
 
       <nav
         aria-label="Mobile"
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-[var(--cmd-border)] bg-[var(--cmd-bg-elevated)] px-2 py-2 md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-[var(--cmd-border)] bg-[rgba(10,12,20,0.94)] px-2 py-2 backdrop-blur-xl md:hidden"
       >
         {visibleNav.slice(0, 5).map((item) => {
           const Icon = item.icon;

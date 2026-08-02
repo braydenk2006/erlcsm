@@ -4,13 +4,19 @@
   "description": "The operating system for ER:LC communities",
   "start_url": "/app",
   "display": "standalone",
-  "background_color": "#0B1412",
-  "theme_color": "#0F766E",
+  "background_color": "#05060A",
+  "theme_color": "#3B6CFF",
   "icons": [
     {
       "src": "/icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/commandry-logo.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

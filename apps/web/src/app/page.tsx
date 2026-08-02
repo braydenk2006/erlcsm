@@ -1,14 +1,27 @@
 import Link from "next/link";
 import { Button } from "@commandry/ui";
+import { BrandMark } from "@/components/brand-mark";
 
 export default function LandingPage() {
   return (
-    <main id="main" className="min-h-screen">
+    <main id="main" className="relative min-h-screen overflow-hidden">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% 35%, rgba(59,108,255,0.22), transparent 60%), radial-gradient(ellipse 50% 40% at 70% 60%, rgba(168,85,247,0.18), transparent 55%)",
+        }}
+      />
+
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
         <header className="flex items-center justify-between gap-4">
-          <p className="font-[family-name:var(--cmd-font-display)] text-2xl tracking-tight">
-            Commandry
-          </p>
+          <div className="flex items-center gap-3">
+            <BrandMark size={42} priority className="cmd-crest-glow" />
+            <p className="font-[family-name:var(--cmd-font-display)] text-xl font-semibold tracking-[0.08em] uppercase">
+              Commandry
+            </p>
+          </div>
           <div className="flex items-center gap-3">
             <Button asChild variant="ghost">
               <Link href="/sign-in">Sign in</Link>
@@ -19,20 +32,29 @@ export default function LandingPage() {
           </div>
         </header>
 
-        <section className="relative mt-16 flex flex-1 flex-col justify-center gap-8 pb-20 md:mt-0">
-          <div className="absolute inset-x-0 top-10 -z-10 h-[420px] rounded-[28px] bg-[linear-gradient(135deg,rgba(15,118,110,0.35),rgba(14,165,233,0.18),transparent)] blur-0" />
-          <p className="animate-rise font-[family-name:var(--cmd-font-display)] text-5xl leading-[1.05] tracking-tight md:text-7xl">
-            Commandry
+        <section className="relative mt-10 flex flex-1 flex-col items-center justify-center gap-7 pb-16 text-center md:mt-0">
+          <div className="animate-rise relative">
+            <div
+              aria-hidden="true"
+              className="animate-crest absolute inset-0 -z-10 scale-125 rounded-full bg-[radial-gradient(circle,rgba(59,108,255,0.35),rgba(168,85,247,0.12)_45%,transparent_70%)] blur-2xl"
+            />
+            <BrandMark
+              size={180}
+              priority
+              className="cmd-crest-glow mx-auto h-auto w-[min(52vw,180px)]"
+            />
+          </div>
+
+          <p className="animate-rise font-[family-name:var(--cmd-font-display)] text-5xl font-semibold tracking-[0.12em] uppercase md:text-7xl">
+            <span className="cmd-gradient-text">Commandry</span>
           </p>
-          <h1 className="animate-rise-delay max-w-3xl text-2xl font-medium text-[var(--cmd-fg-muted)] md:text-3xl">
+
+          <h1 className="animate-rise-delay max-w-2xl text-lg font-medium text-[var(--cmd-fg-muted)] md:text-2xl">
             Connect the community once, then operate everything from one fast, secure, intelligent
             platform.
           </h1>
-          <p className="max-w-2xl text-base text-[var(--cmd-fg-muted)] md:text-lg">
-            Staff, sessions, moderation, CAD, training, Discord, and ER:LC live operations — unified
-            under tenant-isolated controls built for serious communities.
-          </p>
-          <div className="flex flex-wrap gap-3">
+
+          <div className="animate-rise-delay flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg">
               <Link href="/sign-in">Start free</Link>
             </Button>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@commandry/ui";
+import { BrandLockup } from "@/components/brand-mark";
 
 const RELEASES = [
   { name: "Release 0 — Repository & architecture", status: "in_progress" },
@@ -16,13 +17,12 @@ const RELEASES = [
 export default function StatusPage() {
   return (
     <main id="main" className="mx-auto max-w-3xl px-6 py-12">
-      <p className="font-[family-name:var(--cmd-font-display)] text-3xl">Commandry</p>
-      <h1 className="mt-2 text-xl text-[var(--cmd-fg-muted)]">Implementation status</h1>
+      <BrandLockup size={48} subtitle="Implementation status" />
       <ul className="mt-8 space-y-3">
         {RELEASES.map((release) => (
           <li
             key={release.name}
-            className="flex items-center justify-between gap-3 rounded-xl border border-[var(--cmd-border)] bg-[var(--cmd-bg-elevated)] px-4 py-3"
+            className="cmd-glass flex items-center justify-between gap-3 rounded-xl px-4 py-3"
           >
             <span>{release.name}</span>
             <Badge tone={release.status === "in_progress" ? "warning" : "neutral"}>

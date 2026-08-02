@@ -1,37 +1,84 @@
 :root {
-  --cmd-bg: #f4f7f6;
-  --cmd-bg-elevated: #ffffff;
-  --cmd-bg-muted: #e7eeeb;
-  --cmd-fg: #10231f;
-  --cmd-fg-muted: #4d635d;
-  --cmd-border: #c9d6d1;
-  --cmd-accent: #0f766e;
-  --cmd-accent-fg: #f5fffd;
-  --cmd-danger: #b42318;
-  --cmd-warning: #b54708;
-  --cmd-success: #067647;
-  --cmd-ring: #0f766e;
-  --cmd-shadow: 0 10px 30px rgba(16, 35, 31, 0.08);
-  --cmd-radius: 12px;
-  --cmd-font-sans: "Sora", "Segoe UI", sans-serif;
-  --cmd-font-display: "Fraunces", Georgia, serif;
+  /* Brand-first dark system derived from the Commandry crest */
+  --cmd-bg: #05060a;
+  --cmd-bg-elevated: rgba(18, 20, 32, 0.78);
+  --cmd-bg-muted: rgba(34, 38, 58, 0.72);
+  --cmd-fg: #eef2ff;
+  --cmd-fg-muted: #9aa3c2;
+  --cmd-border: rgba(148, 163, 255, 0.16);
+  --cmd-accent: #3b6cff;
+  --cmd-accent-2: #8b5cf6;
+  --cmd-accent-fg: #f8faff;
+  --cmd-danger: #f87171;
+  --cmd-warning: #fbbf24;
+  --cmd-success: #34d399;
+  --cmd-ring: #6d8cff;
+  --cmd-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --cmd-radius: 14px;
+  --cmd-font-sans: "Space Grotesk", "Segoe UI", sans-serif;
+  --cmd-font-display: "Oxanium", "Segoe UI", sans-serif;
   --cmd-font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --cmd-gradient: linear-gradient(135deg, #3b6cff 0%, #6d5cff 48%, #a855f7 100%);
+  --cmd-glow: 0 0 40px rgba(59, 108, 255, 0.28), 0 0 80px rgba(139, 92, 246, 0.18);
+}
+
+.light {
+  --cmd-bg: #eef1f8;
+  --cmd-bg-elevated: rgba(255, 255, 255, 0.9);
+  --cmd-bg-muted: #dde3f2;
+  --cmd-fg: #121526;
+  --cmd-fg-muted: #4c5574;
+  --cmd-border: rgba(59, 108, 255, 0.18);
+  --cmd-accent: #315ef0;
+  --cmd-accent-2: #7c3aed;
+  --cmd-accent-fg: #ffffff;
+  --cmd-danger: #dc2626;
+  --cmd-warning: #d97706;
+  --cmd-success: #059669;
+  --cmd-ring: #315ef0;
+  --cmd-shadow: 0 16px 40px rgba(28, 39, 84, 0.12);
+  --cmd-glow: 0 0 28px rgba(59, 108, 255, 0.16);
 }
 
 .dark {
-  --cmd-bg: #0b1412;
-  --cmd-bg-elevated: #13201c;
-  --cmd-bg-muted: #1b2b26;
-  --cmd-fg: #e8f2ef;
-  --cmd-fg-muted: #9db2ab;
-  --cmd-border: #2a3d37;
-  --cmd-accent: #2dd4bf;
-  --cmd-accent-fg: #042f2e;
-  --cmd-danger: #f97066;
-  --cmd-warning: #fdb022;
-  --cmd-success: #47cd89;
-  --cmd-ring: #2dd4bf;
-  --cmd-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  --cmd-bg: #05060a;
+  --cmd-bg-elevated: rgba(18, 20, 32, 0.78);
+  --cmd-bg-muted: rgba(34, 38, 58, 0.72);
+  --cmd-fg: #eef2ff;
+  --cmd-fg-muted: #9aa3c2;
+  --cmd-border: rgba(148, 163, 255, 0.16);
+  --cmd-accent: #3b6cff;
+  --cmd-accent-2: #8b5cf6;
+  --cmd-accent-fg: #f8faff;
+  --cmd-danger: #f87171;
+  --cmd-warning: #fbbf24;
+  --cmd-success: #34d399;
+  --cmd-ring: #6d8cff;
+  --cmd-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --cmd-glow: 0 0 40px rgba(59, 108, 255, 0.28), 0 0 80px rgba(139, 92, 246, 0.18);
+}
+
+.cmd-glass {
+  background: var(--cmd-bg-elevated);
+  border: 1px solid var(--cmd-border);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--cmd-shadow);
+}
+
+.cmd-gradient-text {
+  background: var(--cmd-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.cmd-gradient-fill {
+  background: var(--cmd-gradient);
+  color: var(--cmd-accent-fg);
+}
+
+.cmd-crest-glow {
+  box-shadow: var(--cmd-glow);
 }
 
 @media (prefers-reduced-motion: reduce) {

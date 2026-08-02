@@ -39,7 +39,7 @@ export default async function HomePage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <section className="rounded-2xl border border-[var(--cmd-border)] bg-[var(--cmd-bg-elevated)] p-5">
+        <section className="cmd-glass rounded-2xl p-5">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-semibold">Setup progress</h2>
             <Badge tone={active.organization.onboardingComplete ? "success" : "warning"}>
@@ -56,7 +56,7 @@ export default async function HomePage() {
           ) : null}
         </section>
 
-        <section className="rounded-2xl border border-[var(--cmd-border)] bg-[var(--cmd-bg-elevated)] p-5">
+        <section className="cmd-glass rounded-2xl p-5">
           <h2 className="mb-3 font-semibold">Integration health</h2>
           <p className="text-sm text-[var(--cmd-fg-muted)]">
             Discord, Roblox, and ER:LC connections are managed from Integrations. No live connection
@@ -67,7 +67,7 @@ export default async function HomePage() {
           </Button>
         </section>
 
-        <section className="rounded-2xl border border-[var(--cmd-border)] bg-[var(--cmd-bg-elevated)] p-5">
+        <section className="cmd-glass rounded-2xl p-5">
           <h2 className="mb-3 font-semibold">Your access</h2>
           <ul className="space-y-2 text-sm text-[var(--cmd-fg-muted)]">
             {active.roles.map((item) => (
