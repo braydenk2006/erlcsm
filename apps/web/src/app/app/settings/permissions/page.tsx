@@ -46,7 +46,7 @@ export default async function PermissionSimulatorPage() {
         </p>
       </div>
 
-      <div className="cmd-glass rounded-2xl p-5">
+      <div className="cmd-glass rounded-[var(--cmd-radius-xl)] p-6">
         <h2 className="font-semibold">Current actor</h2>
         <p className="mt-2 text-sm text-[var(--cmd-fg-muted)]">
           Roles: {actor.roleKeys.join(", ") || "none"}
@@ -55,7 +55,7 @@ export default async function PermissionSimulatorPage() {
 
       <ul className="space-y-3">
         {sampleActions.map((item) => (
-          <li key={item.action} className="cmd-glass rounded-2xl p-4">
+          <li key={item.action} className="cmd-glass rounded-[var(--cmd-radius-lg)] p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <code className="font-[family-name:var(--cmd-font-mono)] text-sm">{item.action}</code>
               <Badge tone={item.allowed ? "success" : "danger"}>

@@ -15,7 +15,7 @@ export default function LandingPage() {
       />
 
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
-        <header className="flex items-center justify-between gap-4">
+        <header className="cmd-glass flex items-center justify-between gap-4 rounded-[var(--cmd-radius-xl)] px-4 py-3 md:px-5">
           <div className="flex items-center gap-3">
             <BrandMark size={42} priority className="cmd-crest-glow" />
             <p className="font-[family-name:var(--cmd-font-display)] text-xl font-semibold tracking-[0.08em] uppercase">

@@ -14,7 +14,10 @@
   --cmd-success: #34d399;
   --cmd-ring: #6d8cff;
   --cmd-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
-  --cmd-radius: 14px;
+  --cmd-radius-sm: 14px;
+  --cmd-radius: 20px;
+  --cmd-radius-lg: 28px;
+  --cmd-radius-xl: 36px;
   --cmd-font-sans: "Space Grotesk", "Segoe UI", sans-serif;
   --cmd-font-display: "Oxanium", "Segoe UI", sans-serif;
   --cmd-font-mono: "IBM Plex Mono", ui-monospace, monospace;
@@ -61,6 +64,7 @@
 .cmd-glass {
   background: var(--cmd-bg-elevated);
   border: 1px solid var(--cmd-border);
+  border-radius: var(--cmd-radius-lg);
   backdrop-filter: blur(18px);
   box-shadow: var(--cmd-shadow);
 }

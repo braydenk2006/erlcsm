@@ -85,7 +85,7 @@ export function AppShell({
     <div className="min-h-screen md:grid md:grid-cols-[260px_1fr]">
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-[270px] border-r border-[var(--cmd-border)] bg-[rgba(10,12,20,0.88)] p-4 backdrop-blur-xl md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 w-[280px] border-r border-[var(--cmd-border)] bg-[rgba(10,12,20,0.88)] p-5 backdrop-blur-xl md:static md:translate-x-0 md:rounded-r-[var(--cmd-radius-xl)]",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}
       >
@@ -117,7 +117,7 @@ export function AppShell({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition",
+                  "flex items-center gap-3 rounded-[var(--cmd-radius)] px-3.5 py-2.5 text-sm transition",
                   active
                     ? "cmd-gradient-fill shadow-[0_8px_24px_rgba(59,108,255,0.25)]"
                     : "text-[var(--cmd-fg-muted)] hover:bg-[var(--cmd-bg-muted)] hover:text-[var(--cmd-fg)]",
@@ -133,7 +133,7 @@ export function AppShell({
       </aside>
 
       <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[var(--cmd-border)] bg-[rgba(5,6,10,0.72)] px-4 py-3 backdrop-blur-xl md:px-6">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[var(--cmd-border)] bg-[rgba(5,6,10,0.72)] px-4 py-3.5 backdrop-blur-xl md:px-6">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -146,7 +146,7 @@ export function AppShell({
             </Button>
             <button
               type="button"
-              className="cmd-glass hidden items-center gap-2 rounded-xl px-3 py-2 text-sm text-[var(--cmd-fg-muted)] md:inline-flex"
+              className="cmd-glass hidden items-center gap-2 rounded-[var(--cmd-radius)] px-4 py-2.5 text-sm text-[var(--cmd-fg-muted)] md:inline-flex"
               aria-label="Open command palette"
             >
               <Search className="h-4 w-4" />
@@ -161,14 +161,14 @@ export function AppShell({
             </div>
           </div>
         </header>
-        <main id="main" className="flex-1 px-4 py-6 md:px-8">
+        <main id="main" className="flex-1 px-4 py-6 pb-28 md:px-8 md:pb-8">
           {children}
         </main>
       </div>
 
       <nav
         aria-label="Mobile"
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-[var(--cmd-border)] bg-[rgba(10,12,20,0.94)] px-2 py-2 backdrop-blur-xl md:hidden"
+        className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-[var(--cmd-radius-xl)] border border-[var(--cmd-border)] bg-[rgba(10,12,20,0.94)] px-2 py-2 shadow-[var(--cmd-shadow)] backdrop-blur-xl md:hidden"
       >
         {visibleNav.slice(0, 5).map((item) => {
           const Icon = item.icon;
@@ -179,7 +179,7 @@ export function AppShell({
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[11px]",
+                "flex flex-col items-center gap-1 rounded-[var(--cmd-radius-sm)] px-1 py-2 text-[11px]",
                 active ? "text-[var(--cmd-accent)]" : "text-[var(--cmd-fg-muted)]",
               )}
             >

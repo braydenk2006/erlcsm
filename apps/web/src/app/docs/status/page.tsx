@@ -22,7 +22,7 @@ export default function StatusPage() {
         {RELEASES.map((release) => (
           <li
             key={release.name}
-            className="cmd-glass flex items-center justify-between gap-3 rounded-xl px-4 py-3"
+            className="cmd-glass flex items-center justify-between gap-3 rounded-[var(--cmd-radius)] px-5 py-3.5"
           >
             <span>{release.name}</span>
             <Badge tone={release.status === "in_progress" ? "warning" : "neutral"}>

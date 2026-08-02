@@ -18,10 +18,10 @@ const buttonVariants = cva(
           "border border-[var(--cmd-border)] bg-[rgba(255,255,255,0.02)] text-[var(--cmd-fg)] hover:border-[rgba(168,85,247,0.45)] hover:bg-[rgba(139,92,246,0.08)]",
       },
       size: {
-        sm: "h-9 px-3",
-        md: "h-11 px-4",
-        lg: "h-12 px-5 text-base",
-        icon: "h-10 w-10",
+        sm: "h-9 rounded-[var(--cmd-radius-sm)] px-4",
+        md: "h-11 px-5",
+        lg: "h-12 rounded-[var(--cmd-radius-lg)] px-6 text-base",
+        icon: "h-11 w-11 rounded-[var(--cmd-radius)]",
       },
     },
     defaultVariants: {

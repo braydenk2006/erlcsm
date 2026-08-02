@@ -22,7 +22,7 @@ export default async function OnboardingPage() {
       </div>
 
       {incomplete ? (
-        <div className="cmd-glass rounded-2xl p-6">
+        <div className="cmd-glass rounded-[var(--cmd-radius-xl)] p-7">
           <h2 className="text-lg font-semibold">{incomplete.organization.name}</h2>
           <p className="mt-2 text-sm text-[var(--cmd-fg-muted)]">
             Continue configuration health checks, ranks, departments, and invitations from the

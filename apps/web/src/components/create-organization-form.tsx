@@ -23,7 +23,7 @@ export function CreateOrganizationForm() {
 
   return (
     <form
-      className="space-y-5 cmd-glass rounded-2xl p-6"
+      className="cmd-glass space-y-5 rounded-[var(--cmd-radius-xl)] p-7"
       onSubmit={(event) => {
         event.preventDefault();
         setError(null);
