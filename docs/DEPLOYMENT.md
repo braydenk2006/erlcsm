@@ -6,26 +6,26 @@ R0/R1 targets a simple deployable shape: Next.js web, BullMQ worker, optional Di
 
 See `.env.example`. Required for a functional app:
 
-| Variable | Purpose |
-| --- | --- |
-| `DATABASE_URL` | Postgres connection string |
-| `REDIS_URL` | Redis for BullMQ |
-| `APP_URL` / `BETTER_AUTH_URL` | Public origin |
-| `BETTER_AUTH_SECRET` | ≥ 32 chars |
-| `CREDENTIALS_ENCRYPTION_KEY` | ≥ 32 chars; encrypts integration secrets |
+| Variable                      | Purpose                                  |
+| ----------------------------- | ---------------------------------------- |
+| `DATABASE_URL`                | Postgres connection string               |
+| `REDIS_URL`                   | Redis for BullMQ                         |
+| `APP_URL` / `BETTER_AUTH_URL` | Public origin                            |
+| `BETTER_AUTH_SECRET`          | ≥ 32 chars                               |
+| `CREDENTIALS_ENCRYPTION_KEY`  | ≥ 32 chars; encrypts integration secrets |
 
 Optional / feature-gated:
 
-| Variable | Effect when unset |
-| --- | --- |
-| `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` | Discord OAuth disabled |
-| `DISCORD_BOT_TOKEN` | Bot idle mode |
-| `RESEND_API_KEY` | Magic links logged to console |
-| `S3_*` | Object storage unused |
-| `STRIPE_*` | Billing runtime unused |
-| `SENTRY_DSN` / `OTEL_EXPORTER_OTLP_ENDPOINT` | Observability exporters unused |
-| `AI_PROVIDER` / `AI_API_KEY` | Defaults to `none` |
-| `ERLC_MODE` | Defaults to `simulator` |
+| Variable                                      | Effect when unset              |
+| --------------------------------------------- | ------------------------------ |
+| `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` | Discord OAuth disabled         |
+| `DISCORD_BOT_TOKEN`                           | Bot idle mode                  |
+| `RESEND_API_KEY`                              | Magic links logged to console  |
+| `S3_*`                                        | Object storage unused          |
+| `STRIPE_*`                                    | Billing runtime unused         |
+| `SENTRY_DSN` / `OTEL_EXPORTER_OTLP_ENDPOINT`  | Observability exporters unused |
+| `AI_PROVIDER` / `AI_API_KEY`                  | Defaults to `none`             |
+| `ERLC_MODE`                                   | Defaults to `simulator`        |
 
 Validate shapes with `envSchema` from `@commandry/validation` when wiring boot checks.
 
@@ -41,11 +41,11 @@ Docker is optional if equivalent Postgres/Redis are already available.
 
 ## Process model
 
-| Process | Command (dev) | Notes |
-| --- | --- | --- |
-| Web | `pnpm --filter @commandry/web dev` | Port 3000 |
-| Worker | `pnpm --filter @commandry/worker dev` (via turbo) | Requires Redis + DB |
-| Discord bot | turbo `dev` | Exits idle path without token |
+| Process     | Command (dev)                                     | Notes                         |
+| ----------- | ------------------------------------------------- | ----------------------------- |
+| Web         | `pnpm --filter @commandry/web dev`                | Port 3000                     |
+| Worker      | `pnpm --filter @commandry/worker dev` (via turbo) | Requires Redis + DB           |
+| Discord bot | turbo `dev`                                       | Exits idle path without token |
 
 Production-ish:
 

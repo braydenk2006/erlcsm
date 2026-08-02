@@ -4,13 +4,13 @@ Packages/apps: `@commandry/discord`, `@commandry/auth` (OAuth), `apps/discord-bo
 
 ## Status
 
-| Capability | State |
-| --- | --- |
-| Discord OAuth sign-in | Wired in Better Auth **when** `DISCORD_CLIENT_ID` + `DISCORD_CLIENT_SECRET` are set |
-| Discord identity table | Schema ready (`DiscordIdentity`) |
-| Bot runtime | Scaffold only; idle without `DISCORD_BOT_TOKEN` |
-| Slash commands / guild sync | Planned Release 5 |
-| Interaction signature verification | Planned (see below) |
+| Capability                         | State                                                                               |
+| ---------------------------------- | ----------------------------------------------------------------------------------- |
+| Discord OAuth sign-in              | Wired in Better Auth **when** `DISCORD_CLIENT_ID` + `DISCORD_CLIENT_SECRET` are set |
+| Discord identity table             | Schema ready (`DiscordIdentity`)                                                    |
+| Bot runtime                        | Scaffold only; idle without `DISCORD_BOT_TOKEN`                                     |
+| Slash commands / guild sync        | Planned Release 5                                                                   |
+| Interaction signature verification | Planned (see below)                                                                 |
 
 ## OAuth
 

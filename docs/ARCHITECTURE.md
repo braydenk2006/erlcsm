@@ -13,42 +13,42 @@ Why this shape for R0/R1:
 
 ## Runtime apps
 
-| App | Role |
-| --- | --- |
-| `apps/web` | Next.js 16 App Router — marketing, auth UI, app shell, REST route handlers |
-| `apps/worker` | BullMQ consumers on Redis; system queue (`health.check`, `demo.echo`); records `JobFailure` rows |
+| App                | Role                                                                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `apps/web`         | Next.js 16 App Router — marketing, auth UI, app shell, REST route handlers                                   |
+| `apps/worker`      | BullMQ consumers on Redis; system queue (`health.check`, `demo.echo`); records `JobFailure` rows             |
 | `apps/discord-bot` | Scaffold; idle diagnostic mode without `DISCORD_BOT_TOKEN`; full slash-command runtime planned for Release 5 |
 
 ## Packages
 
 ### Core (implemented)
 
-| Package | Responsibility |
-| --- | --- |
-| `@commandry/database` | Prisma 7 client via `@prisma/adapter-pg`, schema, AES-256-GCM credential crypto |
-| `@commandry/auth` | Better Auth factory (magic link + optional Discord), Next.js handler wiring |
-| `@commandry/api` | Organization lifecycle, invitations, actor building |
-| `@commandry/permissions` | Actions, system role maps, `authorize()` / `explainAccess()` |
-| `@commandry/audit` | `recordAuditEvent` + metadata sanitization |
-| `@commandry/validation` | Zod org/env schemas |
-| `@commandry/observability` | JSON logger with redaction, request IDs |
-| `@commandry/shared` | Public IDs, `AppError` hierarchy, module keys |
-| `@commandry/ui` | Button, Input, Badge, EmptyState, tokens (teal, Sora/Fraunces) |
+| Package                    | Responsibility                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| `@commandry/database`      | Prisma 7 client via `@prisma/adapter-pg`, schema, AES-256-GCM credential crypto |
+| `@commandry/auth`          | Better Auth factory (magic link + optional Discord), Next.js handler wiring     |
+| `@commandry/api`           | Organization lifecycle, invitations, actor building                             |
+| `@commandry/permissions`   | Actions, system role maps, `authorize()` / `explainAccess()`                    |
+| `@commandry/audit`         | `recordAuditEvent` + metadata sanitization                                      |
+| `@commandry/validation`    | Zod org/env schemas                                                             |
+| `@commandry/observability` | JSON logger with redaction, request IDs                                         |
+| `@commandry/shared`        | Public IDs, `AppError` hierarchy, module keys                                   |
+| `@commandry/ui`            | Button, Input, Badge, EmptyState, tokens (teal, Sora/Fraunces)                  |
 
 ### Integration / foresight (interfaces & constants)
 
-| Package | Current state |
-| --- | --- |
-| `@commandry/erlc` | `ErlcClient` type + simulator (`ERLC_MODE=simulator`) |
-| `@commandry/discord` | OAuth/bot credential status helper |
-| `@commandry/ai` | `DEFAULT_AI_SAFETY_POLICY` constants |
-| `@commandry/billing` | `PLAN_LIMITS` constants only |
-| `@commandry/roblox` | Stable Roblox user ID assertion |
-| `@commandry/notifications` | Channel types + `shouldDeliver` stub |
-| `@commandry/integrations` | Provider/health types |
-| `@commandry/analytics` | Safe property assertion |
-| `@commandry/config` | App name / default timezone |
-| `@commandry/testing` | Test request ID helper |
+| Package                    | Current state                                         |
+| -------------------------- | ----------------------------------------------------- |
+| `@commandry/erlc`          | `ErlcClient` type + simulator (`ERLC_MODE=simulator`) |
+| `@commandry/discord`       | OAuth/bot credential status helper                    |
+| `@commandry/ai`            | `DEFAULT_AI_SAFETY_POLICY` constants                  |
+| `@commandry/billing`       | `PLAN_LIMITS` constants only                          |
+| `@commandry/roblox`        | Stable Roblox user ID assertion                       |
+| `@commandry/notifications` | Channel types + `shouldDeliver` stub                  |
+| `@commandry/integrations`  | Provider/health types                                 |
+| `@commandry/analytics`     | Safe property assertion                               |
+| `@commandry/config`        | App name / default timezone                           |
+| `@commandry/testing`       | Test request ID helper                                |
 
 ## Request flow
 
@@ -90,12 +90,12 @@ Public IDs (`org_…`, `usr_…`, `mem_…`) are exposed over APIs; internal cui
 
 Declared queue names (`apps/worker/src/queues.ts`):
 
-| Queue | Purpose (now / planned) |
-| --- | --- |
-| `commandry.system` | Implemented: `health.check`, `demo.echo` |
-| `commandry.moderation.expiration` | Planned |
-| `commandry.notifications` | Planned |
-| `commandry.integrations` | Planned |
+| Queue                             | Purpose (now / planned)                  |
+| --------------------------------- | ---------------------------------------- |
+| `commandry.system`                | Implemented: `health.check`, `demo.echo` |
+| `commandry.moderation.expiration` | Planned                                  |
+| `commandry.notifications`         | Planned                                  |
+| `commandry.integrations`          | Planned                                  |
 
 BullMQ is the job source of truth; `JobFailure` aids ops visibility.
 

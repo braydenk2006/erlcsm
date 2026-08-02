@@ -4,17 +4,17 @@ Commandry treats multi-tenant isolation, credential handling, and audit integrit
 
 ## Current controls
 
-| Control | Implementation |
-| --- | --- |
-| Auth | Better Auth sessions; magic link; optional Discord OAuth; password auth disabled |
-| Secrets | Env-validated (`BETTER_AUTH_SECRET`, `CREDENTIALS_ENCRYPTION_KEY` ≥ 32 chars) |
-| Credential at rest | AES-256-GCM (`encryptSecret` / `decryptSecret`) for integration payloads |
-| Authorization | Central `authorize()` with cross-tenant deny |
-| Validation | Zod on org create/update/invite/switch |
-| Audit | Append events; sensitive keys redacted (`[REDACTED]`) |
-| Logging | Structured JSON with secret key redaction |
-| Public IDs | Non-sequential IDs in API responses |
-| CI | Placeholder scan blocks fake/mock production patterns |
+| Control            | Implementation                                                                   |
+| ------------------ | -------------------------------------------------------------------------------- |
+| Auth               | Better Auth sessions; magic link; optional Discord OAuth; password auth disabled |
+| Secrets            | Env-validated (`BETTER_AUTH_SECRET`, `CREDENTIALS_ENCRYPTION_KEY` ≥ 32 chars)    |
+| Credential at rest | AES-256-GCM (`encryptSecret` / `decryptSecret`) for integration payloads         |
+| Authorization      | Central `authorize()` with cross-tenant deny                                     |
+| Validation         | Zod on org create/update/invite/switch                                           |
+| Audit              | Append events; sensitive keys redacted (`[REDACTED]`)                            |
+| Logging            | Structured JSON with secret key redaction                                        |
+| Public IDs         | Non-sequential IDs in API responses                                              |
+| CI                 | Placeholder scan blocks fake/mock production patterns                            |
 
 ## Threat model
 

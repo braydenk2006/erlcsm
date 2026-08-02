@@ -1,0 +1,17 @@
+{
+  "name": "Commandry",
+  "short_name": "Commandry",
+  "description": "The operating system for ER:LC communities",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#0B1412",
+  "theme_color": "#0F766E",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

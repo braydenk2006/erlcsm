@@ -37,11 +37,11 @@ Better Auth catch-all via `toNextJsHandler(auth)`.
 
 Configured behaviors:
 
-| Method | Notes |
-| --- | --- |
-| Magic link | Always registered; logs URL to console in development; Resend wiring is milestone-later |
-| Discord OAuth | Registered only when `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` are set |
-| Email/password | Disabled |
+| Method         | Notes                                                                                   |
+| -------------- | --------------------------------------------------------------------------------------- |
+| Magic link     | Always registered; logs URL to console in development; Resend wiring is milestone-later |
+| Discord OAuth  | Registered only when `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` are set            |
+| Email/password | Disabled                                                                                |
 
 Client helper: `@commandry/auth` → `authClient` with `magicLinkClient()`. Session helpers in the web app: `getSession()` / `requireSession()`.
 
@@ -74,13 +74,13 @@ Returns organizations for the signed-in user’s **active** memberships:
 
 Requires session. Body validated by `createOrganizationSchema`:
 
-| Field | Rules |
-| --- | --- |
-| `name` | 2–80 chars |
-| `slug` | lowercase alphanumeric + hyphens, 3–48 |
-| `timezone` | optional, default `UTC` |
+| Field              | Rules                                                                                                      |
+| ------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `name`             | 2–80 chars                                                                                                 |
+| `slug`             | lowercase alphanumeric + hyphens, 3–48                                                                     |
+| `timezone`         | optional, default `UTC`                                                                                    |
 | `organizationType` | `private_server` \| `roleplay` \| `department_heavy` \| `law_enforcement` \| `border_roleplay` \| `custom` |
-| `approximateSize` | `small` \| `medium` \| `large` \| `enterprise` |
+| `approximateSize`  | `small` \| `medium` \| `large` \| `enterprise`                                                             |
 
 **201**
 

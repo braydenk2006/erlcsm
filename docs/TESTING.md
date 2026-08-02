@@ -2,13 +2,13 @@
 
 ## Strategy
 
-| Layer | Tool | Scope |
-| --- | --- | --- |
-| Unit | Vitest | Permissions, validation, crypto, audit sanitize, shared IDs, package stubs |
-| Integration | Vitest (`test:integration` where configured) | API/org tenant behavior, database when `DATABASE_URL` available |
-| End-to-end | Playwright (planned) | Auth → create org → switch org → permission simulator; not yet required in CI |
-| Static | ESLint, `tsc`, Prettier | Enforced in `pnpm quality` and GitHub Actions |
-| Guardrail | ripgrep placeholder scan | Blocks `TODO: implement`, `fakeApiResponse`, `hardcodedSampleOrg` outside docs |
+| Layer       | Tool                                         | Scope                                                                          |
+| ----------- | -------------------------------------------- | ------------------------------------------------------------------------------ |
+| Unit        | Vitest                                       | Permissions, validation, crypto, audit sanitize, shared IDs, package stubs     |
+| Integration | Vitest (`test:integration` where configured) | API/org tenant behavior, database when `DATABASE_URL` available                |
+| End-to-end  | Playwright (planned)                         | Auth → create org → switch org → permission simulator; not yet required in CI  |
+| Static      | ESLint, `tsc`, Prettier                      | Enforced in `pnpm quality` and GitHub Actions                                  |
+| Guardrail   | ripgrep placeholder scan                     | Blocks `TODO: implement`, `fakeApiResponse`, `hardcodedSampleOrg` outside docs |
 
 Philosophy: test real authorization and tenant boundaries early; do not invent mock production organizations or fake ER:LC responses in product paths.
 

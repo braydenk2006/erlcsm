@@ -6,16 +6,16 @@ This repository is a greenfield **modular monolith** (pnpm workspaces + Turborep
 
 ## Stack
 
-| Layer | Choice |
-| --- | --- |
-| Monorepo | pnpm workspaces + Turborepo |
-| Web | Next.js 16 App Router, React 19 |
-| Data | PostgreSQL, Prisma 7 (`@prisma/adapter-pg`) |
-| Jobs | Redis + BullMQ |
-| Auth | Better Auth (magic link; Discord OAuth when configured) |
-| Validation | Zod |
-| UI | Tailwind CSS 4, shared `@commandry/ui` tokens (teal/operational, Sora + Fraunces) |
-| Tests / CI | Vitest, GitHub Actions |
+| Layer      | Choice                                                                            |
+| ---------- | --------------------------------------------------------------------------------- |
+| Monorepo   | pnpm workspaces + Turborepo                                                       |
+| Web        | Next.js 16 App Router, React 19                                                   |
+| Data       | PostgreSQL, Prisma 7 (`@prisma/adapter-pg`)                                       |
+| Jobs       | Redis + BullMQ                                                                    |
+| Auth       | Better Auth (magic link; Discord OAuth when configured)                           |
+| Validation | Zod                                                                               |
+| UI         | Tailwind CSS 4, shared `@commandry/ui` tokens (teal/operational, Sora + Fraunces) |
+| Tests / CI | Vitest, GitHub Actions                                                            |
 
 ## Quickstart
 
@@ -107,23 +107,23 @@ docs/             Product, architecture, ADRs, status
 
 ## Documentation
 
-| Doc | Topic |
-| --- | --- |
-| [docs/PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md) | Vision, principles, release plan |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Modular monolith, request flow, tenancy |
-| [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md) | Entities, indexes, ER diagram |
-| [docs/PERMISSIONS.md](docs/PERMISSIONS.md) | Authorization model |
-| [docs/API.md](docs/API.md) | Current REST endpoints |
-| [docs/SECURITY.md](docs/SECURITY.md) | Threat model |
-| [docs/TESTING.md](docs/TESTING.md) | Vitest / Playwright strategy |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Env, Docker, staging/prod |
-| [docs/ERLC_INTEGRATION.md](docs/ERLC_INTEGRATION.md) | ER:LC interface & simulator |
-| [docs/DISCORD_INTEGRATION.md](docs/DISCORD_INTEGRATION.md) | OAuth & bot plans |
-| [docs/AI_SAFETY.md](docs/AI_SAFETY.md) | Human-in-the-loop AI policy |
-| [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) | Honest done vs planned matrix |
-| [docs/KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md) | Local/dev constraints |
-| [docs/CHANGELOG.md](docs/CHANGELOG.md) | Version history |
-| [docs/DECISIONS/](docs/DECISIONS/) | Architecture decision records |
+| Doc                                                            | Topic                                   |
+| -------------------------------------------------------------- | --------------------------------------- |
+| [docs/PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md)   | Vision, principles, release plan        |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)                   | Modular monolith, request flow, tenancy |
+| [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md)             | Entities, indexes, ER diagram           |
+| [docs/PERMISSIONS.md](docs/PERMISSIONS.md)                     | Authorization model                     |
+| [docs/API.md](docs/API.md)                                     | Current REST endpoints                  |
+| [docs/SECURITY.md](docs/SECURITY.md)                           | Threat model                            |
+| [docs/TESTING.md](docs/TESTING.md)                             | Vitest / Playwright strategy            |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)                       | Env, Docker, staging/prod               |
+| [docs/ERLC_INTEGRATION.md](docs/ERLC_INTEGRATION.md)           | ER:LC interface & simulator             |
+| [docs/DISCORD_INTEGRATION.md](docs/DISCORD_INTEGRATION.md)     | OAuth & bot plans                       |
+| [docs/AI_SAFETY.md](docs/AI_SAFETY.md)                         | Human-in-the-loop AI policy             |
+| [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) | Honest done vs planned matrix           |
+| [docs/KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md)         | Local/dev constraints                   |
+| [docs/CHANGELOG.md](docs/CHANGELOG.md)                         | Version history                         |
+| [docs/DECISIONS/](docs/DECISIONS/)                             | Architecture decision records           |
 
 ## Honest status
 

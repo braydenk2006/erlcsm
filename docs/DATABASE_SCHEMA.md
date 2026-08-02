@@ -14,44 +14,44 @@ Source of truth: `packages/database/prisma/schema.prisma` (PostgreSQL via Prisma
 
 ### Identity
 
-| Model | Notes |
-| --- | --- |
-| `User` | Better Auth compatible; `publicId`, `platformRole`, `activeOrganizationId`, `mfaEnabled` |
-| `Session` | Auth sessions; optional `activeOrganizationId` |
-| `Account` | OAuth/provider links (`providerId` + `accountId` unique) |
-| `Verification` | Magic-link / verification tokens |
-| `RobloxIdentity` | One Roblox link per user (`robloxUserId` unique) |
-| `DiscordIdentity` | One Discord link per user (`discordUserId` unique) |
+| Model             | Notes                                                                                    |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| `User`            | Better Auth compatible; `publicId`, `platformRole`, `activeOrganizationId`, `mfaEnabled` |
+| `Session`         | Auth sessions; optional `activeOrganizationId`                                           |
+| `Account`         | OAuth/provider links (`providerId` + `accountId` unique)                                 |
+| `Verification`    | Magic-link / verification tokens                                                         |
+| `RobloxIdentity`  | One Roblox link per user (`robloxUserId` unique)                                         |
+| `DiscordIdentity` | One Discord link per user (`discordUserId` unique)                                       |
 
 ### Tenancy
 
-| Model | Notes |
-| --- | --- |
-| `Organization` | Tenant root: slug, type, size, modules, plan, status, soft delete |
-| `OrganizationDomain` | Custom domains (schema ready; verification flow planned) |
-| `Membership` | User↔org; unique `(organizationId, userId)`; optional rank |
-| `Invitation` | Email invite with hashed token; 7-day expiry on create |
+| Model                | Notes                                                             |
+| -------------------- | ----------------------------------------------------------------- |
+| `Organization`       | Tenant root: slug, type, size, modules, plan, status, soft delete |
+| `OrganizationDomain` | Custom domains (schema ready; verification flow planned)          |
+| `Membership`         | User↔org; unique `(organizationId, userId)`; optional rank        |
+| `Invitation`         | Email invite with hashed token; 7-day expiry on create            |
 
 ### Access control
 
-| Model | Notes |
-| --- | --- |
-| `Role` | Per-org roles; system roles keyed `owner`/`admin`/`moderator`/`staff`/`member` |
-| `MembershipRole` | M2M membership↔role |
-| `Rank` | Ordered staff ranks; optional Discord role id |
-| `Department` / `DepartmentMember` | Org departments and memberships |
-| `PermissionGrant` / `PermissionDenial` | Per-membership overrides |
-| `BreakGlassSession` | Time-boxed elevated access |
+| Model                                  | Notes                                                                          |
+| -------------------------------------- | ------------------------------------------------------------------------------ |
+| `Role`                                 | Per-org roles; system roles keyed `owner`/`admin`/`moderator`/`staff`/`member` |
+| `MembershipRole`                       | M2M membership↔role                                                            |
+| `Rank`                                 | Ordered staff ranks; optional Discord role id                                  |
+| `Department` / `DepartmentMember`      | Org departments and memberships                                                |
+| `PermissionGrant` / `PermissionDenial` | Per-membership overrides                                                       |
+| `BreakGlassSession`                    | Time-boxed elevated access                                                     |
 
 ### Audit, integrations, ops
 
-| Model | Notes |
-| --- | --- |
-| `AuditEvent` | Action, resource, actor, source, sanitized metadata/before/after |
-| `IntegrationCredential` | Encrypted provider secrets; unique `(organizationId, provider)` |
-| `SupportAccessSession` | Planned support impersonation windows |
-| `NotificationPreference` | Per user/org/channel prefs |
-| `JobFailure` | Worker failure bookkeeping |
+| Model                    | Notes                                                            |
+| ------------------------ | ---------------------------------------------------------------- |
+| `AuditEvent`             | Action, resource, actor, source, sanitized metadata/before/after |
+| `IntegrationCredential`  | Encrypted provider secrets; unique `(organizationId, provider)`  |
+| `SupportAccessSession`   | Planned support impersonation windows                            |
+| `NotificationPreference` | Per user/org/channel prefs                                       |
+| `JobFailure`             | Worker failure bookkeeping                                       |
 
 ## Tenant ownership
 
@@ -65,30 +65,30 @@ Users are global; tenancy is enforced through membership + `authorize()` resourc
 
 ## Important indexes
 
-| Table | Index / constraint |
-| --- | --- |
-| `organizations` | unique `slug`, `publicId`; index `status` |
-| `memberships` | unique `(organizationId, userId)`; `(organizationId, status)`; `userId` |
-| `invitations` | unique `tokenHash`; `(organizationId, email)`; `(organizationId, status)` |
-| `roles` | unique `(organizationId, key)` |
-| `ranks` | unique `(organizationId, name)`, `(organizationId, order)` |
-| `departments` | unique `(organizationId, slug)`; `(organizationId, isActive)` |
-| `permission_grants` / `_denials` | `(membershipId, action)` |
-| `audit_events` | `(organizationId, createdAt)`; `(organizationId, resourceType, resourceId)`; `(actorUserId, createdAt)` |
-| `integration_credentials` | unique `(organizationId, provider)` |
-| `sessions` / `accounts` | `userId` |
-| `job_failures` | `(queue, createdAt)` |
+| Table                            | Index / constraint                                                                                      |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `organizations`                  | unique `slug`, `publicId`; index `status`                                                               |
+| `memberships`                    | unique `(organizationId, userId)`; `(organizationId, status)`; `userId`                                 |
+| `invitations`                    | unique `tokenHash`; `(organizationId, email)`; `(organizationId, status)`                               |
+| `roles`                          | unique `(organizationId, key)`                                                                          |
+| `ranks`                          | unique `(organizationId, name)`, `(organizationId, order)`                                              |
+| `departments`                    | unique `(organizationId, slug)`; `(organizationId, isActive)`                                           |
+| `permission_grants` / `_denials` | `(membershipId, action)`                                                                                |
+| `audit_events`                   | `(organizationId, createdAt)`; `(organizationId, resourceType, resourceId)`; `(actorUserId, createdAt)` |
+| `integration_credentials`        | unique `(organizationId, provider)`                                                                     |
+| `sessions` / `accounts`          | `userId`                                                                                                |
+| `job_failures`                   | `(queue, createdAt)`                                                                                    |
 
 ## Deletion semantics
 
-| Resource | Behavior |
-| --- | --- |
+| Resource     | Behavior                                                                                        |
+| ------------ | ----------------------------------------------------------------------------------------------- |
 | Organization | Soft delete via `deletedAt` + status (`PENDING_DELETION` / `DELETED`); listings exclude deleted |
-| Membership | Status → `FORMER` / `leftAt` preferred over hard delete for history |
-| Cascade FKs | Child rows cascade when parent org/membership is hard-deleted |
-| Audit | `organizationId` / `actorUserId` set null on parent delete — events retained |
-| Invitations | Status transitions (`REVOKED`, `EXPIRED`, `ACCEPTED`); token never stored plaintext |
-| Credentials | Cascade with organization; ciphertext only |
+| Membership   | Status → `FORMER` / `leftAt` preferred over hard delete for history                             |
+| Cascade FKs  | Child rows cascade when parent org/membership is hard-deleted                                   |
+| Audit        | `organizationId` / `actorUserId` set null on parent delete — events retained                    |
+| Invitations  | Status transitions (`REVOKED`, `EXPIRED`, `ACCEPTED`); token never stored plaintext             |
+| Credentials  | Cascade with organization; ciphertext only                                                      |
 
 Hard-delete retention jobs are not implemented in R0/R1.
 

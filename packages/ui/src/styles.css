@@ -1,0 +1,46 @@
+:root {
+  --cmd-bg: #f4f7f6;
+  --cmd-bg-elevated: #ffffff;
+  --cmd-bg-muted: #e7eeeb;
+  --cmd-fg: #10231f;
+  --cmd-fg-muted: #4d635d;
+  --cmd-border: #c9d6d1;
+  --cmd-accent: #0f766e;
+  --cmd-accent-fg: #f5fffd;
+  --cmd-danger: #b42318;
+  --cmd-warning: #b54708;
+  --cmd-success: #067647;
+  --cmd-ring: #0f766e;
+  --cmd-shadow: 0 10px 30px rgba(16, 35, 31, 0.08);
+  --cmd-radius: 12px;
+  --cmd-font-sans: "Sora", "Segoe UI", sans-serif;
+  --cmd-font-display: "Fraunces", Georgia, serif;
+  --cmd-font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+.dark {
+  --cmd-bg: #0b1412;
+  --cmd-bg-elevated: #13201c;
+  --cmd-bg-muted: #1b2b26;
+  --cmd-fg: #e8f2ef;
+  --cmd-fg-muted: #9db2ab;
+  --cmd-border: #2a3d37;
+  --cmd-accent: #2dd4bf;
+  --cmd-accent-fg: #042f2e;
+  --cmd-danger: #f97066;
+  --cmd-warning: #fdb022;
+  --cmd-success: #47cd89;
+  --cmd-ring: #2dd4bf;
+  --cmd-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

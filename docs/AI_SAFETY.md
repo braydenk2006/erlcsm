@@ -21,11 +21,11 @@ These flags are typed as literals so unsafe combinations fail typecheck if alter
 
 ## Configuration
 
-| Env | Default | Notes |
-| --- | --- | --- |
-| `AI_PROVIDER` | `none` | `none` \| `openai` \| `anthropic` |
-| `AI_API_KEY` | empty | Unused while provider is `none` |
-| `AI_DEFAULT_MODEL` | empty | Reserved |
+| Env                | Default | Notes                             |
+| ------------------ | ------- | --------------------------------- |
+| `AI_PROVIDER`      | `none`  | `none` \| `openai` \| `anthropic` |
+| `AI_API_KEY`       | empty   | Unused while provider is `none`   |
+| `AI_DEFAULT_MODEL` | empty   | Reserved                          |
 
 With `AI_PROVIDER=none`, no model calls should be made. Release 8 delivers product AI features against this policy.
 

@@ -44,16 +44,16 @@ const decision = authorize({
 
 `PermissionScope` types (for grants and future UI):
 
-| Scope | Meaning |
-| --- | --- |
-| `organization` | Entire tenant |
-| `department` | Single department id |
+| Scope                  | Meaning                        |
+| ---------------------- | ------------------------------ |
+| `organization`         | Entire tenant                  |
+| `department`           | Single department id           |
 | `assigned_departments` | Actor's department memberships |
-| `own` | Records the actor owns |
-| `below_rank` | Targets below actor rank order |
-| `session` | Specific session |
-| `cad_agency` | CAD agency boundary |
-| `public` | Non-sensitive public reads |
+| `own`                  | Records the actor owns         |
+| `below_rank`           | Targets below actor rank order |
+| `session`              | Specific session               |
+| `cad_agency`           | CAD agency boundary            |
+| `public`               | Non-sensitive public reads     |
 
 Runtime enforcement today focuses on **organization match**, **role/grant actions**, **ownership**, **sensitivity**, and **break-glass**. Finer department/rank scopes are modeled and partially stubbed for later releases.
 
@@ -75,13 +75,13 @@ Many actions are defined ahead of their domain modules so R2+ can ship without r
 
 Seeded/created on organization create (`owner`, `admin`, `moderator`, `staff`, `member`):
 
-| Role | Intent |
-| --- | --- |
-| `owner` | Full control including delete, billing, break-glass |
-| `admin` | Broad admin without ownership transfer / delete / billing |
-| `moderator` | Moderation + live view + documents read |
-| `staff` | Operational read + own shifts |
-| `member` | Baseline org/member/document read |
+| Role        | Intent                                                    |
+| ----------- | --------------------------------------------------------- |
+| `owner`     | Full control including delete, billing, break-glass       |
+| `admin`     | Broad admin without ownership transfer / delete / billing |
+| `moderator` | Moderation + live view + documents read                   |
+| `staff`     | Operational read + own shifts                             |
+| `member`    | Baseline org/member/document read                         |
 
 Exact action sets: `SYSTEM_ROLE_PERMISSIONS` in `packages/permissions/src/types.ts`.
 

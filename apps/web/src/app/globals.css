@@ -1,0 +1,84 @@
+@import "tailwindcss";
+@import "@commandry/ui/styles.css";
+
+@theme {
+  --font-sans: var(--cmd-font-sans);
+  --font-display: var(--cmd-font-display);
+  --font-mono: var(--cmd-font-mono);
+  --color-cmd-bg: var(--cmd-bg);
+  --color-cmd-elevated: var(--cmd-bg-elevated);
+  --color-cmd-muted: var(--cmd-bg-muted);
+  --color-cmd-fg: var(--cmd-fg);
+  --color-cmd-fg-muted: var(--cmd-fg-muted);
+  --color-cmd-border: var(--cmd-border);
+  --color-cmd-accent: var(--cmd-accent);
+  --color-cmd-accent-fg: var(--cmd-accent-fg);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--cmd-font-sans);
+  color: var(--cmd-fg);
+  background:
+    radial-gradient(
+      circle at top left,
+      color-mix(in oklab, var(--cmd-accent) 18%, transparent),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 80% 0%,
+      color-mix(in oklab, #0ea5e9 12%, transparent),
+      transparent 35%
+    ),
+    linear-gradient(180deg, var(--cmd-bg), color-mix(in oklab, var(--cmd-bg) 88%, #0f172a));
+  background-attachment: fixed;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cmd-ring);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--cmd-accent);
+  color: var(--cmd-accent-fg);
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: rise-in 500ms ease-out both;
+}
+
+.animate-rise-delay {
+  animation: rise-in 650ms ease-out 120ms both;
+}

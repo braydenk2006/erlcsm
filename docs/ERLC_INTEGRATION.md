@@ -32,8 +32,8 @@ export type ErlcClient = {
 
 ## Configuration
 
-| Env | Values | Default |
-| --- | --- | --- |
+| Env         | Values                | Default     |
+| ----------- | --------------------- | ----------- |
 | `ERLC_MODE` | `simulator` \| `live` | `simulator` |
 
 `live` mode must not be treated as functional until a real client implementation and encrypted tenant credentials are wired. Setting the env alone does not create a live connection.

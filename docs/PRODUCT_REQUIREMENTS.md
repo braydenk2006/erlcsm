@@ -18,28 +18,28 @@ Communities should connect once and operate everything from a fast, secure, inte
 
 ## Target users
 
-| Persona | Needs |
-| --- | --- |
-| Community owners | Org setup, billing (later), integrations, ownership controls |
-| Admins / leadership | Roles, departments, staff lifecycle, audit visibility |
-| Moderators | Moderation queues, live visibility, sessions |
-| Staff | Shifts, activity, training, documents |
-| Members | Applications, documents, limited self-service |
-| Platform support | Time-boxed, audited impersonation (planned) |
+| Persona             | Needs                                                        |
+| ------------------- | ------------------------------------------------------------ |
+| Community owners    | Org setup, billing (later), integrations, ownership controls |
+| Admins / leadership | Roles, departments, staff lifecycle, audit visibility        |
+| Moderators          | Moderation queues, live visibility, sessions                 |
+| Staff               | Shifts, activity, training, documents                        |
+| Members             | Applications, documents, limited self-service                |
+| Platform support    | Time-boxed, audited impersonation (planned)                  |
 
 ## Release plan summary
 
-| Release | Theme | Intent |
-| --- | --- | --- |
-| **R0** | Repository & architecture | Monorepo, schema, auth shell, packages, CI, docs |
-| **R1** | Tenant & identity foundation | Orgs, memberships, invitations, permissions, active org switching |
-| **R2** | Operations core | People, staff, departments, sessions, activity |
-| **R3** | Recruitment & development | Applications, training, documents |
-| **R4** | Governance | Moderation depth, break-glass ops, exports, compliance UX |
-| **R5** | Live ER:LC & Discord | Encrypted credentials, live client, bot slash commands |
-| **R6** | CAD | Dispatch, units, records |
-| **R7** | Growth platform | Website, forms, automations, analytics, billing enforcement |
-| **R8** | AI | Assisted drafting/retrieval under safety policy |
+| Release | Theme                        | Intent                                                            |
+| ------- | ---------------------------- | ----------------------------------------------------------------- |
+| **R0**  | Repository & architecture    | Monorepo, schema, auth shell, packages, CI, docs                  |
+| **R1**  | Tenant & identity foundation | Orgs, memberships, invitations, permissions, active org switching |
+| **R2**  | Operations core              | People, staff, departments, sessions, activity                    |
+| **R3**  | Recruitment & development    | Applications, training, documents                                 |
+| **R4**  | Governance                   | Moderation depth, break-glass ops, exports, compliance UX         |
+| **R5**  | Live ER:LC & Discord         | Encrypted credentials, live client, bot slash commands            |
+| **R6**  | CAD                          | Dispatch, units, records                                          |
+| **R7**  | Growth platform              | Website, forms, automations, analytics, billing enforcement       |
+| **R8**  | AI                           | Assisted drafting/retrieval under safety policy                   |
 
 R0 and early R1 are **in progress**. Later releases are planned; packages and nav placeholders exist so the architecture can grow without rewrites.
 
