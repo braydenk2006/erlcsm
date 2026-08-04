@@ -1,0 +1,50 @@
+{
+  "name": "commandry",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Commandry — the operating system for ER:LC communities",
+  "packageManager": "pnpm@10.33.3",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:unit": "turbo run test --filter='./packages/*'",
+    "test:integration": "turbo run test:integration",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "pnpm --filter @commandry/database generate",
+    "db:migrate": "pnpm --filter @commandry/database migrate:dev",
+    "db:migrate:deploy": "pnpm --filter @commandry/database migrate:deploy",
+    "db:seed": "pnpm --filter @commandry/database seed",
+    "db:studio": "pnpm --filter @commandry/database studio",
+    "quality": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "prepare": "husky || true"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.1",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "prettier": "^3.9.6",
+    "turbo": "^2.10.8",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.65.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "sharp",
+      "msgpackr-extract"
+    ]
+  },
+  "type": "module"
+}

@@ -1,0 +1,547 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================================
+// Identity (Better Auth compatible + Commandry extensions)
+// =============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  publicId      String    @unique @map("public_id")
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false) @map("email_verified")
+  image         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  sessions              Session[]
+  accounts              Account[]
+  memberships           Membership[]
+  sentInvitations       Invitation[]           @relation("InvitationInviter")
+  auditEvents           AuditEvent[]           @relation("AuditActor")
+  activeOrganizationId  String?                @map("active_organization_id")
+  platformRole          PlatformRole           @default(NONE) @map("platform_role")
+  mfaEnabled            Boolean                @default(false) @map("mfa_enabled")
+  robloxLink            RobloxIdentity?
+  discordLink           DiscordIdentity?
+  supportAccessSessions SupportAccessSession[] @relation("SupportActor")
+
+  @@map("users")
+}
+
+model Session {
+  id                   String   @id @default(cuid())
+  expiresAt            DateTime @map("expires_at")
+  token                String   @unique
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  ipAddress            String?  @map("ip_address")
+  userAgent            String?  @map("user_agent")
+  userId               String   @map("user_id")
+  activeOrganizationId String?  @map("active_organization_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+enum PlatformRole {
+  NONE
+  SUPPORT
+  ADMIN
+  SUPERADMIN
+}
+
+// =============================================================================
+// External identities
+// =============================================================================
+
+model RobloxIdentity {
+  id              String    @id @default(cuid())
+  publicId        String    @unique @map("public_id")
+  userId          String    @unique @map("user_id")
+  robloxUserId    String    @unique @map("roblox_user_id")
+  username        String
+  displayName     String?   @map("display_name")
+  avatarUrl       String?   @map("avatar_url")
+  verifiedAt      DateTime  @map("verified_at")
+  lastSyncedAt    DateTime? @map("last_synced_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("roblox_identities")
+}
+
+model DiscordIdentity {
+  id             String    @id @default(cuid())
+  publicId       String    @unique @map("public_id")
+  userId         String    @unique @map("user_id")
+  discordUserId  String    @unique @map("discord_user_id")
+  username       String
+  globalName     String?   @map("global_name")
+  avatarUrl      String?   @map("avatar_url")
+  verifiedAt     DateTime  @map("verified_at")
+  lastSyncedAt   DateTime? @map("last_synced_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("discord_identities")
+}
+
+// =============================================================================
+// Multi-tenant organizations
+// =============================================================================
+
+model Organization {
+  id                 String             @id @default(cuid())
+  publicId           String             @unique @map("public_id")
+  name               String
+  slug               String             @unique
+  timezone           String             @default("UTC")
+  organizationType   OrganizationType   @default(CUSTOM) @map("organization_type")
+  approximateSize    ApproximateSize    @default(SMALL) @map("approximate_size")
+  accentColor        String             @default("#0F766E") @map("accent_color")
+  logoUrl            String?            @map("logo_url")
+  terminology        Json               @default("{}")
+  enabledModules     String[]           @default(["home", "people", "staff", "departments", "sessions", "activity", "settings"]) @map("enabled_modules")
+  onboardingStep     Int                @default(0) @map("onboarding_step")
+  onboardingComplete Boolean            @default(false) @map("onboarding_complete")
+  planKey            String             @default("free") @map("plan_key")
+  status             OrganizationStatus @default(ACTIVE)
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  deletedAt          DateTime?          @map("deleted_at")
+
+  memberships           Membership[]
+  invitations           Invitation[]
+  roles                 Role[]
+  ranks                 Rank[]
+  departments           Department[]
+  auditEvents           AuditEvent[]
+  integrations          IntegrationCredential[]
+  customDomains         OrganizationDomain[]
+  supportAccessSessions SupportAccessSession[]
+  notificationPrefs     NotificationPreference[]
+
+  @@index([status])
+  @@map("organizations")
+}
+
+enum OrganizationType {
+  PRIVATE_SERVER
+  ROLEPLAY
+  DEPARTMENT_HEAVY
+  LAW_ENFORCEMENT
+  BORDER_ROLEPLAY
+  CUSTOM
+}
+
+enum ApproximateSize {
+  SMALL
+  MEDIUM
+  LARGE
+  ENTERPRISE
+}
+
+enum OrganizationStatus {
+  ACTIVE
+  SUSPENDED
+  READ_ONLY
+  PENDING_DELETION
+  DELETED
+}
+
+model OrganizationDomain {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  domain         String    @unique
+  isPrimary      Boolean   @default(false) @map("is_primary")
+  verifiedAt     DateTime? @map("verified_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("organization_domains")
+}
+
+model Membership {
+  id             String           @id @default(cuid())
+  publicId       String           @unique @map("public_id")
+  organizationId String           @map("organization_id")
+  userId         String           @map("user_id")
+  status         MembershipStatus @default(ACTIVE)
+  title          String?
+  joinedAt       DateTime         @default(now()) @map("joined_at")
+  leftAt         DateTime?        @map("left_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roles              MembershipRole[]
+  rankId             String?             @map("rank_id")
+  rank               Rank?               @relation(fields: [rankId], references: [id], onDelete: SetNull)
+  departmentMembers  DepartmentMember[]
+  permissionGrants   PermissionGrant[]
+  permissionDenies   PermissionDenial[]
+  breakGlassSessions BreakGlassSession[]
+
+  @@unique([organizationId, userId])
+  @@index([organizationId, status])
+  @@index([userId])
+  @@map("memberships")
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  FORMER
+}
+
+model Invitation {
+  id             String           @id @default(cuid())
+  publicId       String           @unique @map("public_id")
+  organizationId String           @map("organization_id")
+  email          String
+  roleKey        String           @default("member") @map("role_key")
+  tokenHash      String           @unique @map("token_hash")
+  status         InvitationStatus @default(PENDING)
+  message        String?
+  invitedById    String           @map("invited_by_id")
+  expiresAt      DateTime         @map("expires_at")
+  acceptedAt     DateTime?        @map("accepted_at")
+  revokedAt      DateTime?        @map("revoked_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedBy    User         @relation("InvitationInviter", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, email])
+  @@index([organizationId, status])
+  @@map("invitations")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+// =============================================================================
+// Roles, ranks, departments, permissions
+// =============================================================================
+
+model Role {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  key            String
+  name           String
+  description    String?
+  isSystem       Boolean  @default(false) @map("is_system")
+  permissions    String[] @default([])
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members      MembershipRole[]
+
+  @@unique([organizationId, key])
+  @@index([organizationId])
+  @@map("roles")
+}
+
+model MembershipRole {
+  id           String   @id @default(cuid())
+  membershipId String   @map("membership_id")
+  roleId       String   @map("role_id")
+  assignedAt   DateTime @default(now()) @map("assigned_at")
+
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, roleId])
+  @@map("membership_roles")
+}
+
+model Rank {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  name           String
+  order          Int
+  isStaff        Boolean  @default(true) @map("is_staff")
+  discordRoleId  String?  @map("discord_role_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members      Membership[]
+
+  @@unique([organizationId, name])
+  @@unique([organizationId, order])
+  @@index([organizationId])
+  @@map("ranks")
+}
+
+model Department {
+  id             String    @id @default(cuid())
+  publicId       String    @unique @map("public_id")
+  organizationId String    @map("organization_id")
+  name           String
+  slug           String
+  description    String?
+  accentColor    String?   @map("accent_color")
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members      DepartmentMember[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, isActive])
+  @@map("departments")
+}
+
+model DepartmentMember {
+  id           String   @id @default(cuid())
+  departmentId String   @map("department_id")
+  membershipId String   @map("membership_id")
+  title        String?
+  isLeader     Boolean  @default(false) @map("is_leader")
+  joinedAt     DateTime @default(now()) @map("joined_at")
+
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([departmentId, membershipId])
+  @@index([membershipId])
+  @@map("department_members")
+}
+
+model PermissionGrant {
+  id           String    @id @default(cuid())
+  membershipId String    @map("membership_id")
+  action       String
+  scopeType    String    @default("organization") @map("scope_type")
+  scopeId      String?   @map("scope_id")
+  reason       String?
+  expiresAt    DateTime? @map("expires_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@index([membershipId, action])
+  @@map("permission_grants")
+}
+
+model PermissionDenial {
+  id           String    @id @default(cuid())
+  membershipId String    @map("membership_id")
+  action       String
+  reason       String?
+  expiresAt    DateTime? @map("expires_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@index([membershipId, action])
+  @@map("permission_denials")
+}
+
+model BreakGlassSession {
+  id           String   @id @default(cuid())
+  membershipId String   @map("membership_id")
+  reason       String
+  startsAt     DateTime @default(now()) @map("starts_at")
+  endsAt       DateTime @map("ends_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@index([membershipId, endsAt])
+  @@map("break_glass_sessions")
+}
+
+// =============================================================================
+// Audit (append-only for tenants)
+// =============================================================================
+
+model AuditEvent {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String?  @map("organization_id")
+  actorUserId    String?  @map("actor_user_id")
+  action         String
+  resourceType   String   @map("resource_type")
+  resourceId     String?  @map("resource_id")
+  requestId      String?  @map("request_id")
+  source         AuditSource
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  metadata       Json     @default("{}")
+  before         Json?
+  after          Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  actor        User?         @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+  @@index([organizationId, resourceType, resourceId])
+  @@index([actorUserId, createdAt])
+  @@map("audit_events")
+}
+
+enum AuditSource {
+  WEB
+  API
+  DISCORD
+  AUTOMATION
+  ERLC
+  PLATFORM_SUPPORT
+  SYSTEM
+  WORKER
+}
+
+// =============================================================================
+// Integrations & support
+// =============================================================================
+
+model IntegrationCredential {
+  id             String          @id @default(cuid())
+  publicId       String          @unique @map("public_id")
+  organizationId String          @map("organization_id")
+  provider       String
+  label          String?
+  ciphertext     String
+  iv             String
+  authTag        String          @map("auth_tag")
+  status         IntegrationStatus @default(DISCONNECTED)
+  lastCheckedAt  DateTime?       @map("last_checked_at")
+  lastSuccessAt  DateTime?       @map("last_success_at")
+  lastError      String?         @map("last_error")
+  metadata       Json            @default("{}")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, provider])
+  @@index([organizationId])
+  @@map("integration_credentials")
+}
+
+enum IntegrationStatus {
+  DISCONNECTED
+  CONNECTED
+  DEGRADED
+  ERROR
+}
+
+model SupportAccessSession {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  actorUserId    String   @map("actor_user_id")
+  reason         String
+  startsAt       DateTime @default(now()) @map("starts_at")
+  endsAt         DateTime @map("ends_at")
+  revokedAt      DateTime? @map("revoked_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actor        User         @relation("SupportActor", fields: [actorUserId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, endsAt])
+  @@map("support_access_sessions")
+}
+
+model NotificationPreference {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  channel        String
+  enabled        Boolean  @default(true)
+  quietHoursStart Int?    @map("quiet_hours_start")
+  quietHoursEnd   Int?    @map("quiet_hours_end")
+  moduleOverrides Json    @default("{}") @map("module_overrides")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId, channel])
+  @@map("notification_preferences")
+}
+
+// =============================================================================
+// Background jobs bookkeeping (BullMQ is source of truth; this aids ops)
+// =============================================================================
+
+model JobFailure {
+  id        String   @id @default(cuid())
+  queue     String
+  jobName   String   @map("job_name")
+  jobId     String?  @map("job_id")
+  payload   Json     @default("{}")
+  error     String
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([queue, createdAt])
+  @@map("job_failures")
+}

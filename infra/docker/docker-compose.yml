@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: commandry
+      POSTGRES_PASSWORD: commandry
+      POSTGRES_DB: commandry
+    ports:
+      - "5432:5432"
+    volumes:
+      - commandry_pg:/var/lib/postgresql/data
+      - ./init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U commandry -d commandry"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - commandry_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: commandry
+      MINIO_ROOT_PASSWORD: commandrysecret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - commandry_minio:/data
+
+volumes:
+  commandry_pg:
+  commandry_redis:
+  commandry_minio:

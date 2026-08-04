@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: commandry
+          POSTGRES_PASSWORD: commandry
+          POSTGRES_DB: commandry
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U commandry -d commandry"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://commandry:commandry@localhost:5432/commandry?schema=public
+      DATABASE_URL_TEST: postgresql://commandry:commandry@localhost:5432/commandry?schema=public
+      REDIS_URL: redis://localhost:6379
+      BETTER_AUTH_SECRET: ci-test-secret-replace-in-production-32chars
+      BETTER_AUTH_URL: http://localhost:3000
+      CREDENTIALS_ENCRYPTION_KEY: ci-encryption-key-replace-in-prod-32
+      APP_URL: http://localhost:3000
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Validate formatting
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Migrate database
+        run: pnpm db:migrate:deploy
+
+      - name: Unit and integration tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Forbidden placeholder scan
+        run: |
+          if rg -n --glob '!docs/**' --glob '!**/CHANGELOG.md' --glob '!**/KNOWN_LIMITATIONS.md' \
+            -e 'TODO: implement' -e 'fakeApiResponse' -e 'hardcodedSampleOrg' \
+            apps packages; then
+            echo "Forbidden placeholder patterns found"
+            exit 1
+          fi
+          echo "Placeholder scan passed"
