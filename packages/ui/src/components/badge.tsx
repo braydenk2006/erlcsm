@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/cn";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-[999px] px-3 py-1 text-xs font-semibold uppercase tracking-wide",
+  "inline-flex items-center rounded-[var(--cmd-radius-pill)] px-3 py-1 text-xs font-semibold uppercase tracking-wide",
   {
     variants: {
       tone: {
@@ -15,7 +15,7 @@ const badgeVariants = cva(
         danger:
           "bg-[color-mix(in_oklab,var(--cmd-danger)_18%,transparent)] text-[var(--cmd-danger)]",
         accent:
-          "bg-[linear-gradient(135deg,rgba(59,108,255,0.22),rgba(168,85,247,0.22))] text-[#d7deff] border border-[rgba(109,140,255,0.35)]",
+          "bg-[linear-gradient(135deg,rgba(255,59,92,0.22),rgba(124,92,255,0.22))] text-[#ffe4ea] border border-[rgba(255,79,216,0.35)]",
       },
     },
     defaultVariants: {

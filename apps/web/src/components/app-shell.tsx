@@ -13,6 +13,7 @@ import {
   Home,
   Link2,
   Menu,
+  Plus,
   Radio,
   Search,
   Settings,
@@ -82,14 +83,14 @@ export function AppShell({
   );
 
   return (
-    <div className="min-h-screen md:grid md:grid-cols-[260px_1fr]">
+    <div className="min-h-screen md:grid md:grid-cols-[272px_1fr] md:gap-4 md:p-4">
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-[280px] border-r border-[var(--cmd-border)] bg-[rgba(10,12,20,0.88)] p-5 backdrop-blur-xl md:static md:translate-x-0 md:rounded-r-[var(--cmd-radius-xl)]",
+          "fixed inset-y-0 left-0 z-40 flex w-[280px] flex-col border-r border-[var(--cmd-border)] bg-[rgba(10,16,32,0.92)] p-4 backdrop-blur-2xl md:static md:translate-x-0 md:rounded-[var(--cmd-radius-xl)] md:border",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}
       >
-        <div className="mb-6 flex items-center justify-between gap-2">
+        <div className="mb-5 flex items-center justify-between gap-2">
           <BrandLockup size={34} subtitle="Operations workspace" />
           <Button
             variant="ghost"
@@ -107,7 +108,14 @@ export function AppShell({
           activeOrganizationId={activeOrganization?.id ?? null}
         />
 
-        <nav aria-label="Primary" className="mt-6 space-y-1 overflow-y-auto pb-24">
+        <Button asChild className="mt-4 w-full" size="sm">
+          <Link href="/app/onboarding">
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            Quick create
+          </Link>
+        </Button>
+
+        <nav aria-label="Primary" className="mt-5 min-h-0 flex-1 space-y-1 overflow-y-auto pb-8">
           {visibleNav.map((item) => {
             const Icon = item.icon;
             const active =
@@ -117,9 +125,9 @@ export function AppShell({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-[var(--cmd-radius)] px-3.5 py-2.5 text-sm transition",
+                  "flex items-center gap-3 rounded-[var(--cmd-radius-pill)] px-3.5 py-2.5 text-sm transition",
                   active
-                    ? "cmd-gradient-fill shadow-[0_8px_24px_rgba(59,108,255,0.25)]"
+                    ? "cmd-nav-active"
                     : "text-[var(--cmd-fg-muted)] hover:bg-[var(--cmd-bg-muted)] hover:text-[var(--cmd-fg)]",
                 )}
                 onClick={() => setMobileOpen(false)}
@@ -132,8 +140,8 @@ export function AppShell({
         </nav>
       </aside>
 
-      <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[var(--cmd-border)] bg-[rgba(5,6,10,0.72)] px-4 py-3.5 backdrop-blur-xl md:px-6">
+      <div className="flex min-h-screen flex-col md:min-h-[calc(100vh-2rem)] md:overflow-hidden md:rounded-[var(--cmd-radius-xl)] md:border md:border-[var(--cmd-border)] md:bg-[rgba(12,18,34,0.45)] md:backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[var(--cmd-border)] bg-[rgba(8,12,24,0.55)] px-4 py-3.5 backdrop-blur-xl md:px-6">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -146,7 +154,7 @@ export function AppShell({
             </Button>
             <button
               type="button"
-              className="cmd-glass hidden items-center gap-2 rounded-[var(--cmd-radius)] px-4 py-2.5 text-sm text-[var(--cmd-fg-muted)] md:inline-flex"
+              className="cmd-glass hidden items-center gap-2 rounded-[var(--cmd-radius-pill)] px-4 py-2.5 text-sm text-[var(--cmd-fg-muted)] md:inline-flex"
               aria-label="Open command palette"
             >
               <Search className="h-4 w-4" />
@@ -155,9 +163,15 @@ export function AppShell({
             </button>
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <div className="text-right">
+            <div className="hidden text-right sm:block">
               <p className="font-medium">{user.name}</p>
               <p className="text-xs text-[var(--cmd-fg-muted)]">{user.email}</p>
+            </div>
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--cmd-border)] bg-[var(--cmd-bg-muted)] text-sm font-semibold"
+              aria-hidden="true"
+            >
+              {user.name.slice(0, 1).toUpperCase()}
             </div>
           </div>
         </header>
@@ -168,7 +182,7 @@ export function AppShell({
 
       <nav
         aria-label="Mobile"
-        className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-[var(--cmd-radius-xl)] border border-[var(--cmd-border)] bg-[rgba(10,12,20,0.94)] px-2 py-2 shadow-[var(--cmd-shadow)] backdrop-blur-xl md:hidden"
+        className="cmd-glass-strong fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-[var(--cmd-radius-pill)] px-2 py-2 md:hidden"
       >
         {visibleNav.slice(0, 5).map((item) => {
           const Icon = item.icon;
@@ -179,11 +193,18 @@ export function AppShell({
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-1 rounded-[var(--cmd-radius-sm)] px-1 py-2 text-[11px]",
+                "flex flex-col items-center gap-1 rounded-[var(--cmd-radius-pill)] px-1 py-2 text-[11px]",
                 active ? "text-[var(--cmd-accent)]" : "text-[var(--cmd-fg-muted)]",
               )}
             >
-              <Icon className="h-4 w-4" aria-hidden="true" />
+              <span
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-full",
+                  active ? "bg-[rgba(255,59,92,0.18)]" : "bg-transparent",
+                )}
+              >
+                <Icon className="h-4 w-4" aria-hidden="true" />
+              </span>
               <span>{item.label.split(" ")[0]}</span>
             </Link>
           );

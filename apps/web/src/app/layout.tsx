@@ -1,16 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, Oxanium, Space_Grotesk } from "next/font/google";
+import { IBM_Plex_Mono, Outfit, Syne } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-space-grotesk",
+  variable: "--font-outfit",
 });
 
-const oxanium = Oxanium({
+const syne = Syne({
   subsets: ["latin"],
-  variable: "--font-oxanium",
+  variable: "--font-syne",
 });
 
 const plexMono = IBM_Plex_Mono({
@@ -40,8 +40,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#315EF0" },
-    { media: "(prefers-color-scheme: dark)", color: "#05060A" },
+    { media: "(prefers-color-scheme: light)", color: "#E11D48" },
+    { media: "(prefers-color-scheme: dark)", color: "#0A1020" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -52,13 +52,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       suppressHydrationWarning
-      className={`dark ${spaceGrotesk.variable} ${oxanium.variable} ${plexMono.variable}`}
+      className={`dark ${outfit.variable} ${syne.variable} ${plexMono.variable}`}
     >
       <body
         style={
           {
-            "--cmd-font-sans": "var(--font-space-grotesk), Space Grotesk, sans-serif",
-            "--cmd-font-display": "var(--font-oxanium), Oxanium, sans-serif",
+            "--cmd-font-sans": "var(--font-outfit), Outfit, sans-serif",
+            "--cmd-font-display": "var(--font-syne), Syne, sans-serif",
             "--cmd-font-mono": "var(--font-plex-mono), monospace",
           } as React.CSSProperties
         }

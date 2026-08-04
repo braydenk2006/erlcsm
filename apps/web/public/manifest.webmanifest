@@ -4,8 +4,8 @@
   "description": "The operating system for ER:LC communities",
   "start_url": "/app",
   "display": "standalone",
-  "background_color": "#05060A",
-  "theme_color": "#3B6CFF",
+  "background_color": "#0A1020",
+  "theme_color": "#FF3B5C",
   "icons": [
     {
       "src": "/icons/icon.svg",

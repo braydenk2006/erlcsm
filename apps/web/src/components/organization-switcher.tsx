@@ -17,7 +17,7 @@ export function OrganizationSwitcher({
     return (
       <a
         href="/app/onboarding"
-        className="block rounded-[var(--cmd-radius)] border border-dashed border-[var(--cmd-border)] px-3 py-3 text-sm text-[var(--cmd-fg-muted)]"
+        className="block rounded-[var(--cmd-radius-pill)] border border-dashed border-[var(--cmd-border)] px-4 py-3 text-sm text-[var(--cmd-fg-muted)]"
       >
         Create your first community
       </a>
@@ -30,7 +30,7 @@ export function OrganizationSwitcher({
         Community
       </span>
       <select
-        className="h-12 w-full rounded-[var(--cmd-radius)] border border-[var(--cmd-border)] bg-[var(--cmd-bg-elevated)] px-4"
+        className="h-12 w-full rounded-[var(--cmd-radius-pill)] border border-[var(--cmd-border)] bg-[rgba(8,12,24,0.72)] px-4"
         disabled={pending}
         value={activeOrganizationId ?? organizations[0]?.id}
         onChange={(event) => {

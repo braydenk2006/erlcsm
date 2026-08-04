@@ -29,7 +29,7 @@ export default async function HomePage() {
     <div className="space-y-8">
       <div className="space-y-2">
         <p className="text-sm uppercase tracking-[0.18em] text-[var(--cmd-fg-muted)]">Home</p>
-        <h1 className="font-[family-name:var(--cmd-font-display)] text-4xl tracking-tight">
+        <h1 className="font-[family-name:var(--cmd-font-display)] text-4xl tracking-[-0.03em]">
           {active.organization.name}
         </h1>
         <p className="max-w-2xl text-[var(--cmd-fg-muted)]">
@@ -37,6 +37,27 @@ export default async function HomePage() {
           module data is available — never fabricated metrics.
         </p>
       </div>
+
+      <section className="cmd-glass-strong relative overflow-hidden rounded-[var(--cmd-radius-xl)] p-6 md:p-8">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-[linear-gradient(120deg,rgba(255,59,92,0.22),rgba(124,92,255,0.18),rgba(45,226,197,0.12))]"
+        />
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <Badge tone="accent">Now playing</Badge>
+            <h2 className="mt-3 font-[family-name:var(--cmd-font-display)] text-3xl tracking-[-0.03em]">
+              Community command center
+            </h2>
+            <p className="mt-2 max-w-xl text-sm text-[var(--cmd-fg-muted)]">
+              Jump into setup, integrations, and access controls without leaving the workspace vibe.
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/app/onboarding">Continue setup</Link>
+          </Button>
+        </div>
+      </section>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <section className="cmd-glass rounded-[var(--cmd-radius-xl)] p-6">
