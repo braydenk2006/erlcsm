@@ -75,7 +75,7 @@ export function CreateOrganizationForm() {
           aria-describedby="slug-help"
         />
         <p id="slug-help" className="text-xs text-[var(--cmd-fg-muted)]">
-          Used for subdomain routing: {slug || "your-community"}.commandry.app
+          Used for subdomain routing: {slug || "your-community"}.ordinex.app
         </p>
       </div>
       <div className="space-y-2">

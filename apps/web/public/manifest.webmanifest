@@ -1,11 +1,11 @@
 {
-  "name": "Commandry",
-  "short_name": "Commandry",
+  "name": "Ordinex",
+  "short_name": "Ordinex",
   "description": "The operating system for ER:LC communities",
   "start_url": "/app",
   "display": "standalone",
-  "background_color": "#0A1020",
-  "theme_color": "#FF3B5C",
+  "background_color": "#05060A",
+  "theme_color": "#3B6CFF",
   "icons": [
     {
       "src": "/icons/icon.svg",
@@ -14,7 +14,7 @@
       "purpose": "any"
     },
     {
-      "src": "/icons/commandry-logo.png",
+      "src": "/icons/ordinex-logo.png",
       "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any maskable"

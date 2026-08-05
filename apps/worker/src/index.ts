@@ -65,7 +65,7 @@ async function main() {
     },
   );
 
-  log.info("Commandry worker started", { queues: Object.values(QUEUE_NAMES) });
+  log.info("Ordinex worker started", { queues: Object.values(QUEUE_NAMES) });
 
   const shutdown = async () => {
     log.info("Shutting down worker");

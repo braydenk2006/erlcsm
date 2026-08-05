@@ -15,7 +15,7 @@ export default function SignInPage() {
         <div className="flex flex-col items-center text-center">
           <BrandMark size={76} priority className="cmd-crest-glow" />
           <p className="mt-4 font-[family-name:var(--cmd-font-display)] text-3xl font-semibold tracking-[-0.02em]">
-            Commandry
+            Ordinex
           </p>
           <h1 className="mt-2 text-base text-[var(--cmd-fg-muted)]">Sign in to your workspace</h1>
         </div>

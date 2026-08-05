@@ -16,7 +16,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-3">
             <BrandMark size={40} priority className="cmd-crest-glow" />
             <p className="font-[family-name:var(--cmd-font-display)] text-lg font-semibold tracking-[0.06em] md:text-xl">
-              Commandry
+              Ordinex
             </p>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
@@ -43,7 +43,7 @@ export default function LandingPage() {
           </div>
 
           <p className="animate-rise font-[family-name:var(--cmd-font-display)] text-5xl font-semibold tracking-[-0.03em] md:text-7xl">
-            <span className="cmd-gradient-text">Commandry</span>
+            <span className="cmd-gradient-text">Ordinex</span>
           </p>
 
           <h1 className="animate-rise-delay max-w-2xl text-lg font-medium text-[var(--cmd-fg-muted)] md:text-2xl">

@@ -12,8 +12,8 @@ export function BrandMark({
 }) {
   return (
     <Image
-      src="/icons/commandry-logo.png"
-      alt="Commandry"
+      src="/icons/ordinex-logo.png"
+      alt="Ordinex"
       width={size}
       height={size}
       priority={priority}
@@ -36,7 +36,7 @@ export function BrandLockup({
       <BrandMark size={size} className="cmd-crest-glow" />
       <div className="min-w-0">
         <p className="font-[family-name:var(--cmd-font-display)] text-xl font-semibold tracking-[0.04em]">
-          Commandry
+          Ordinex
         </p>
         {subtitle ? (
           <p className="truncate text-xs text-[var(--cmd-fg-muted)]">{subtitle}</p>

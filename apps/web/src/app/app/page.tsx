@@ -15,7 +15,7 @@ export default async function HomePage() {
     return (
       <EmptyState
         title="Create your first community"
-        description="Commandry workspaces are organization-scoped. Start onboarding to configure ranks, departments, and integrations."
+        description="Ordinex workspaces are organization-scoped. Start onboarding to configure ranks, departments, and integrations."
         action={
           <Button asChild>
             <Link href="/app/onboarding">Start onboarding</Link>
