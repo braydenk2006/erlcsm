@@ -12,15 +12,25 @@ const createSchema = z.object({
   reason: z.string().min(1).max(500),
 });
 
+const STATES = [
+  "DRAFT",
+  "SUBMITTED",
+  "UNDER_REVIEW",
+  "APPROVED",
+  "DENIED",
+  "ACTIVE",
+  "SERVED",
+  "EXPIRED",
+  "RECALLED",
+  "DISMISSED",
+] as const;
+
 export async function GET(request: Request) {
   try {
     const { organizationId } = await requireCadPermission("cad.dispatch.view");
-    const statusParam = new URL(request.url).searchParams.get("status");
-    const status =
-      statusParam === "ACTIVE" || statusParam === "CLEARED" || statusParam === "EXPIRED"
-        ? statusParam
-        : undefined;
-    return NextResponse.json({ warrants: await listWarrants(organizationId, status) });
+    const stateParam = new URL(request.url).searchParams.get("state");
+    const state = STATES.find((s) => s === stateParam);
+    return NextResponse.json({ warrants: await listWarrants(organizationId, state) });
   } catch (error) {
     return handleRouteError(error);
   }

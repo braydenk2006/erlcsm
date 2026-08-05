@@ -1,7 +1,13 @@
 import { prisma } from "@commandry/database";
-import { createPublicId } from "@commandry/shared";
-import type { CadCallStatus, CadUnitStatus } from "./domain";
-import { allocateCallNumber } from "./application/settings";
+import { ConflictError, createPublicId, NotFoundError } from "@commandry/shared";
+import type { CadCallStatus, CadUnitStatus, ReportState, WarrantState } from "./domain";
+import { canTransitionReport, canTransitionWarrant, isReportEditable } from "./domain";
+import {
+  allocateCallNumber,
+  allocateRecordNumber,
+  allocateWarrantNumber,
+} from "./application/settings";
+import { recordStatusEvent } from "./application/status-events";
 
 // ---------------------------------------------------------------------------
 // Enums (mirrors of the Prisma enums, kept as string unions for the API layer).
@@ -15,6 +21,8 @@ export type CadWarrantStatus = "ACTIVE" | "CLEARED" | "EXPIRED";
 export type CadRecordType = "CITATION" | "ARREST" | "INCIDENT" | "WARNING";
 export type CadBoloType = "PERSON" | "VEHICLE";
 export type CadBoloStatus = "ACTIVE" | "CLEARED";
+// Lifecycle states are owned by the domain layer.
+export type { ReportState, WarrantState } from "./domain";
 
 // ---------------------------------------------------------------------------
 // View types (JSON-friendly shapes returned to the web layer)
@@ -81,22 +89,32 @@ export type VehicleView = {
 
 export type WarrantView = {
   id: string;
-  status: CadWarrantStatus;
+  warrantNumber: string | null;
+  type: string;
+  state: WarrantState;
   charges: string[];
   reason: string;
+  scope: string | null;
   issuedBy: string | null;
+  reviewNote: string | null;
+  expiresAt: Date | null;
+  version: number;
   createdAt: Date;
   civilian: { id: string; name: string } | null;
 };
 
 export type RecordView = {
   id: string;
+  recordNumber: string | null;
   type: CadRecordType;
+  status: ReportState;
   title: string;
   charges: string[];
   officerName: string | null;
+  reviewNote: string | null;
   fineAmount: number | null;
   narrative: string | null;
+  version: number;
   createdAt: Date;
   civilian: { id: string; name: string } | null;
 };
@@ -107,7 +125,9 @@ export type BoloView = {
   title: string;
   description: string;
   plate: string | null;
+  priority: number;
   status: CadBoloStatus;
+  expiresAt: Date | null;
   createdBy: string | null;
   createdAt: Date;
 };
@@ -202,14 +222,18 @@ export async function setUnitStatus(
   unitPublicId: string,
   status: CadUnitStatus,
 ): Promise<void> {
-  await prisma.cadUnit.updateMany({
+  const result = await prisma.cadUnit.updateMany({
     where: { organizationId, publicId: unitPublicId },
     data: { status, lastStatusAt: new Date() },
   });
+  if (result.count === 0) throw new NotFoundError("Unit");
 }
 
 export async function goOffDuty(organizationId: string, unitPublicId: string): Promise<void> {
-  await prisma.cadUnit.deleteMany({ where: { organizationId, publicId: unitPublicId } });
+  const result = await prisma.cadUnit.deleteMany({
+    where: { organizationId, publicId: unitPublicId },
+  });
+  if (result.count === 0) throw new NotFoundError("Unit");
 }
 
 // ---------------------------------------------------------------------------
@@ -367,7 +391,7 @@ export async function assignUnitToCall(
 ): Promise<void> {
   const callId = await resolveCallId(organizationId, callPublicId);
   const unitId = await resolveUnitId(organizationId, unitPublicId);
-  if (!callId || !unitId) return;
+  if (!callId || !unitId) throw new NotFoundError(callId ? "Unit" : "Call");
 
   await prisma.cadCallUnit.upsert({
     where: { callId_unitId: { callId, unitId } },
@@ -397,7 +421,7 @@ export async function unassignUnitFromCall(
 ): Promise<void> {
   const callId = await resolveCallId(organizationId, callPublicId);
   const unitId = await resolveUnitId(organizationId, unitPublicId);
-  if (!callId || !unitId) return;
+  if (!callId || !unitId) throw new NotFoundError(callId ? "Unit" : "Call");
   await prisma.cadCallUnit.deleteMany({ where: { callId, unitId } });
   await prisma.cadUnit.update({ where: { id: unitId }, data: { status: "AVAILABLE" } });
 }
@@ -409,7 +433,7 @@ export async function addCallLog(
   authorName: string,
 ): Promise<void> {
   const callId = await resolveCallId(organizationId, callPublicId);
-  if (!callId) return;
+  if (!callId) throw new NotFoundError("Call");
   await prisma.cadCallLog.create({ data: { callId, authorName, note } });
 }
 
@@ -418,15 +442,16 @@ export async function updateCallStatus(
   callPublicId: string,
   status: CadCallStatus,
 ): Promise<void> {
-  await prisma.cadCall.updateMany({
+  const result = await prisma.cadCall.updateMany({
     where: { organizationId, publicId: callPublicId },
     data: { status, ...(status === "CLOSED" ? { closedAt: new Date() } : {}) },
   });
+  if (result.count === 0) throw new NotFoundError("Call");
 }
 
 export async function closeCall(organizationId: string, callPublicId: string): Promise<void> {
   const callId = await resolveCallId(organizationId, callPublicId);
-  if (!callId) return;
+  if (!callId) throw new NotFoundError("Call");
   const assignments = await prisma.cadCallUnit.findMany({
     where: { callId },
     select: { unitId: true },
@@ -550,19 +575,31 @@ function mapVehicle(vehicle: {
 
 function mapWarrant(warrant: {
   publicId: string;
-  status: string;
+  warrantNumber: string | null;
+  type: string;
+  state: string;
   charges: string[];
   reason: string;
+  scope: string | null;
   issuedByName: string | null;
+  reviewNote: string | null;
+  expiresAt: Date | null;
+  version: number;
   createdAt: Date;
   civilian: { publicId: string; firstName: string; lastName: string } | null;
 }): WarrantView {
   return {
     id: warrant.publicId,
-    status: warrant.status as CadWarrantStatus,
+    warrantNumber: warrant.warrantNumber,
+    type: warrant.type,
+    state: warrant.state as WarrantState,
     charges: warrant.charges,
     reason: warrant.reason,
+    scope: warrant.scope,
     issuedBy: warrant.issuedByName,
+    reviewNote: warrant.reviewNote,
+    expiresAt: warrant.expiresAt,
+    version: warrant.version,
     createdAt: warrant.createdAt,
     civilian: warrant.civilian
       ? { id: warrant.civilian.publicId, name: civilianName(warrant.civilian) }
@@ -572,23 +609,31 @@ function mapWarrant(warrant: {
 
 function mapRecord(record: {
   publicId: string;
+  recordNumber: string | null;
   type: string;
+  status: string;
   title: string;
   charges: string[];
   officerName: string | null;
+  reviewNote: string | null;
   fineAmount: number | null;
   narrative: string | null;
+  version: number;
   createdAt: Date;
   civilian: { publicId: string; firstName: string; lastName: string } | null;
 }): RecordView {
   return {
     id: record.publicId,
+    recordNumber: record.recordNumber,
     type: record.type as CadRecordType,
+    status: record.status as ReportState,
     title: record.title,
     charges: record.charges,
     officerName: record.officerName,
+    reviewNote: record.reviewNote,
     fineAmount: record.fineAmount,
     narrative: record.narrative,
+    version: record.version,
     createdAt: record.createdAt,
     civilian: record.civilian
       ? { id: record.civilian.publicId, name: civilianName(record.civilian) }
@@ -634,7 +679,7 @@ export async function updateCivilian(
   civilianPublicId: string,
   data: { licenseStatus?: CadLicenseStatus; flags?: string[]; notes?: string | null },
 ): Promise<void> {
-  await prisma.cadCivilian.updateMany({
+  const result = await prisma.cadCivilian.updateMany({
     where: { organizationId, publicId: civilianPublicId },
     data: {
       ...(data.licenseStatus ? { licenseStatus: data.licenseStatus } : {}),
@@ -642,6 +687,7 @@ export async function updateCivilian(
       ...(data.notes !== undefined ? { notes: data.notes } : {}),
     },
   });
+  if (result.count === 0) throw new NotFoundError("Civilian");
 }
 
 // ---------------------------------------------------------------------------
@@ -715,22 +761,28 @@ export async function setVehicleStolen(
   vehiclePublicId: string,
   stolen: boolean,
 ): Promise<void> {
-  await prisma.cadVehicle.updateMany({
+  const result = await prisma.cadVehicle.updateMany({
     where: { organizationId, publicId: vehiclePublicId },
     data: { stolen },
   });
+  if (result.count === 0) throw new NotFoundError("Vehicle");
 }
 
 // ---------------------------------------------------------------------------
-// Warrants
+// Warrants (approval lifecycle)
 // ---------------------------------------------------------------------------
 
+const WARRANT_INCLUDE = { civilian: true } as const;
+
+/** Create a warrant in SUBMITTED state (awaiting review) with a warrant number. */
 export async function createWarrant(
   organizationId: string,
   input: {
     civilianId: string;
     charges: string[];
     reason: string;
+    type?: string;
+    scope?: string | null;
     issuedByName?: string | null;
     issuedByUserId?: string | null;
   },
@@ -740,45 +792,134 @@ export async function createWarrant(
     select: { id: true },
   });
   if (!civilian) return null;
+  const warrantNumber = await allocateWarrantNumber(organizationId);
   const warrant = await prisma.cadWarrant.create({
     data: {
       publicId: createPublicId("wrt"),
       organizationId,
       civilianId: civilian.id,
+      warrantNumber,
+      type: input.type ?? "arrest",
+      state: "SUBMITTED",
       charges: input.charges,
       reason: input.reason,
+      scope: input.scope ?? null,
       issuedByName: input.issuedByName ?? null,
       issuedByUserId: input.issuedByUserId ?? null,
     },
-    include: { civilian: true },
+    include: WARRANT_INCLUDE,
+  });
+  await recordStatusEvent({
+    organizationId,
+    subjectType: "warrant",
+    subjectId: warrant.publicId,
+    toStatus: "SUBMITTED",
+    actorUserId: input.issuedByUserId ?? null,
   });
   return mapWarrant(warrant);
 }
 
 export async function listWarrants(
   organizationId: string,
-  status?: CadWarrantStatus,
+  state?: WarrantState,
 ): Promise<WarrantView[]> {
   const warrants = await prisma.cadWarrant.findMany({
-    where: { organizationId, ...(status ? { status } : {}) },
+    where: { organizationId, ...(state ? { state } : {}) },
     orderBy: { createdAt: "desc" },
     take: 100,
-    include: { civilian: true },
+    include: WARRANT_INCLUDE,
   });
   return warrants.map(mapWarrant);
 }
 
-export async function clearWarrant(organizationId: string, warrantPublicId: string): Promise<void> {
-  await prisma.cadWarrant.updateMany({
+/**
+ * Guarded warrant state transition with optimistic concurrency. Enforces the
+ * domain state machine (`canTransitionWarrant`); AI/officers cannot skip review
+ * because ACTIVE is only reachable from APPROVED.
+ */
+export async function transitionWarrant(
+  organizationId: string,
+  warrantPublicId: string,
+  toState: WarrantState,
+  options: {
+    actorUserId?: string | null;
+    note?: string | null;
+    expiresInDays?: number;
+    expectedVersion?: number;
+  } = {},
+): Promise<WarrantView> {
+  const warrant = await prisma.cadWarrant.findFirst({
     where: { organizationId, publicId: warrantPublicId },
-    data: { status: "CLEARED", clearedAt: new Date() },
   });
+  if (!warrant) throw new NotFoundError("Warrant");
+  const fromState = warrant.state as WarrantState;
+  if (options.expectedVersion !== undefined && options.expectedVersion !== warrant.version) {
+    throw new ConflictError("Warrant was modified by someone else");
+  }
+  if (!canTransitionWarrant(fromState, toState)) {
+    throw new ConflictError(`Cannot move warrant from ${fromState} to ${toState}`);
+  }
+
+  const data: Record<string, unknown> = { state: toState, version: { increment: 1 } };
+  if (toState === "APPROVED" || toState === "DENIED") {
+    data.reviewedByUserId = options.actorUserId ?? null;
+    data.reviewNote = options.note ?? null;
+  }
+  if (toState === "ACTIVE") {
+    const days = options.expiresInDays ?? 30;
+    data.expiresAt = new Date(Date.now() + days * 86_400_000);
+  }
+  if (toState === "SERVED" || toState === "RECALLED" || toState === "DISMISSED") {
+    data.clearedAt = new Date();
+  }
+
+  const updated = await prisma.cadWarrant.update({
+    where: { id: warrant.id },
+    data,
+    include: WARRANT_INCLUDE,
+  });
+  await recordStatusEvent({
+    organizationId,
+    subjectType: "warrant",
+    subjectId: warrantPublicId,
+    fromStatus: fromState,
+    toStatus: toState,
+    actorUserId: options.actorUserId ?? null,
+    note: options.note ?? null,
+  });
+  return mapWarrant(updated);
+}
+
+/** Expire ACTIVE warrants past their expiry (idempotent — for the worker). */
+export async function expireOverdueWarrants(now = new Date()): Promise<number> {
+  const overdue = await prisma.cadWarrant.findMany({
+    where: { state: "ACTIVE", expiresAt: { lt: now } },
+    select: { id: true, organizationId: true, publicId: true },
+  });
+  for (const w of overdue) {
+    await prisma.cadWarrant.update({
+      where: { id: w.id },
+      data: { state: "EXPIRED", version: { increment: 1 } },
+    });
+    await recordStatusEvent({
+      organizationId: w.organizationId,
+      subjectType: "warrant",
+      subjectId: w.publicId,
+      fromStatus: "ACTIVE",
+      toStatus: "EXPIRED",
+      note: "Auto-expired",
+    });
+  }
+  return overdue.length;
 }
 
 // ---------------------------------------------------------------------------
-// Records (citations / arrests / incidents / warnings)
+// Records (review lifecycle)
 // ---------------------------------------------------------------------------
 
+const RECORD_INCLUDE = { civilian: true } as const;
+
+/** Create a record in DRAFT status. */
 export async function createRecord(
   organizationId: string,
   input: {
@@ -806,6 +947,7 @@ export async function createRecord(
       organizationId,
       civilianId,
       type: input.type,
+      status: "DRAFT",
       title: input.title,
       charges: input.charges ?? [],
       officerName: input.officerName ?? null,
@@ -813,27 +955,144 @@ export async function createRecord(
       fineAmount: input.fineAmount ?? null,
       narrative: input.narrative ?? null,
     },
-    include: { civilian: true },
+    include: RECORD_INCLUDE,
   });
   return mapRecord(record);
 }
 
 export async function listRecords(
   organizationId: string,
-  options: { type?: CadRecordType } = {},
+  options: { type?: CadRecordType; status?: ReportState } = {},
 ): Promise<RecordView[]> {
   const records = await prisma.cadRecord.findMany({
-    where: { organizationId, ...(options.type ? { type: options.type } : {}) },
+    where: {
+      organizationId,
+      ...(options.type ? { type: options.type } : {}),
+      ...(options.status ? { status: options.status } : {}),
+    },
     orderBy: { createdAt: "desc" },
     take: 100,
-    include: { civilian: true },
+    include: RECORD_INCLUDE,
   });
   return records.map(mapRecord);
+}
+
+/** Edit a DRAFT/REVISION_REQUESTED record's content (optimistic concurrency). */
+export async function updateRecordContent(
+  organizationId: string,
+  recordPublicId: string,
+  patch: {
+    title?: string;
+    charges?: string[];
+    fineAmount?: number | null;
+    narrative?: string | null;
+  },
+  expectedVersion?: number,
+): Promise<RecordView> {
+  const record = await prisma.cadRecord.findFirst({
+    where: { organizationId, publicId: recordPublicId },
+  });
+  if (!record) throw new NotFoundError("Record");
+  if (!isReportEditable(record.status as ReportState)) {
+    throw new ConflictError(`Record is not editable in ${record.status}`);
+  }
+  if (expectedVersion !== undefined && expectedVersion !== record.version) {
+    throw new ConflictError("Record was modified by someone else");
+  }
+  const updated = await prisma.cadRecord.update({
+    where: { id: record.id },
+    data: {
+      ...(patch.title !== undefined ? { title: patch.title } : {}),
+      ...(patch.charges !== undefined ? { charges: patch.charges } : {}),
+      ...(patch.fineAmount !== undefined ? { fineAmount: patch.fineAmount } : {}),
+      ...(patch.narrative !== undefined ? { narrative: patch.narrative } : {}),
+      version: { increment: 1 },
+    },
+    include: RECORD_INCLUDE,
+  });
+  return mapRecord(updated);
+}
+
+/**
+ * Guarded record status transition with optimistic concurrency. Enforces the
+ * domain review lifecycle; approved/locked records cannot be silently edited.
+ */
+export async function transitionRecord(
+  organizationId: string,
+  recordPublicId: string,
+  toStatus: ReportState,
+  options: { actorUserId?: string | null; note?: string | null; expectedVersion?: number } = {},
+): Promise<RecordView> {
+  const record = await prisma.cadRecord.findFirst({
+    where: { organizationId, publicId: recordPublicId },
+  });
+  if (!record) throw new NotFoundError("Record");
+  const fromStatus = record.status as ReportState;
+  if (options.expectedVersion !== undefined && options.expectedVersion !== record.version) {
+    throw new ConflictError("Record was modified by someone else");
+  }
+  if (!canTransitionReport(fromStatus, toStatus)) {
+    throw new ConflictError(`Cannot move record from ${fromStatus} to ${toStatus}`);
+  }
+
+  const data: Record<string, unknown> = { status: toStatus, version: { increment: 1 } };
+  if (toStatus === "SUBMITTED" && !record.recordNumber) {
+    data.recordNumber = await allocateRecordNumber(organizationId);
+  }
+  if (toStatus === "APPROVED" || toStatus === "REJECTED" || toStatus === "REVISION_REQUESTED") {
+    data.reviewedByUserId = options.actorUserId ?? null;
+    data.reviewNote = options.note ?? null;
+  }
+  if (toStatus === "LOCKED") {
+    data.lockedAt = new Date();
+  }
+
+  const updated = await prisma.cadRecord.update({
+    where: { id: record.id },
+    data,
+    include: RECORD_INCLUDE,
+  });
+  await recordStatusEvent({
+    organizationId,
+    subjectType: "record",
+    subjectId: recordPublicId,
+    fromStatus,
+    toStatus,
+    actorUserId: options.actorUserId ?? null,
+    note: options.note ?? null,
+  });
+  return mapRecord(updated);
 }
 
 // ---------------------------------------------------------------------------
 // BOLOs
 // ---------------------------------------------------------------------------
+
+function mapBolo(bolo: {
+  publicId: string;
+  type: string;
+  title: string;
+  description: string;
+  plate: string | null;
+  priority: number;
+  status: string;
+  expiresAt: Date | null;
+  createdByName: string | null;
+  createdAt: Date;
+}): BoloView {
+  return {
+    id: bolo.publicId,
+    type: bolo.type as CadBoloType,
+    title: bolo.title,
+    description: bolo.description,
+    plate: bolo.plate,
+    priority: bolo.priority,
+    status: bolo.status as CadBoloStatus,
+    expiresAt: bolo.expiresAt,
+    createdBy: bolo.createdByName,
+    createdAt: bolo.createdAt,
+  };
+}
 
 export async function createBolo(
   organizationId: string,
@@ -842,6 +1101,8 @@ export async function createBolo(
     title: string;
     description: string;
     plate?: string | null;
+    priority?: number;
+    expiresInDays?: number;
     createdByName?: string | null;
     createdByUserId?: string | null;
   },
@@ -854,20 +1115,15 @@ export async function createBolo(
       title: input.title,
       description: input.description,
       plate: input.plate ?? null,
+      priority: input.priority ?? 3,
+      expiresAt: input.expiresInDays
+        ? new Date(Date.now() + input.expiresInDays * 86_400_000)
+        : null,
       createdByName: input.createdByName ?? null,
       createdByUserId: input.createdByUserId ?? null,
     },
   });
-  return {
-    id: bolo.publicId,
-    type: bolo.type as CadBoloType,
-    title: bolo.title,
-    description: bolo.description,
-    plate: bolo.plate,
-    status: bolo.status as CadBoloStatus,
-    createdBy: bolo.createdByName,
-    createdAt: bolo.createdAt,
-  };
+  return mapBolo(bolo);
 }
 
 export async function listBolos(
@@ -876,26 +1132,27 @@ export async function listBolos(
 ): Promise<BoloView[]> {
   const bolos = await prisma.cadBolo.findMany({
     where: { organizationId, ...(status ? { status } : {}) },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ priority: "asc" }, { createdAt: "desc" }],
     take: 100,
   });
-  return bolos.map((bolo) => ({
-    id: bolo.publicId,
-    type: bolo.type as CadBoloType,
-    title: bolo.title,
-    description: bolo.description,
-    plate: bolo.plate,
-    status: bolo.status as CadBoloStatus,
-    createdBy: bolo.createdByName,
-    createdAt: bolo.createdAt,
-  }));
+  return bolos.map(mapBolo);
+}
+
+/** Expire ACTIVE BOLOs past their expiry (idempotent — for the worker). */
+export async function expireOverdueBolos(now = new Date()): Promise<number> {
+  const result = await prisma.cadBolo.updateMany({
+    where: { status: "ACTIVE", expiresAt: { lt: now } },
+    data: { status: "CLEARED" },
+  });
+  return result.count;
 }
 
 export async function clearBolo(organizationId: string, boloPublicId: string): Promise<void> {
-  await prisma.cadBolo.updateMany({
+  const result = await prisma.cadBolo.updateMany({
     where: { organizationId, publicId: boloPublicId },
     data: { status: "CLEARED" },
   });
+  if (result.count === 0) throw new NotFoundError("BOLO");
 }
 
 // ---------------------------------------------------------------------------

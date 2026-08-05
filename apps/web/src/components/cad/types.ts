@@ -8,6 +8,26 @@ export type CallStatus = "PENDING" | "DISPATCHED" | "ACTIVE" | "CLOSED";
 export type LicenseStatus = "VALID" | "SUSPENDED" | "REVOKED" | "EXPIRED" | "NONE";
 export type RegistrationStatus = "VALID" | "EXPIRED" | "SUSPENDED" | "NONE";
 export type WarrantStatus = "ACTIVE" | "CLEARED" | "EXPIRED";
+export type WarrantState =
+  | "DRAFT"
+  | "SUBMITTED"
+  | "UNDER_REVIEW"
+  | "APPROVED"
+  | "DENIED"
+  | "ACTIVE"
+  | "SERVED"
+  | "EXPIRED"
+  | "RECALLED"
+  | "DISMISSED";
+export type ReportState =
+  | "DRAFT"
+  | "SUBMITTED"
+  | "UNDER_REVIEW"
+  | "REVISION_REQUESTED"
+  | "APPROVED"
+  | "REJECTED"
+  | "LOCKED"
+  | "ARCHIVED";
 export type RecordType = "CITATION" | "ARREST" | "INCIDENT" | "WARNING";
 export type BoloType = "PERSON" | "VEHICLE";
 
@@ -57,22 +77,32 @@ export type Vehicle = {
 
 export type Warrant = {
   id: string;
-  status: WarrantStatus;
+  warrantNumber: string | null;
+  type: string;
+  state: WarrantState;
   charges: string[];
   reason: string;
+  scope: string | null;
   issuedBy: string | null;
+  reviewNote: string | null;
+  expiresAt: string | null;
+  version: number;
   createdAt: string;
   civilian: { id: string; name: string } | null;
 };
 
 export type CadRecord = {
   id: string;
+  recordNumber: string | null;
   type: RecordType;
+  status: ReportState;
   title: string;
   charges: string[];
   officerName: string | null;
+  reviewNote: string | null;
   fineAmount: number | null;
   narrative: string | null;
+  version: number;
   createdAt: string;
   civilian: { id: string; name: string } | null;
 };

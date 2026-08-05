@@ -104,14 +104,6 @@ const CAD_V2_OFFICER: Action[] = [
   "cad.bolos.manage",
 ];
 
-const CAD_V2_READONLY: Action[] = [
-  "cad.access",
-  "cad.dispatch.view",
-  "cad.mdt.access",
-  "cad.people.view",
-  "cad.vehicles.view",
-];
-
 export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
   owner: [
     "organization:read",
@@ -247,5 +239,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...CAD_V2_OFFICER,
     "erlc:view",
   ],
-  member: ["organization:read", "member:read", "document:read", ...CAD_V2_READONLY],
+  // Baseline members do NOT get CAD access — CAD (law-enforcement) records must be
+  // granted explicitly via role/permission, never implied by community membership.
+  member: ["organization:read", "member:read", "document:read"],
 };

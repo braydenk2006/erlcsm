@@ -30,6 +30,21 @@ function licenseTone(status: LicenseStatus): "success" | "warning" | "danger" | 
   return "neutral";
 }
 
+function warrantTone(state: string): "success" | "warning" | "danger" | "neutral" | "accent" {
+  if (state === "ACTIVE") return "danger";
+  if (state === "APPROVED") return "warning";
+  if (state === "SUBMITTED" || state === "UNDER_REVIEW") return "accent";
+  return "neutral";
+}
+
+function recordTone(status: string): "success" | "warning" | "danger" | "neutral" | "accent" {
+  if (status === "APPROVED" || status === "LOCKED") return "success";
+  if (status === "SUBMITTED" || status === "UNDER_REVIEW") return "accent";
+  if (status === "REVISION_REQUESTED") return "warning";
+  if (status === "REJECTED") return "danger";
+  return "neutral";
+}
+
 function ChargePicker({
   penalCode,
   charges,
@@ -465,8 +480,12 @@ function WarrantsTab({
   const [reason, setReason] = useState("");
   const [charges, setCharges] = useState<string[]>([]);
 
-  async function clearWarrant(id: string) {
-    await fetch(`/api/cad/warrants/${id}`, { method: "PATCH" });
+  async function warrantAction(id: string, body: Record<string, unknown>) {
+    await fetch(`/api/cad/warrants/${id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
     reload();
     onChange();
   }
@@ -482,20 +501,71 @@ function WarrantsTab({
               key={w.id}
               className="rounded-[var(--cmd-radius)] border border-[var(--cmd-border)] p-3"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{w.reason}</span>
+              <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Badge tone={w.status === "ACTIVE" ? "danger" : "neutral"}>{w.status}</Badge>
-                  {w.status === "ACTIVE" ? (
-                    <Button size="sm" variant="ghost" onClick={() => void clearWarrant(w.id)}>
-                      Clear
-                    </Button>
+                  {w.warrantNumber ? (
+                    <span className="font-[family-name:var(--cmd-font-mono)] text-[11px] text-[var(--cmd-fg-muted)]">
+                      {w.warrantNumber}
+                    </span>
                   ) : null}
+                  <span className="text-sm font-medium">{w.reason}</span>
                 </div>
+                <Badge tone={warrantTone(w.state)}>{w.state}</Badge>
               </div>
               {w.charges.length > 0 ? (
                 <p className="mt-1 text-xs text-[var(--cmd-fg-muted)]">{w.charges.join(", ")}</p>
               ) : null}
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {w.state === "SUBMITTED" || w.state === "UNDER_REVIEW" ? (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() =>
+                        void warrantAction(w.id, { action: "review", decision: "approve" })
+                      }
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        void warrantAction(w.id, { action: "review", decision: "deny" })
+                      }
+                    >
+                      Deny
+                    </Button>
+                  </>
+                ) : null}
+                {w.state === "APPROVED" ? (
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={() => void warrantAction(w.id, { action: "activate" })}
+                  >
+                    Activate
+                  </Button>
+                ) : null}
+                {w.state === "ACTIVE" ? (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => void warrantAction(w.id, { action: "serve" })}
+                    >
+                      Serve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => void warrantAction(w.id, { action: "recall" })}
+                    >
+                      Recall
+                    </Button>
+                  </>
+                ) : null}
+              </div>
             </li>
           ))}
         </ul>
@@ -525,7 +595,7 @@ function WarrantsTab({
         <ChargePicker penalCode={penalCode} charges={charges} setCharges={setCharges} />
         <Button size="sm" type="submit" variant="danger">
           <ShieldAlert className="h-4 w-4" />
-          Issue warrant
+          Submit warrant for review
         </Button>
       </form>
     </div>
@@ -549,6 +619,16 @@ function RecordsTab({
   const [narrative, setNarrative] = useState("");
   const [charges, setCharges] = useState<string[]>([]);
 
+  async function recordAction(id: string, body: Record<string, unknown>) {
+    await fetch(`/api/cad/records/${id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    reload();
+    onChange();
+  }
+
   return (
     <div className="space-y-3">
       {detail.records.length === 0 ? (
@@ -560,9 +640,19 @@ function RecordsTab({
               key={r.id}
               className="rounded-[var(--cmd-radius)] border border-[var(--cmd-border)] p-3"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{r.title}</span>
-                <Badge tone="accent">{r.type}</Badge>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  {r.recordNumber ? (
+                    <span className="font-[family-name:var(--cmd-font-mono)] text-[11px] text-[var(--cmd-fg-muted)]">
+                      {r.recordNumber}
+                    </span>
+                  ) : null}
+                  <span className="text-sm font-medium">{r.title}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Badge tone="neutral">{r.type}</Badge>
+                  <Badge tone={recordTone(r.status)}>{r.status}</Badge>
+                </div>
               </div>
               {r.charges.length > 0 ? (
                 <p className="mt-1 text-xs text-[var(--cmd-fg-muted)]">{r.charges.join(", ")}</p>
@@ -571,6 +661,48 @@ function RecordsTab({
                 <p className="text-xs text-[var(--cmd-fg-muted)]">Fine: ${r.fineAmount}</p>
               ) : null}
               {r.narrative ? <p className="mt-1 text-xs">{r.narrative}</p> : null}
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {r.status === "DRAFT" || r.status === "REVISION_REQUESTED" ? (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => void recordAction(r.id, { action: "submit" })}
+                  >
+                    Submit
+                  </Button>
+                ) : null}
+                {r.status === "SUBMITTED" || r.status === "UNDER_REVIEW" ? (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() =>
+                        void recordAction(r.id, { action: "review", decision: "approve" })
+                      }
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        void recordAction(r.id, { action: "review", decision: "reject" })
+                      }
+                    >
+                      Reject
+                    </Button>
+                  </>
+                ) : null}
+                {r.status === "APPROVED" ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void recordAction(r.id, { action: "lock" })}
+                  >
+                    Lock
+                  </Button>
+                ) : null}
+              </div>
             </li>
           ))}
         </ul>
@@ -635,7 +767,7 @@ function RecordsTab({
         />
         <Button size="sm" type="submit">
           <Scale className="h-4 w-4" />
-          File {type.toLowerCase()}
+          Save {type.toLowerCase()} draft
         </Button>
       </form>
     </div>

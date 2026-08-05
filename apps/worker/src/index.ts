@@ -4,6 +4,7 @@ import { prisma } from "@commandry/database";
 import { createLogger } from "@commandry/observability";
 import { QUEUE_NAMES, type SystemJobName } from "./queues";
 import { runErlcMaintenance } from "./erlc-maintenance";
+import { runCadExpiration } from "./cad-maintenance";
 
 const log = createLogger({ service: "worker" });
 
@@ -74,6 +75,9 @@ async function main() {
       if (job.name === "erlc.maintenance") {
         return runErlcMaintenance();
       }
+      if (job.name === "cad.expiration") {
+        return runCadExpiration();
+      }
       throw new Error(`Unknown job: ${job.name}`);
     },
     { connection },
@@ -86,13 +90,21 @@ async function main() {
     });
   });
 
-  // Run once now, then on a 60s cadence.
+  // Run once now, then on a 60s cadence (ER:LC health/player-history + CAD expiration).
   await integrationsQueue.add("erlc.maintenance", {}, { removeOnComplete: 50, removeOnFail: 50 });
+  await integrationsQueue.add("cad.expiration", {}, { removeOnComplete: 50, removeOnFail: 50 });
   const maintenanceTimer = setInterval(() => {
     void integrationsQueue
       .add("erlc.maintenance", {}, { removeOnComplete: 50, removeOnFail: 50 })
       .catch((error) => {
         log.error("Failed to enqueue ER:LC maintenance", {
+          error: error instanceof Error ? error.message : "unknown",
+        });
+      });
+    void integrationsQueue
+      .add("cad.expiration", {}, { removeOnComplete: 50, removeOnFail: 50 })
+      .catch((error) => {
+        log.error("Failed to enqueue CAD expiration", {
           error: error instanceof Error ? error.message : "unknown",
         });
       });

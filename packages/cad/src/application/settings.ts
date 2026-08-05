@@ -94,3 +94,23 @@ export async function allocateCallNumber(
     callNumber: formatCallNumber(settings.callSequence, format),
   };
 }
+
+/** Allocate the next warrant number (atomic increment). */
+export async function allocateWarrantNumber(organizationId: string): Promise<string> {
+  const settings = await prisma.cadSettings.upsert({
+    where: { organizationId },
+    create: { organizationId, warrantSequence: 1 },
+    update: { warrantSequence: { increment: 1 } },
+  });
+  return formatCallNumber(settings.warrantSequence, { prefix: "W" });
+}
+
+/** Allocate the next record number (atomic increment). */
+export async function allocateRecordNumber(organizationId: string): Promise<string> {
+  const settings = await prisma.cadSettings.upsert({
+    where: { organizationId },
+    create: { organizationId, recordSequence: 1 },
+    update: { recordSequence: { increment: 1 } },
+  });
+  return formatCallNumber(settings.recordSequence, { prefix: "R" });
+}

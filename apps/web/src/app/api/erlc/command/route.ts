@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getErlcClientForOrganization } from "@commandry/integrations";
 import { recordAuditEvent } from "@commandry/audit";
 import { ValidationError } from "@commandry/shared";
-import { requireActiveOrganization } from "@/lib/organization";
+import { requirePermission } from "@/lib/cad-auth";
 import { handleRouteError } from "@/lib/api";
 
 const bodySchema = z.object({
@@ -13,7 +13,9 @@ const bodySchema = z.object({
 /** Execute a remote ER:LC server command and write an audit trail entry. */
 export async function POST(request: Request) {
   try {
-    const { organizationId, userId } = await requireActiveOrganization();
+    // Remote commands are privileged: require the erlc:command action, not just
+    // organization membership.
+    const { organizationId, userId } = await requirePermission("erlc:command");
     const parsed = bodySchema.safeParse(await request.json());
     if (!parsed.success) {
       throw new ValidationError("A command string is required");

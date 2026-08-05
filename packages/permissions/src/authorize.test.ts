@@ -121,16 +121,26 @@ describe("authorize", () => {
       ).toBe(false);
     });
 
-    it("limits members to read-only CAD access", () => {
+    it("denies baseline members any CAD access (must be granted explicitly)", () => {
       expect(
         authorize({ actor: civilian, organizationId: "org_1", action: "cad.access" }).allowed,
-      ).toBe(true);
+      ).toBe(false);
       expect(
         authorize({ actor: civilian, organizationId: "org_1", action: "cad.people.view" }).allowed,
-      ).toBe(true);
+      ).toBe(false);
       expect(
         authorize({ actor: civilian, organizationId: "org_1", action: "cad.calls.create" }).allowed,
       ).toBe(false);
+    });
+
+    it("grants CAD access via an explicit permission grant", () => {
+      const granted: Actor = {
+        ...civilian,
+        permissionKeys: ["cad.access", "cad.people.view"],
+      };
+      expect(
+        authorize({ actor: granted, organizationId: "org_1", action: "cad.people.view" }).allowed,
+      ).toBe(true);
     });
 
     it("denies CAD actions across tenants even for owners", () => {

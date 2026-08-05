@@ -13,6 +13,7 @@
     "generate": "node -e \"process.exit(0)\""
   },
   "dependencies": {
+    "@commandry/cad": "workspace:*",
     "@commandry/database": "workspace:*",
     "@commandry/integrations": "workspace:*",
     "@commandry/observability": "workspace:*",

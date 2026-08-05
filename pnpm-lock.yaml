@@ -136,6 +136,9 @@ importers:
 
   apps/worker:
     dependencies:
+      '@commandry/cad':
+        specifier: workspace:*
+        version: link:../../packages/cad
       '@commandry/database':
         specifier: workspace:*
         version: link:../../packages/database

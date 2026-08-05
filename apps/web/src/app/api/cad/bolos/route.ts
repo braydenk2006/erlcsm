@@ -10,6 +10,8 @@ const createSchema = z.object({
   title: z.string().min(1).max(120),
   description: z.string().min(1).max(1000),
   plate: z.string().max(12).optional(),
+  priority: z.number().int().min(1).max(5).optional(),
+  expiresInDays: z.number().int().min(1).max(365).optional(),
 });
 
 export async function GET(request: Request) {

@@ -179,6 +179,8 @@ model Organization {
   cadBolos              CadBolo[]
   cadAgencies           CadAgency[]
   cadSettings           CadSettings?
+  cadStatusEvents       CadStatusEvent[]
+  cadPenalCharges       CadPenalCharge[]
 
   @@index([status])
   @@map("organizations")
@@ -605,6 +607,7 @@ model CadUnit {
   agency          CadAgency?    @relation(fields: [agencyId], references: [id], onDelete: SetNull)
   callAssignments CadCallUnit[]
 
+  @@unique([organizationId, callsign])
   @@index([organizationId, status])
   @@map("cad_units")
 }
@@ -712,7 +715,7 @@ model CadVehicle {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   owner        CadCivilian? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
 
-  @@index([organizationId, plate])
+  @@unique([organizationId, plate])
   @@map("cad_vehicles")
 }
 
@@ -723,17 +726,25 @@ enum CadRegistrationStatus {
   NONE
 }
 
-// Warrant issued against a civilian.
+// Warrant issued against a civilian (full approval lifecycle).
 model CadWarrant {
   id             String           @id @default(cuid())
   publicId       String           @unique @map("public_id")
   organizationId String           @map("organization_id")
   civilianId     String           @map("civilian_id")
+  warrantNumber  String?          @map("warrant_number")
+  type           String           @default("arrest")
+  state          CadWarrantState  @default(SUBMITTED)
   status         CadWarrantStatus @default(ACTIVE)
   charges        String[]         @default([])
   reason         String
+  scope          String?
   issuedByName   String?          @map("issued_by_name")
   issuedByUserId String?          @map("issued_by_user_id")
+  reviewedByUserId String?        @map("reviewed_by_user_id")
+  reviewNote     String?          @map("review_note")
+  expiresAt      DateTime?        @map("expires_at")
+  version        Int              @default(0)
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @updatedAt @map("updated_at")
   clearedAt      DateTime?        @map("cleared_at")
@@ -741,7 +752,8 @@ model CadWarrant {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   civilian     CadCivilian  @relation(fields: [civilianId], references: [id], onDelete: Cascade)
 
-  @@index([organizationId, status])
+  @@index([organizationId, state])
+  @@index([organizationId, expiresAt])
   @@map("cad_warrants")
 }
 
@@ -751,26 +763,47 @@ enum CadWarrantStatus {
   EXPIRED
 }
 
-// Records: citations, arrests, incident reports, written warnings.
+enum CadWarrantState {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  DENIED
+  ACTIVE
+  SERVED
+  EXPIRED
+  RECALLED
+  DISMISSED
+}
+
+// Records: citations, arrests, incident reports, written warnings (review lifecycle).
 model CadRecord {
-  id             String        @id @default(cuid())
-  publicId       String        @unique @map("public_id")
-  organizationId String        @map("organization_id")
-  civilianId     String?       @map("civilian_id")
-  type           CadRecordType @default(CITATION)
-  title          String
-  charges        String[]      @default([])
-  officerName    String?       @map("officer_name")
-  officerUserId  String?       @map("officer_user_id")
-  fineAmount     Int?          @map("fine_amount")
-  narrative      String?
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
+  id                String          @id @default(cuid())
+  publicId          String          @unique @map("public_id")
+  organizationId    String          @map("organization_id")
+  civilianId        String?         @map("civilian_id")
+  type              CadRecordType   @default(CITATION)
+  recordNumber      String?         @map("record_number")
+  status            CadRecordStatus @default(DRAFT)
+  title             String
+  charges           String[]        @default([])
+  officerName       String?         @map("officer_name")
+  officerUserId     String?         @map("officer_user_id")
+  additionalAuthors String[]        @default([]) @map("additional_authors")
+  reviewedByUserId  String?         @map("reviewed_by_user_id")
+  reviewNote        String?         @map("review_note")
+  lockedAt          DateTime?       @map("locked_at")
+  fineAmount        Int?            @map("fine_amount")
+  narrative         String?
+  version           Int             @default(0)
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   civilian     CadCivilian? @relation(fields: [civilianId], references: [id], onDelete: SetNull)
 
   @@index([organizationId, type])
+  @@index([organizationId, status])
   @@map("cad_records")
 }
 
@@ -779,6 +812,17 @@ enum CadRecordType {
   ARREST
   INCIDENT
   WARNING
+}
+
+enum CadRecordStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  REVISION_REQUESTED
+  APPROVED
+  REJECTED
+  LOCKED
+  ARCHIVED
 }
 
 // BOLO (Be On the Lookout) for a person or vehicle.
@@ -790,7 +834,9 @@ model CadBolo {
   title           String
   description     String
   plate           String?
+  priority        Int           @default(3)
   status          CadBoloStatus @default(ACTIVE)
+  expiresAt       DateTime?     @map("expires_at")
   createdByName   String?       @map("created_by_name")
   createdByUserId String?       @map("created_by_user_id")
   createdAt       DateTime      @default(now()) @map("created_at")
@@ -799,6 +845,7 @@ model CadBolo {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, status])
+  @@index([organizationId, expiresAt])
   @@map("cad_bolos")
 }
 
@@ -842,12 +889,57 @@ model CadSettings {
   enabledSections  String[] @default(["command", "dispatch", "mdt", "units", "calls", "persons", "vehicles", "records", "warrants", "bolos"]) @map("enabled_sections")
   callNumberPrefix String?  @map("call_number_prefix")
   callSequence     Int      @default(0) @map("call_sequence")
+  warrantSequence  Int      @default(0) @map("warrant_sequence")
+  recordSequence   Int      @default(0) @map("record_sequence")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("cad_settings")
+}
+
+// Append-only status-transition history for CAD subjects (calls/units/warrants/records).
+model CadStatusEvent {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  subjectType    String   @map("subject_type")
+  subjectId      String   @map("subject_id")
+  fromStatus     String?  @map("from_status")
+  toStatus       String   @map("to_status")
+  actorUserId    String?  @map("actor_user_id")
+  note           String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, subjectType, subjectId])
+  @@map("cad_status_events")
+}
+
+// Tenant-customizable penal code charge.
+model CadPenalCharge {
+  id             String    @id @default(cuid())
+  publicId       String    @unique @map("public_id")
+  organizationId String    @map("organization_id")
+  code           String
+  title          String
+  class          String    @default("Misdemeanor")
+  fine           Int       @default(0)
+  jailMinutes    Int       @default(0) @map("jail_minutes")
+  points         Int       @default(0)
+  isAttempt      Boolean   @default(false) @map("is_attempt")
+  active         Boolean   @default(true)
+  effectiveAt    DateTime? @map("effective_at")
+  archivedAt     DateTime? @map("archived_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, code])
+  @@index([organizationId, active])
+  @@map("cad_penal_charges")
 }
 
 model SupportAccessSession {
