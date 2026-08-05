@@ -118,6 +118,7 @@ docs/             Product, architecture, ADRs, status
 | [docs/TESTING.md](docs/TESTING.md)                             | Vitest / Playwright strategy            |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)                       | Env, Docker, staging/prod               |
 | [docs/ERLC_INTEGRATION.md](docs/ERLC_INTEGRATION.md)           | ER:LC interface & simulator             |
+| [docs/CAD.md](docs/CAD.md)                                     | CAD/MDT dispatch, records, penal code   |
 | [docs/DISCORD_INTEGRATION.md](docs/DISCORD_INTEGRATION.md)     | OAuth & bot plans                       |
 | [docs/AI_SAFETY.md](docs/AI_SAFETY.md)                         | Human-in-the-loop AI policy             |
 | [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) | Honest done vs planned matrix           |
