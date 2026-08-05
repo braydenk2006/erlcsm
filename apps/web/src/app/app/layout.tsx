@@ -3,6 +3,11 @@ import { listMembershipsForUser } from "@commandry/api";
 import { getSession } from "@/lib/session";
 import { AppShell } from "@/components/app-shell";
 
+// Every route under /app is authenticated and renders per-user, per-organization
+// data derived from the session cookie, so it is inherently dynamic and must not
+// be statically prerendered at build time.
+export const dynamic = "force-dynamic";
+
 export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   if (!session?.user) {
