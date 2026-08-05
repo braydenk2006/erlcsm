@@ -24,6 +24,7 @@ export type Unit = {
 export type CallSummary = {
   id: string;
   number: string;
+  callNumber: string | null;
   title: string;
   type: string | null;
   caller: string;

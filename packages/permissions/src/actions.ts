@@ -60,11 +60,39 @@ export const ACTIONS = [
   "document:manage",
   "document:publish",
 
-  // CAD
+  // CAD (legacy coarse actions — retained for backward compatibility)
   "cad:dispatch",
   "cad:unit",
   "cad:records",
   "cad:manage",
+
+  // CAD/MDT v2 — granular, server-enforced actions
+  "cad.access",
+  "cad.dispatch.view",
+  "cad.dispatch.manage",
+  "cad.calls.create",
+  "cad.calls.assign",
+  "cad.calls.close",
+  "cad.units.manage",
+  "cad.mdt.access",
+  "cad.people.view",
+  "cad.people.manage",
+  "cad.vehicles.view",
+  "cad.vehicles.manage",
+  "cad.records.create",
+  "cad.records.review",
+  "cad.records.approve",
+  "cad.records.lock",
+  "cad.warrants.create",
+  "cad.warrants.review",
+  "cad.warrants.approve",
+  "cad.bolos.manage",
+  "cad.evidence.manage",
+  "cad.court.access",
+  "cad.fireems.access",
+  "cad.civilian.access",
+  "cad.analytics.view",
+  "cad.configuration.manage",
 
   // Live server / ER:LC
   "erlc:view",

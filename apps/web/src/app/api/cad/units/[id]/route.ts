@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { goOffDuty, setUnitStatus } from "@commandry/cad";
 import { ValidationError } from "@commandry/shared";
-import { requireActiveOrganization } from "@/lib/organization";
+import { requireCadPermission } from "@/lib/cad-auth";
 import { handleRouteError } from "@/lib/api";
 
 const patchSchema = z.object({
@@ -11,7 +11,7 @@ const patchSchema = z.object({
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const { organizationId } = await requireActiveOrganization();
+    const { organizationId } = await requireCadPermission("cad.units.manage");
     const { id } = await context.params;
     const parsed = patchSchema.safeParse(await request.json());
     if (!parsed.success) throw new ValidationError("A valid status is required");
@@ -24,7 +24,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
 export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const { organizationId } = await requireActiveOrganization();
+    const { organizationId } = await requireCadPermission("cad.units.manage");
     const { id } = await context.params;
     await goOffDuty(organizationId, id);
     return NextResponse.json({ ok: true });

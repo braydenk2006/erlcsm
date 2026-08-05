@@ -177,6 +177,8 @@ model Organization {
   cadWarrants           CadWarrant[]
   cadRecords            CadRecord[]
   cadBolos              CadBolo[]
+  cadAgencies           CadAgency[]
+  cadSettings           CadSettings?
 
   @@index([status])
   @@map("organizations")
@@ -358,6 +360,7 @@ model Department {
 
   organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members      DepartmentMember[]
+  cadAgencies  CadAgency[]
 
   @@unique([organizationId, slug])
   @@index([organizationId, isActive])
@@ -542,11 +545,20 @@ model CadCall {
   message         String
   location        String?
   postal          String?
+  street          String?
   priority        Int           @default(3)
   status          CadCallStatus @default(PENDING)
+  disposition     String?
   assignedUnit    String?       @map("assigned_unit")
+  callNumber      String?       @map("call_number")
+  callSequence    Int?          @map("call_sequence")
+  agencyId        String?       @map("agency_id")
   createdByUserId String?       @map("created_by_user_id")
   openedAt        DateTime      @default(now()) @map("opened_at")
+  dispatchedAt    DateTime?     @map("dispatched_at")
+  enRouteAt       DateTime?     @map("en_route_at")
+  onSceneAt       DateTime?     @map("on_scene_at")
+  clearedAt       DateTime?     @map("cleared_at")
   syncedAt        DateTime      @default(now()) @map("synced_at")
   closedAt        DateTime?     @map("closed_at")
   metadata        Json          @default("{}")
@@ -579,6 +591,10 @@ model CadUnit {
   type           CadUnitType   @default(POLICE)
   status         CadUnitStatus @default(AVAILABLE)
   userId         String?       @map("user_id")
+  membershipId   String?       @map("membership_id")
+  agencyId       String?       @map("agency_id")
+  division       String?
+  locationText   String?       @map("location_text")
   robloxUsername String?       @map("roblox_username")
   onDutyAt       DateTime      @default(now()) @map("on_duty_at")
   lastStatusAt   DateTime      @default(now()) @map("last_status_at")
@@ -586,6 +602,7 @@ model CadUnit {
   updatedAt      DateTime      @updatedAt @map("updated_at")
 
   organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  agency          CadAgency?    @relation(fields: [agencyId], references: [id], onDelete: SetNull)
   callAssignments CadCallUnit[]
 
   @@index([organizationId, status])
@@ -793,6 +810,44 @@ enum CadBoloType {
 enum CadBoloStatus {
   ACTIVE
   CLEARED
+}
+
+// A CAD agency groups units and may reference an existing Ordinex Department.
+model CadAgency {
+  id             String      @id @default(cuid())
+  publicId       String      @unique @map("public_id")
+  organizationId String      @map("organization_id")
+  name           String
+  shortName      String?     @map("short_name")
+  type           CadUnitType @default(POLICE)
+  departmentId   String?     @map("department_id")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  department   Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  units        CadUnit[]
+
+  @@index([organizationId])
+  @@map("cad_agencies")
+}
+
+// Per-organization CAD configuration + v1/v2 feature flag + call-number counter.
+model CadSettings {
+  id               String   @id @default(cuid())
+  organizationId   String   @unique @map("organization_id")
+  enabled          Boolean  @default(true)
+  version          String   @default("v1")
+  defaultLanding   String   @default("dispatch") @map("default_landing")
+  enabledSections  String[] @default(["command", "dispatch", "mdt", "units", "calls", "persons", "vehicles", "records", "warrants", "bolos"]) @map("enabled_sections")
+  callNumberPrefix String?  @map("call_number_prefix")
+  callSequence     Int      @default(0) @map("call_sequence")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("cad_settings")
 }
 
 model SupportAccessSession {

@@ -329,6 +329,11 @@ export function DispatchView({ onChange }: { onChange: () => void }) {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Badge tone={priorityTone(call.priority)}>P{call.priority}</Badge>
+                      {call.callNumber ? (
+                        <span className="font-[family-name:var(--cmd-font-mono)] text-[11px] text-[var(--cmd-fg-muted)]">
+                          {call.callNumber}
+                        </span>
+                      ) : null}
                       <span className="text-sm font-semibold">{call.title}</span>
                     </div>
                     <span className="text-[11px] text-[var(--cmd-fg-muted)]">

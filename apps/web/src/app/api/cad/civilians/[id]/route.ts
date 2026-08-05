@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCivilian, updateCivilian } from "@commandry/cad";
 import { ValidationError } from "@commandry/shared";
-import { requireActiveOrganization } from "@/lib/organization";
+import { requireCadPermission } from "@/lib/cad-auth";
 import { handleRouteError } from "@/lib/api";
 
 const patchSchema = z.object({
@@ -13,7 +13,7 @@ const patchSchema = z.object({
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const { organizationId } = await requireActiveOrganization();
+    const { organizationId } = await requireCadPermission("cad.people.view");
     const { id } = await context.params;
     const civilian = await getCivilian(organizationId, id);
     if (!civilian) return NextResponse.json({ error: "Civilian not found" }, { status: 404 });
@@ -25,7 +25,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const { organizationId } = await requireActiveOrganization();
+    const { organizationId } = await requireCadPermission("cad.people.manage");
     const { id } = await context.params;
     const parsed = patchSchema.safeParse(await request.json());
     if (!parsed.success) throw new ValidationError("Invalid civilian update");

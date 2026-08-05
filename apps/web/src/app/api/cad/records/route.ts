@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createRecord, listRecords } from "@commandry/cad";
 import { ValidationError } from "@commandry/shared";
-import { requireActiveOrganization } from "@/lib/organization";
+import { requireCadPermission } from "@/lib/cad-auth";
 import { handleRouteError } from "@/lib/api";
 
 const createSchema = z.object({
@@ -16,7 +16,7 @@ const createSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const { organizationId } = await requireActiveOrganization();
+    const { organizationId } = await requireCadPermission("cad.people.view");
     const typeParam = new URL(request.url).searchParams.get("type");
     const type =
       typeParam === "CITATION" ||
@@ -33,7 +33,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { organizationId, organization } = await requireActiveOrganization();
+    const { organizationId, organization } = await requireCadPermission("cad.records.create");
     const parsed = createSchema.safeParse(await request.json());
     if (!parsed.success) throw new ValidationError("A record type and title are required");
     const record = await createRecord(organizationId, {

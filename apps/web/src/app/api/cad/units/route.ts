@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { goOnDuty, listUnits } from "@commandry/cad";
 import { ValidationError } from "@commandry/shared";
-import { requireActiveOrganization } from "@/lib/organization";
+import { requireCadPermission } from "@/lib/cad-auth";
 import { handleRouteError } from "@/lib/api";
 
 const onDutySchema = z.object({
@@ -14,7 +14,7 @@ const onDutySchema = z.object({
 
 export async function GET() {
   try {
-    const { organizationId } = await requireActiveOrganization();
+    const { organizationId } = await requireCadPermission("cad.dispatch.view");
     return NextResponse.json({ units: await listUnits(organizationId) });
   } catch (error) {
     return handleRouteError(error);
@@ -23,7 +23,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { organizationId, userId } = await requireActiveOrganization();
+    const { organizationId, userId } = await requireCadPermission("cad.units.manage");
     const parsed = onDutySchema.safeParse(await request.json());
     if (!parsed.success) throw new ValidationError("Callsign and name are required");
     const unit = await goOnDuty(organizationId, { ...parsed.data, userId });

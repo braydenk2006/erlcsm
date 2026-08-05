@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createCall, listCalls } from "@commandry/cad";
+import { recordAuditEvent } from "@commandry/audit";
 import { ValidationError } from "@commandry/shared";
-import { requireActiveOrganization } from "@/lib/organization";
+import { requireCadPermission } from "@/lib/cad-auth";
 import { handleRouteError } from "@/lib/api";
 
 const createSchema = z.object({
@@ -17,7 +18,7 @@ const createSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const { organizationId } = await requireActiveOrganization();
+    const { organizationId } = await requireCadPermission("cad.dispatch.view");
     const includeClosed = new URL(request.url).searchParams.get("closed") === "1";
     return NextResponse.json({ calls: await listCalls(organizationId, { includeClosed }) });
   } catch (error) {
@@ -27,10 +28,19 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { organizationId, userId } = await requireActiveOrganization();
+    const { organizationId, userId } = await requireCadPermission("cad.calls.create");
     const parsed = createSchema.safeParse(await request.json());
     if (!parsed.success) throw new ValidationError("Title and message are required");
     const call = await createCall(organizationId, { ...parsed.data, createdByUserId: userId });
+    await recordAuditEvent({
+      organizationId,
+      actorUserId: userId,
+      action: "cad.calls.create",
+      resourceType: "cad_call",
+      resourceId: call.id,
+      source: "WEB",
+      metadata: { title: call.title, priority: call.priority, callNumber: call.callNumber },
+    }).catch(() => undefined);
     return NextResponse.json({ call }, { status: 201 });
   } catch (error) {
     return handleRouteError(error);

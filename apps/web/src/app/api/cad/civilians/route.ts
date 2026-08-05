@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createCivilian, listCivilians } from "@commandry/cad";
 import { ValidationError } from "@commandry/shared";
-import { requireActiveOrganization } from "@/lib/organization";
+import { requireCadPermission } from "@/lib/cad-auth";
 import { handleRouteError } from "@/lib/api";
 
 const createSchema = z.object({
@@ -18,7 +18,7 @@ const createSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const { organizationId } = await requireActiveOrganization();
+    const { organizationId } = await requireCadPermission("cad.people.view");
     const search = new URL(request.url).searchParams.get("q") ?? undefined;
     return NextResponse.json({ civilians: await listCivilians(organizationId, search) });
   } catch (error) {
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { organizationId, userId } = await requireActiveOrganization();
+    const { organizationId, userId } = await requireCadPermission("cad.people.manage");
     const parsed = createSchema.safeParse(await request.json());
     if (!parsed.success) throw new ValidationError("First and last name are required");
     const civilian = await createCivilian(organizationId, {

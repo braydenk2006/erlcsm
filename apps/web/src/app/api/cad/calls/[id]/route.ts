@@ -8,8 +8,10 @@ import {
   unassignUnitFromCall,
   updateCallStatus,
 } from "@commandry/cad";
+import { recordAuditEvent } from "@commandry/audit";
 import { ValidationError } from "@commandry/shared";
-import { requireActiveOrganization } from "@/lib/organization";
+import type { Action } from "@commandry/permissions";
+import { requireCadPermission } from "@/lib/cad-auth";
 import { handleRouteError } from "@/lib/api";
 
 const patchSchema = z.discriminatedUnion("action", [
@@ -25,7 +27,7 @@ const patchSchema = z.discriminatedUnion("action", [
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const { organizationId } = await requireActiveOrganization();
+    const { organizationId } = await requireCadPermission("cad.dispatch.view");
     const { id } = await context.params;
     const call = await getCall(organizationId, id);
     if (!call) return NextResponse.json({ error: "Call not found" }, { status: 404 });
@@ -37,11 +39,17 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const { organizationId, organization } = await requireActiveOrganization();
     const { id } = await context.params;
     const parsed = patchSchema.safeParse(await request.json());
     if (!parsed.success) throw new ValidationError("Invalid call action");
     const action = parsed.data;
+    const needed: Action =
+      action.action === "assign" || action.action === "unassign"
+        ? "cad.calls.assign"
+        : action.action === "close" || action.action === "status"
+          ? "cad.calls.close"
+          : "cad.dispatch.manage";
+    const { organizationId, organization } = await requireCadPermission(needed);
 
     if (action.action === "assign") await assignUnitToCall(organizationId, id, action.unitId);
     else if (action.action === "unassign")
@@ -50,6 +58,17 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       await addCallLog(organizationId, id, action.note, organization.name);
     else if (action.action === "status") await updateCallStatus(organizationId, id, action.status);
     else await closeCall(organizationId, id);
+
+    if (action.action === "close" || action.action === "status") {
+      await recordAuditEvent({
+        organizationId,
+        action: action.action === "close" ? "cad.calls.close" : "cad.dispatch.manage",
+        resourceType: "cad_call",
+        resourceId: id,
+        source: "WEB",
+        metadata: { action: action.action },
+      }).catch(() => undefined);
+    }
 
     const call = await getCall(organizationId, id);
     return NextResponse.json({ ok: true, call });

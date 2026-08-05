@@ -59,6 +59,59 @@ export type PermissionGrant = {
   source: string;
 };
 
+// Granular CAD/MDT v2 actions bundled for role assignment.
+const CAD_V2_ALL: Action[] = [
+  "cad.access",
+  "cad.dispatch.view",
+  "cad.dispatch.manage",
+  "cad.calls.create",
+  "cad.calls.assign",
+  "cad.calls.close",
+  "cad.units.manage",
+  "cad.mdt.access",
+  "cad.people.view",
+  "cad.people.manage",
+  "cad.vehicles.view",
+  "cad.vehicles.manage",
+  "cad.records.create",
+  "cad.records.review",
+  "cad.records.approve",
+  "cad.records.lock",
+  "cad.warrants.create",
+  "cad.warrants.review",
+  "cad.warrants.approve",
+  "cad.bolos.manage",
+  "cad.evidence.manage",
+  "cad.court.access",
+  "cad.fireems.access",
+  "cad.civilian.access",
+  "cad.analytics.view",
+  "cad.configuration.manage",
+];
+
+// Line-officer subset: can operate the MDT and file records, but not manage
+// configuration, approve records/warrants, or manage units.
+const CAD_V2_OFFICER: Action[] = [
+  "cad.access",
+  "cad.dispatch.view",
+  "cad.calls.create",
+  "cad.calls.assign",
+  "cad.mdt.access",
+  "cad.people.view",
+  "cad.vehicles.view",
+  "cad.records.create",
+  "cad.warrants.create",
+  "cad.bolos.manage",
+];
+
+const CAD_V2_READONLY: Action[] = [
+  "cad.access",
+  "cad.dispatch.view",
+  "cad.mdt.access",
+  "cad.people.view",
+  "cad.vehicles.view",
+];
+
 export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
   owner: [
     "organization:read",
@@ -110,6 +163,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "cad:unit",
     "cad:records",
     "cad:manage",
+    ...CAD_V2_ALL,
     "erlc:view",
     "erlc:command",
     "erlc:manage",
@@ -160,6 +214,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "cad:unit",
     "cad:records",
     "cad:manage",
+    ...CAD_V2_ALL,
     "erlc:view",
     "erlc:command",
     "erlc:manage",
@@ -174,6 +229,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "session:read",
     "moderation:read",
     "moderation:create",
+    ...CAD_V2_OFFICER,
     "erlc:view",
     "document:read",
   ],
@@ -188,7 +244,8 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "session:read",
     "training:read",
     "document:read",
+    ...CAD_V2_OFFICER,
     "erlc:view",
   ],
-  member: ["organization:read", "member:read", "document:read"],
+  member: ["organization:read", "member:read", "document:read", ...CAD_V2_READONLY],
 };

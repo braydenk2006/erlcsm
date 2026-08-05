@@ -9,15 +9,15 @@ players are correlated into player history.
 
 ## Modules
 
-| Area | Capabilities |
-| --- | --- |
-| **Dispatch** | Units go on/off duty with status (Available, En route, On scene, Panic, …). Create calls or sync 911 calls from ER:LC, assign/unassign units, add timeline notes, set status, and close calls. Assigning a unit flips the call to DISPATCHED and the unit to EN_ROUTE. |
-| **Civilians (RMS)** | Create/search person records, set license status (Valid/Suspended/Revoked/Expired), flags, and notes. Each record aggregates the civilian's vehicles, warrants, and records. |
-| **Vehicles** | Register vehicles (plate, model, color, owner), search by plate/model, and flag/recover stolen. |
-| **Warrants** | Issue warrants against a civilian with penal-code charges; view and clear active warrants department-wide. |
-| **Records** | File citations, arrests, incident reports, and written warnings with charges, fine amounts, and a narrative. |
-| **BOLOs** | Issue and clear person/vehicle Be-On-the-Lookout alerts. |
-| **Personnel** | ER:LC player-history correlation (presence rolled up and linked to Roblox identities). |
+| Area                | Capabilities                                                                                                                                                                                                                                                           |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Dispatch**        | Units go on/off duty with status (Available, En route, On scene, Panic, …). Create calls or sync 911 calls from ER:LC, assign/unassign units, add timeline notes, set status, and close calls. Assigning a unit flips the call to DISPATCHED and the unit to EN_ROUTE. |
+| **Civilians (RMS)** | Create/search person records, set license status (Valid/Suspended/Revoked/Expired), flags, and notes. Each record aggregates the civilian's vehicles, warrants, and records.                                                                                           |
+| **Vehicles**        | Register vehicles (plate, model, color, owner), search by plate/model, and flag/recover stolen.                                                                                                                                                                        |
+| **Warrants**        | Issue warrants against a civilian with penal-code charges; view and clear active warrants department-wide.                                                                                                                                                             |
+| **Records**         | File citations, arrests, incident reports, and written warnings with charges, fine amounts, and a narrative.                                                                                                                                                           |
+| **BOLOs**           | Issue and clear person/vehicle Be-On-the-Lookout alerts.                                                                                                                                                                                                               |
+| **Personnel**       | ER:LC player-history correlation (presence rolled up and linked to Roblox identities).                                                                                                                                                                                 |
 
 ## Data model
 

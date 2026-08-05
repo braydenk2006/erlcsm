@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createBolo, listBolos } from "@commandry/cad";
 import { ValidationError } from "@commandry/shared";
-import { requireActiveOrganization } from "@/lib/organization";
+import { requireCadPermission } from "@/lib/cad-auth";
 import { handleRouteError } from "@/lib/api";
 
 const createSchema = z.object({
@@ -14,7 +14,7 @@ const createSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const { organizationId } = await requireActiveOrganization();
+    const { organizationId } = await requireCadPermission("cad.dispatch.view");
     const statusParam = new URL(request.url).searchParams.get("status");
     const status = statusParam === "ACTIVE" || statusParam === "CLEARED" ? statusParam : undefined;
     return NextResponse.json({ bolos: await listBolos(organizationId, status) });
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { organizationId, organization } = await requireActiveOrganization();
+    const { organizationId, organization } = await requireCadPermission("cad.bolos.manage");
     const parsed = createSchema.safeParse(await request.json());
     if (!parsed.success) throw new ValidationError("Type, title, and description are required");
     const bolo = await createBolo(organizationId, {

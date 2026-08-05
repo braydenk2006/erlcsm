@@ -1,14 +1,14 @@
 import { prisma } from "@commandry/database";
 import { createPublicId } from "@commandry/shared";
+import type { CadCallStatus, CadUnitStatus } from "./domain";
+import { allocateCallNumber } from "./application/settings";
 
 // ---------------------------------------------------------------------------
-// Enums (mirrors of the Prisma enums, kept as string unions for the API layer)
+// Enums (mirrors of the Prisma enums, kept as string unions for the API layer).
+// Unit/call status unions are owned by the domain layer (single source of truth).
 // ---------------------------------------------------------------------------
 
 export type CadUnitType = "POLICE" | "SHERIFF" | "STATE" | "FIRE" | "EMS" | "DISPATCH";
-export type CadUnitStatus =
-  "AVAILABLE" | "BUSY" | "EN_ROUTE" | "ON_SCENE" | "PANIC" | "OUT_OF_SERVICE";
-export type CadCallStatus = "PENDING" | "DISPATCHED" | "ACTIVE" | "CLOSED";
 export type CadLicenseStatus = "VALID" | "SUSPENDED" | "REVOKED" | "EXPIRED" | "NONE";
 export type CadRegistrationStatus = "VALID" | "EXPIRED" | "SUSPENDED" | "NONE";
 export type CadWarrantStatus = "ACTIVE" | "CLEARED" | "EXPIRED";
@@ -35,6 +35,7 @@ export type UnitView = {
 export type CallSummaryView = {
   id: string;
   number: string;
+  callNumber: string | null;
   title: string;
   type: string | null;
   caller: string;
@@ -244,6 +245,7 @@ export async function createCall(
     createdByUserId?: string | null;
   },
 ): Promise<CallSummaryView> {
+  const { sequence, callNumber } = await allocateCallNumber(organizationId);
   const call = await prisma.cadCall.create({
     data: {
       publicId: createPublicId("call"),
@@ -251,6 +253,8 @@ export async function createCall(
       source: "manual",
       externalId: createPublicId("callext"),
       number: "911",
+      callNumber,
+      callSequence: sequence,
       title: input.title,
       type: input.type ?? null,
       caller: input.caller ?? "Dispatch",
@@ -265,6 +269,7 @@ export async function createCall(
   return {
     id: call.publicId,
     number: call.number,
+    callNumber: call.callNumber,
     title: call.title ?? input.title,
     type: call.type,
     caller: call.caller,
@@ -296,6 +301,7 @@ export async function listCalls(
   return calls.map((call) => ({
     id: call.publicId,
     number: call.number,
+    callNumber: call.callNumber,
     title: call.title ?? call.message.slice(0, 40),
     type: call.type,
     caller: call.caller,
@@ -326,6 +332,7 @@ export async function getCall(
   return {
     id: call.publicId,
     number: call.number,
+    callNumber: call.callNumber,
     title: call.title ?? call.message.slice(0, 40),
     type: call.type,
     caller: call.caller,
@@ -368,9 +375,11 @@ export async function assignUnitToCall(
     update: {},
   });
   await prisma.cadUnit.update({ where: { id: unitId }, data: { status: "EN_ROUTE" } });
-  await prisma.cadCall.update({
-    where: { id: callId },
-    data: { status: "DISPATCHED" },
+  await prisma.cadCall.update({ where: { id: callId }, data: { status: "DISPATCHED" } });
+  // Record the first dispatch time only (do not overwrite on re-assign).
+  await prisma.cadCall.updateMany({
+    where: { id: callId, dispatchedAt: null },
+    data: { dispatchedAt: new Date() },
   });
   const unit = await prisma.cadUnit.findUnique({
     where: { id: unitId },
@@ -427,9 +436,10 @@ export async function closeCall(organizationId: string, callPublicId: string): P
     data: { status: "AVAILABLE" },
   });
   await prisma.cadCallUnit.deleteMany({ where: { callId } });
+  const closedAt = new Date();
   await prisma.cadCall.update({
     where: { id: callId },
-    data: { status: "CLOSED", closedAt: new Date() },
+    data: { status: "CLOSED", closedAt, clearedAt: closedAt },
   });
   await prisma.cadCallLog.create({ data: { callId, authorName: "Dispatch", note: "Call closed" } });
 }
