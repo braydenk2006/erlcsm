@@ -44,6 +44,10 @@ export const ACTIONS = [
   "session:manage",
   "session:launch",
 
+  // Announcements
+  "announcement:read",
+  "announcement:manage",
+
   // Moderation
   "moderation:read",
   "moderation:create",

@@ -139,6 +139,8 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "session:read",
     "session:manage",
     "session:launch",
+    "announcement:read",
+    "announcement:manage",
     "moderation:read",
     "moderation:create",
     "moderation:approve",
@@ -191,6 +193,8 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "session:read",
     "session:manage",
     "session:launch",
+    "announcement:read",
+    "announcement:manage",
     "moderation:read",
     "moderation:create",
     "moderation:approve",
@@ -219,6 +223,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "shift:read",
     "shift:manage_own",
     "session:read",
+    "announcement:read",
     "moderation:read",
     "moderation:create",
     ...CAD_V2_OFFICER,
@@ -234,6 +239,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "shift:manage_own",
     "activity:read",
     "session:read",
+    "announcement:read",
     "training:read",
     "document:read",
     ...CAD_V2_OFFICER,
@@ -241,5 +247,5 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
   ],
   // Baseline members do NOT get CAD access — CAD (law-enforcement) records must be
   // granted explicitly via role/permission, never implied by community membership.
-  member: ["organization:read", "member:read", "document:read"],
+  member: ["organization:read", "member:read", "announcement:read", "document:read"],
 };

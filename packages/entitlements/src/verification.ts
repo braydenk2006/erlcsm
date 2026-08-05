@@ -18,9 +18,11 @@ const OVERRIDES: Partial<Record<CapabilityKey, VerificationStatus>> = {
   "core.organizations": "verified",
   "core.permissions.basic": "verified",
   "core.audit.basic": "verified",
-  // Core (partial)
-  "core.members": "partial",
-  "core.departments": "partial",
+  // Core organization management (Start-Up completion)
+  "core.members": "verified",
+  "core.departments": "verified",
+  "core.notifications": "verified",
+  "announcements.management": "verified",
   "core.mobile": "partial",
   "core.pwa": "partial",
   // Integrations core
@@ -29,9 +31,11 @@ const OVERRIDES: Partial<Record<CapabilityKey, VerificationStatus>> = {
   "server.live_status": "verified",
   "server.players": "verified",
   "server.teams": "verified",
-  "server.locations": "verified",
   "server.callsigns": "verified",
-  "server.wanted_status": "verified",
+  // Live PRC ER:LC API exposes no per-player coordinates or wanted level; these
+  // work with the simulator but not the live integration -> Partial (not verified).
+  "server.locations": "partial",
+  "server.wanted_status": "partial",
   "server.vehicles": "verified",
   "server.join_leave_logs": "verified",
   "server.kill_logs": "verified",

@@ -23,12 +23,14 @@ import {
   X,
   CalendarRange,
   Briefcase,
+  Megaphone,
 } from "lucide-react";
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Badge, Button, cn } from "@commandry/ui";
 import { BrandLockup } from "@/components/brand-mark";
 import { OrganizationSwitcher } from "@/components/organization-switcher";
+import { NotificationBell } from "@/components/org/notification-bell";
 import type { NavItem } from "@/lib/nav-registry";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -48,6 +50,7 @@ const ICONS: Record<string, LucideIcon> = {
   Globe,
   Link2,
   Settings,
+  Megaphone,
 };
 
 type OrgSummary = {
@@ -156,6 +159,7 @@ export function AppShell({
             </button>
           </div>
           <div className="flex items-center gap-3 text-sm">
+            <NotificationBell />
             <div className="hidden text-right sm:block">
               <p className="font-medium">{user.name}</p>
               <p className="text-xs text-[var(--cmd-fg-muted)]">{user.email}</p>

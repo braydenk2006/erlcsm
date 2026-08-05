@@ -87,6 +87,15 @@ export const NAV_REGISTRY: NavRegistryEntry[] = [
     permission: "moderation:read",
   },
   {
+    key: "announcements",
+    label: "Announcements",
+    href: "/app/announcements",
+    iconName: "Megaphone",
+    group: "community",
+    feature: "announcements.management",
+    permission: "announcement:read",
+  },
+  {
     key: "sessions",
     label: "Sessions",
     href: "/app/sessions",
