@@ -96,6 +96,15 @@ export const NAV_REGISTRY: NavRegistryEntry[] = [
     permission: "announcement:read",
   },
   {
+    key: "schedule",
+    label: "Schedule",
+    href: "/app/schedule",
+    iconName: "CalendarClock",
+    group: "operations",
+    feature: "shifts.tracking",
+    permission: "shifts.attendance.view",
+  },
+  {
     key: "sessions",
     label: "Sessions",
     href: "/app/sessions",

@@ -104,6 +104,34 @@ const CAD_V2_OFFICER: Action[] = [
   "cad.bolos.manage",
 ];
 
+// Full scheduled-shift management (owners/admins).
+const SHIFTS_ALL: Action[] = [
+  "shifts.schedule",
+  "shifts.schedule.recurring",
+  "shifts.edit",
+  "shifts.cancel",
+  "shifts.claim",
+  "shifts.claim.approve",
+  "shifts.assign_host",
+  "shifts.publish_discord",
+  "shifts.start",
+  "shifts.complete",
+  "shifts.attendance.view",
+  "shifts.attendance.manage",
+  "shifts.attendance.override",
+  "shifts.integration.manage",
+  "shifts.analytics.view",
+];
+
+// What a staff host can do (claim, run, take attendance) — no scheduler/approval powers.
+const SHIFTS_STAFF: Action[] = [
+  "shifts.claim",
+  "shifts.start",
+  "shifts.complete",
+  "shifts.attendance.view",
+  "shifts.attendance.manage",
+];
+
 export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
   owner: [
     "organization:read",
@@ -158,6 +186,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "cad:records",
     "cad:manage",
     ...CAD_V2_ALL,
+    ...SHIFTS_ALL,
     "erlc:view",
     "erlc:command",
     "erlc:manage",
@@ -211,6 +240,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "cad:records",
     "cad:manage",
     ...CAD_V2_ALL,
+    ...SHIFTS_ALL,
     "erlc:view",
     "erlc:command",
     "erlc:manage",
@@ -227,6 +257,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "moderation:read",
     "moderation:create",
     ...CAD_V2_OFFICER,
+    ...SHIFTS_STAFF,
     "erlc:view",
     "document:read",
   ],
@@ -243,6 +274,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "training:read",
     "document:read",
     ...CAD_V2_OFFICER,
+    ...SHIFTS_STAFF,
     "erlc:view",
   ],
   // Baseline members do NOT get CAD access — CAD (law-enforcement) records must be

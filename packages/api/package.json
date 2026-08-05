@@ -21,6 +21,7 @@
     "@commandry/audit": "workspace:*",
     "@commandry/database": "workspace:*",
     "@commandry/entitlements": "workspace:*",
+    "@commandry/integrations": "workspace:*",
     "@commandry/operations": "workspace:*",
     "@commandry/permissions": "workspace:*",
     "@commandry/roblox": "workspace:*",

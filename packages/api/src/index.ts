@@ -92,3 +92,30 @@ export {
 } from "./operations/sessions";
 export { recordAttendance, listAttendance, type AttendanceView } from "./operations/attendance";
 export { getOrgAnalytics, type OrgAnalytics } from "./operations/analytics";
+export {
+  ensureSchedulingSettings,
+  createScheduledShift,
+  listScheduledShifts,
+  getScheduledShiftDetail,
+  cancelScheduledShift,
+  openClaiming,
+  claimShift,
+  withdrawClaim,
+  decideClaim,
+  assignHost,
+  publishShift,
+  startScheduledShift,
+  markShiftAttendance,
+  syncShiftPrcPresence,
+  completeScheduledShift,
+  getSchedulingAnalytics,
+  type ScheduledShiftView,
+  type ScheduledShiftDetail,
+  type SchedulingAnalytics,
+} from "./operations/scheduling";
+export {
+  generateRecurrenceOccurrences,
+  sendDueShiftReminders,
+  syncActiveShiftsPrc,
+  reconcileMissedShifts,
+} from "./operations/scheduling-jobs";

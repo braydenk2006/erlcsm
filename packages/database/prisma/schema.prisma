@@ -210,6 +210,12 @@ model Organization {
   operationalSessions   OperationalSession[]
   attendanceRecords     AttendanceRecord[]
   operationsSettings    OperationsSettings?
+  scheduledShifts       ScheduledShift[]
+  shiftClaims           ShiftClaim[]
+  scheduledShiftEvents  ScheduledShiftEvent[]
+  prcPresenceMatches    PrcPresenceMatch[]
+  shiftRecurrences      ShiftRecurrence[]
+  shiftSchedulingSettings ShiftSchedulingSettings?
 
   @@index([status])
   @@map("organizations")
@@ -1234,6 +1240,172 @@ model OperationsSettings {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("operations_settings")
+}
+
+// ---------------------------------------------------------------------------
+// Scheduled shifts (calendar + claiming + Discord + PRC), built on the shared
+// participation ledger and attendance engine. The owner-created scheduled shift
+// is the authoritative record; Discord/PRC state and the shift timeline live on
+// or alongside it (no duplicate calendar/attendance/Discord models).
+// ---------------------------------------------------------------------------
+
+model ScheduledShift {
+  id                   String    @id @default(cuid())
+  publicId             String    @unique @map("public_id")
+  organizationId       String    @map("organization_id")
+  title                String
+  description          String?
+  shiftType            String    @default("patrol") @map("shift_type")
+  departmentId         String?   @map("department_id")
+  erlcServer           String?   @map("erlc_server")
+  timezone             String    @default("UTC")
+  scheduledStart       DateTime  @map("scheduled_start")
+  scheduledEnd         DateTime  @map("scheduled_end")
+  capacity             Int?
+  requiredHostCount    Int       @default(1) @map("required_host_count")
+  requiredStaffCount   Int       @default(0) @map("required_staff_count")
+  minRankOrder         Int?      @map("min_rank_order")
+  requiredPermission   String?   @map("required_permission")
+  requiredDepartmentId String?   @map("required_department_id")
+  claimPolicy          String    @default("FIRST_ELIGIBLE") @map("claim_policy")
+  attendancePolicy     String    @default("MANUAL") @map("attendance_policy")
+  prcSyncPolicy        String    @default("SUGGEST_ONLY") @map("prc_sync_policy")
+  status               String    @default("DRAFT")
+  hostMembershipId     String?   @map("host_membership_id")
+  coHostMembershipIds  String[]  @default([]) @map("co_host_membership_ids")
+  claimedAt            DateTime? @map("claimed_at")
+  publishedAt          DateTime? @map("published_at")
+  actualStart          DateTime? @map("actual_start")
+  actualEnd            DateTime? @map("actual_end")
+  cancellationReason   String?   @map("cancellation_reason")
+  completionNotes      String?   @map("completion_notes")
+  recurrenceId         String?   @map("recurrence_id")
+  discordChannelId     String?   @map("discord_channel_id")
+  discordMessageId     String?   @map("discord_message_id")
+  discordEventId       String?   @map("discord_event_id")
+  discordState         String    @default("NONE") @map("discord_state")
+  prcSyncState         String    @default("IDLE") @map("prc_sync_state")
+  lastRemindedOffset   Int?      @map("last_reminded_offset")
+  version              Int       @default(0)
+  createdByUserId      String    @map("created_by_user_id")
+  updatedByUserId      String?   @map("updated_by_user_id")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([recurrenceId, scheduledStart])
+  @@index([organizationId, status])
+  @@index([organizationId, scheduledStart])
+  @@map("scheduled_shifts")
+}
+
+model ShiftClaim {
+  id               String    @id @default(cuid())
+  publicId         String    @unique @map("public_id")
+  organizationId   String    @map("organization_id")
+  scheduledShiftId String    @map("scheduled_shift_id")
+  membershipId     String    @map("membership_id")
+  userId           String    @map("user_id")
+  role             String    @default("host")
+  status           String    @default("REQUESTED")
+  reason           String?
+  decidedByUserId  String?   @map("decided_by_user_id")
+  decidedAt        DateTime? @map("decided_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([scheduledShiftId])
+  @@index([organizationId, membershipId])
+  @@map("shift_claims")
+}
+
+// One chronological shift timeline (lifecycle + Discord + PRC + attendance
+// events) — integrations do NOT keep separate logs.
+model ScheduledShiftEvent {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  scheduledShiftId String   @map("scheduled_shift_id")
+  type             String
+  occurredAt       DateTime @default(now()) @map("occurred_at")
+  actorUserId      String?  @map("actor_user_id")
+  metadata         Json     @default("{}")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([scheduledShiftId, occurredAt])
+  @@map("scheduled_shift_events")
+}
+
+// PRC presence correlation for a scheduled shift (suggest-only by default).
+model PrcPresenceMatch {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  scheduledShiftId String   @map("scheduled_shift_id")
+  robloxUserId     String   @map("roblox_user_id")
+  robloxUsername   String   @map("roblox_username")
+  membershipId     String?  @map("membership_id")
+  userId           String?  @map("user_id")
+  team             String?
+  callsign         String?
+  firstSeenAt      DateTime @map("first_seen_at")
+  lastSeenAt       DateTime @map("last_seen_at")
+  presenceMinutes  Int      @default(0) @map("presence_minutes")
+  applied          Boolean  @default(false)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([scheduledShiftId, robloxUserId])
+  @@index([organizationId, scheduledShiftId])
+  @@map("prc_presence_matches")
+}
+
+model ShiftRecurrence {
+  id              String    @id @default(cuid())
+  publicId        String    @unique @map("public_id")
+  organizationId  String    @map("organization_id")
+  title           String
+  rule            Json
+  timezone        String    @default("UTC")
+  durationMinutes Int       @default(120) @map("duration_minutes")
+  departmentId    String?   @map("department_id")
+  erlcServer      String?   @map("erlc_server")
+  shiftType       String    @default("patrol") @map("shift_type")
+  horizonUntil    DateTime? @map("horizon_until")
+  active          Boolean   @default(true)
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, active])
+  @@map("shift_recurrences")
+}
+
+model ShiftSchedulingSettings {
+  id                    String   @id @default(cuid())
+  organizationId        String   @unique @map("organization_id")
+  discordChannelId      String?  @map("discord_channel_id")
+  discordEventLocation  String?  @map("discord_event_location")
+  announcementTemplate  String?  @map("announcement_template")
+  mentionRoleIds        String[] @default([]) @map("mention_role_ids")
+  hostsMayPublish       Boolean  @default(true) @map("hosts_may_publish")
+  approvalBeforePublish Boolean  @default(false) @map("approval_before_publish")
+  updateOnChange        Boolean  @default(true) @map("update_on_change")
+  cancelDeletesEvent    Boolean  @default(true) @map("cancel_deletes_event")
+  reminderOffsets       Int[]    @default([1440, 60, 15]) @map("reminder_offsets")
+  allowPublishWithoutHost Boolean @default(false) @map("allow_publish_without_host")
+  startWindowMinutes    Int      @default(30) @map("start_window_minutes")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("shift_scheduling_settings")
 }
 
 // =============================================================================

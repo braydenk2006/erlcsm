@@ -22,6 +22,7 @@ import {
   Workflow,
   X,
   CalendarRange,
+  CalendarClock,
   Briefcase,
   Megaphone,
 } from "lucide-react";
@@ -51,6 +52,7 @@ const ICONS: Record<string, LucideIcon> = {
   Link2,
   Settings,
   Megaphone,
+  CalendarClock,
 };
 
 type OrgSummary = {

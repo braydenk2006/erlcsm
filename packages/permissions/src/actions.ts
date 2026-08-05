@@ -48,6 +48,23 @@ export const ACTIONS = [
   "announcement:read",
   "announcement:manage",
 
+  // Scheduled shifts (Operational Time Platform)
+  "shifts.schedule",
+  "shifts.schedule.recurring",
+  "shifts.edit",
+  "shifts.cancel",
+  "shifts.claim",
+  "shifts.claim.approve",
+  "shifts.assign_host",
+  "shifts.publish_discord",
+  "shifts.start",
+  "shifts.complete",
+  "shifts.attendance.view",
+  "shifts.attendance.manage",
+  "shifts.attendance.override",
+  "shifts.integration.manage",
+  "shifts.analytics.view",
+
   // Moderation
   "moderation:read",
   "moderation:create",

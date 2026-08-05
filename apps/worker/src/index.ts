@@ -6,6 +6,7 @@ import { QUEUE_NAMES, type SystemJobName } from "./queues";
 import { runErlcMaintenance } from "./erlc-maintenance";
 import { runCadExpiration } from "./cad-maintenance";
 import { runOperationsMaintenance } from "./operations-maintenance";
+import { runSchedulingMaintenance } from "./scheduling-maintenance";
 
 const log = createLogger({ service: "worker" });
 
@@ -82,6 +83,9 @@ async function main() {
       if (job.name === "operations.maintenance") {
         return runOperationsMaintenance();
       }
+      if (job.name === "scheduling.maintenance") {
+        return runSchedulingMaintenance();
+      }
       throw new Error(`Unknown job: ${job.name}`);
     },
     { connection },
@@ -99,6 +103,11 @@ async function main() {
   await integrationsQueue.add("cad.expiration", {}, { removeOnComplete: 50, removeOnFail: 50 });
   await integrationsQueue.add(
     "operations.maintenance",
+    {},
+    { removeOnComplete: 50, removeOnFail: 50 },
+  );
+  await integrationsQueue.add(
+    "scheduling.maintenance",
     {},
     { removeOnComplete: 50, removeOnFail: 50 },
   );
@@ -121,6 +130,13 @@ async function main() {
       .add("operations.maintenance", {}, { removeOnComplete: 50, removeOnFail: 50 })
       .catch((error) => {
         log.error("Failed to enqueue operations maintenance", {
+          error: error instanceof Error ? error.message : "unknown",
+        });
+      });
+    void integrationsQueue
+      .add("scheduling.maintenance", {}, { removeOnComplete: 50, removeOnFail: 50 })
+      .catch((error) => {
+        log.error("Failed to enqueue scheduling maintenance", {
           error: error instanceof Error ? error.message : "unknown",
         });
       });

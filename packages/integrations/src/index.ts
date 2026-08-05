@@ -25,3 +25,14 @@ export {
   type CadCallView,
   type PlayerHistoryView,
 } from "./erlc-service";
+export {
+  getDiscordClientForOrganization,
+  createMockDiscordClient,
+  createLiveDiscordClient,
+  connectDiscord,
+  getDiscordIntegration,
+  DiscordError,
+  type DiscordClient,
+  type DiscordScheduledEventInput,
+  type DiscordIntegrationSummary,
+} from "./discord-service";

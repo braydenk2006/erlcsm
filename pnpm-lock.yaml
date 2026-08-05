@@ -197,6 +197,9 @@ importers:
       '@commandry/entitlements':
         specifier: workspace:*
         version: link:../entitlements
+      '@commandry/integrations':
+        specifier: workspace:*
+        version: link:../integrations
       '@commandry/operations':
         specifier: workspace:*
         version: link:../operations
