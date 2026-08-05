@@ -171,6 +171,12 @@ model Organization {
   notificationPrefs     NotificationPreference[]
   erlcPlayerSessions    ErlcPlayerSession[]
   cadCalls              CadCall[]
+  cadUnits              CadUnit[]
+  cadCivilians          CadCivilian[]
+  cadVehicles           CadVehicle[]
+  cadWarrants           CadWarrant[]
+  cadRecords            CadRecord[]
+  cadBolos              CadBolo[]
 
   @@index([status])
   @@map("organizations")
@@ -521,29 +527,35 @@ model ErlcPlayerSession {
   @@map("erlc_player_sessions")
 }
 
-// CAD entries synchronized from ER:LC emergency (911) calls.
+// CAD calls: emergency (911) calls, whether synced from ER:LC or dispatcher-created.
 model CadCall {
-  id             String        @id @default(cuid())
-  publicId       String        @unique @map("public_id")
-  organizationId String        @map("organization_id")
-  source         String        @default("erlc")
-  externalId     String        @map("external_id")
-  number         String        @default("911")
-  caller         String
-  callerId       String?       @map("caller_id")
-  message        String
-  location       String?
-  priority       Int           @default(3)
-  status         CadCallStatus @default(PENDING)
-  assignedUnit   String?       @map("assigned_unit")
-  openedAt       DateTime      @default(now()) @map("opened_at")
-  syncedAt       DateTime      @default(now()) @map("synced_at")
-  closedAt       DateTime?     @map("closed_at")
-  metadata       Json          @default("{}")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
+  id              String        @id @default(cuid())
+  publicId        String        @unique @map("public_id")
+  organizationId  String        @map("organization_id")
+  source          String        @default("erlc")
+  externalId      String        @map("external_id")
+  number          String        @default("911")
+  title           String?
+  type            String?
+  caller          String
+  callerId        String?       @map("caller_id")
+  message         String
+  location        String?
+  postal          String?
+  priority        Int           @default(3)
+  status          CadCallStatus @default(PENDING)
+  assignedUnit    String?       @map("assigned_unit")
+  createdByUserId String?       @map("created_by_user_id")
+  openedAt        DateTime      @default(now()) @map("opened_at")
+  syncedAt        DateTime      @default(now()) @map("synced_at")
+  closedAt        DateTime?     @map("closed_at")
+  metadata        Json          @default("{}")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  units        CadCallUnit[]
+  logs         CadCallLog[]
 
   @@unique([organizationId, source, externalId])
   @@index([organizationId, status])
@@ -552,8 +564,235 @@ model CadCall {
 
 enum CadCallStatus {
   PENDING
+  DISPATCHED
   ACTIVE
   CLOSED
+}
+
+// An on-duty unit (officer, EMS, fire, dispatcher) tracked in the CAD.
+model CadUnit {
+  id             String        @id @default(cuid())
+  publicId       String        @unique @map("public_id")
+  organizationId String        @map("organization_id")
+  callsign       String
+  name           String
+  type           CadUnitType   @default(POLICE)
+  status         CadUnitStatus @default(AVAILABLE)
+  userId         String?       @map("user_id")
+  robloxUsername String?       @map("roblox_username")
+  onDutyAt       DateTime      @default(now()) @map("on_duty_at")
+  lastStatusAt   DateTime      @default(now()) @map("last_status_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  callAssignments CadCallUnit[]
+
+  @@index([organizationId, status])
+  @@map("cad_units")
+}
+
+enum CadUnitType {
+  POLICE
+  SHERIFF
+  STATE
+  FIRE
+  EMS
+  DISPATCH
+}
+
+enum CadUnitStatus {
+  AVAILABLE
+  BUSY
+  EN_ROUTE
+  ON_SCENE
+  PANIC
+  OUT_OF_SERVICE
+}
+
+// Assignment of a unit to a call.
+model CadCallUnit {
+  id         String   @id @default(cuid())
+  callId     String   @map("call_id")
+  unitId     String   @map("unit_id")
+  assignedAt DateTime @default(now()) @map("assigned_at")
+
+  call CadCall @relation(fields: [callId], references: [id], onDelete: Cascade)
+  unit CadUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@unique([callId, unitId])
+  @@index([unitId])
+  @@map("cad_call_units")
+}
+
+// Timeline note on a call (dispatch narrative).
+model CadCallLog {
+  id           String   @id @default(cuid())
+  callId       String   @map("call_id")
+  authorUserId String?  @map("author_user_id")
+  authorName   String?  @map("author_name")
+  note         String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  call CadCall @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  @@index([callId, createdAt])
+  @@map("cad_call_logs")
+}
+
+// RMS civilian (person) record.
+model CadCivilian {
+  id              String            @id @default(cuid())
+  publicId        String            @unique @map("public_id")
+  organizationId  String            @map("organization_id")
+  firstName       String            @map("first_name")
+  lastName        String            @map("last_name")
+  dateOfBirth     DateTime?         @map("date_of_birth")
+  gender          String?
+  address         String?
+  phone           String?
+  licenseStatus   CadLicenseStatus  @default(VALID) @map("license_status")
+  robloxUsername  String?           @map("roblox_username")
+  flags           String[]          @default([])
+  notes           String?
+  createdByUserId String?           @map("created_by_user_id")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vehicles     CadVehicle[]
+  warrants     CadWarrant[]
+  records      CadRecord[]
+
+  @@index([organizationId, lastName])
+  @@map("cad_civilians")
+}
+
+enum CadLicenseStatus {
+  VALID
+  SUSPENDED
+  REVOKED
+  EXPIRED
+  NONE
+}
+
+// RMS registered vehicle.
+model CadVehicle {
+  id             String                @id @default(cuid())
+  publicId       String                @unique @map("public_id")
+  organizationId String                @map("organization_id")
+  plate          String
+  model          String
+  color          String?
+  ownerId        String?               @map("owner_id")
+  registration   CadRegistrationStatus @default(VALID)
+  insurance      CadRegistrationStatus @default(VALID)
+  stolen         Boolean               @default(false)
+  notes          String?
+  createdAt      DateTime              @default(now()) @map("created_at")
+  updatedAt      DateTime              @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  owner        CadCivilian? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, plate])
+  @@map("cad_vehicles")
+}
+
+enum CadRegistrationStatus {
+  VALID
+  EXPIRED
+  SUSPENDED
+  NONE
+}
+
+// Warrant issued against a civilian.
+model CadWarrant {
+  id             String           @id @default(cuid())
+  publicId       String           @unique @map("public_id")
+  organizationId String           @map("organization_id")
+  civilianId     String           @map("civilian_id")
+  status         CadWarrantStatus @default(ACTIVE)
+  charges        String[]         @default([])
+  reason         String
+  issuedByName   String?          @map("issued_by_name")
+  issuedByUserId String?          @map("issued_by_user_id")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  clearedAt      DateTime?        @map("cleared_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  civilian     CadCivilian  @relation(fields: [civilianId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("cad_warrants")
+}
+
+enum CadWarrantStatus {
+  ACTIVE
+  CLEARED
+  EXPIRED
+}
+
+// Records: citations, arrests, incident reports, written warnings.
+model CadRecord {
+  id             String        @id @default(cuid())
+  publicId       String        @unique @map("public_id")
+  organizationId String        @map("organization_id")
+  civilianId     String?       @map("civilian_id")
+  type           CadRecordType @default(CITATION)
+  title          String
+  charges        String[]      @default([])
+  officerName    String?       @map("officer_name")
+  officerUserId  String?       @map("officer_user_id")
+  fineAmount     Int?          @map("fine_amount")
+  narrative      String?
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  civilian     CadCivilian? @relation(fields: [civilianId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, type])
+  @@map("cad_records")
+}
+
+enum CadRecordType {
+  CITATION
+  ARREST
+  INCIDENT
+  WARNING
+}
+
+// BOLO (Be On the Lookout) for a person or vehicle.
+model CadBolo {
+  id              String        @id @default(cuid())
+  publicId        String        @unique @map("public_id")
+  organizationId  String        @map("organization_id")
+  type            CadBoloType   @default(PERSON)
+  title           String
+  description     String
+  plate           String?
+  status          CadBoloStatus @default(ACTIVE)
+  createdByName   String?       @map("created_by_name")
+  createdByUserId String?       @map("created_by_user_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("cad_bolos")
+}
+
+enum CadBoloType {
+  PERSON
+  VEHICLE
+}
+
+enum CadBoloStatus {
+  ACTIVE
+  CLEARED
 }
 
 model SupportAccessSession {

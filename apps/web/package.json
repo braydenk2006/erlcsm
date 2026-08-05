@@ -16,6 +16,7 @@
     "@commandry/api": "workspace:*",
     "@commandry/audit": "workspace:*",
     "@commandry/auth": "workspace:*",
+    "@commandry/cad": "workspace:*",
     "@commandry/database": "workspace:*",
     "@commandry/erlc": "workspace:*",
     "@commandry/integrations": "workspace:*",
