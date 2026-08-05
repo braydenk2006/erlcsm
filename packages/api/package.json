@@ -22,6 +22,7 @@
     "@commandry/database": "workspace:*",
     "@commandry/entitlements": "workspace:*",
     "@commandry/permissions": "workspace:*",
+    "@commandry/roblox": "workspace:*",
     "@commandry/shared": "workspace:*",
     "@commandry/validation": "workspace:*"
   },

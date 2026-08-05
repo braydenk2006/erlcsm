@@ -197,6 +197,9 @@ importers:
       '@commandry/permissions':
         specifier: workspace:*
         version: link:../permissions
+      '@commandry/roblox':
+        specifier: workspace:*
+        version: link:../roblox
       '@commandry/shared':
         specifier: workspace:*
         version: link:../shared

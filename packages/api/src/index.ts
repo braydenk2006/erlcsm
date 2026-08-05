@@ -54,3 +54,12 @@ export {
   markAnnouncementRead,
   type AnnouncementView,
 } from "./announcements/service";
+export {
+  getRobloxStatus,
+  startRobloxVerification,
+  confirmRobloxVerification,
+  unlinkRoblox,
+  type RobloxStatus,
+  type RobloxLinkView,
+  type RobloxChallengeView,
+} from "./roblox/service";

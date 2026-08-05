@@ -25,6 +25,8 @@ const OVERRIDES: Partial<Record<CapabilityKey, VerificationStatus>> = {
   "announcements.management": "verified",
   "core.mobile": "partial",
   "core.pwa": "partial",
+  // Identity integration
+  "roblox.account_linking": "verified",
   // Integrations core
   "discord.integration": "partial",
   // Server management (verified — ER:LC live suite)
