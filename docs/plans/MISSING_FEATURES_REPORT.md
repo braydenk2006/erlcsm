@@ -9,6 +9,17 @@ Cross-cutting requirements for every item below: tenant isolation, server-side p
 **entitlement** enforcement (`requireFeature`/`assertWithinLimit`), input validation, error/empty/
 loading states, and tests.
 
+## Update — Start-Up Phase 2 (Core Organization Management) shipped
+
+Now **Verified Complete** and removed from the lists below: `core.members`, `core.departments`,
+`core.notifications`, `announcements.management`. Also reclassified from Verified → **Partial**
+(simulator-only; live PRC ER:LC API has no data): `server.locations`, `server.wanted_status`.
+
+Remaining Start-Up work (Phases 3–9) is enumerated in `STARTUP_COMPLETION_REPORT.md`:
+Roblox linking; shifts/activity/sessions; applications/forms/training; documents + website builder +
+public staff directory; Start-Up AI (report/application summaries); dedicated MDT + incident/arrest
+report workflows + basic CAD analytics; mobile + PWA/offline.
+
 ## Group A — CAD expansion (Growth)
 
 | Feature                             | Key                                              | Status  | What exists                              | What's missing                                                                | Complexity |

@@ -16,10 +16,10 @@ Recorded before implementing Start-Up completion work. Source of truth: the enti
 Re-inspecting every Start-Up capability surfaced two overstatements that were corrected in
 `verification.ts` (the single source of truth):
 
-| Capability | Was | Now | Reason |
-| --- | --- | --- | --- |
+| Capability                                  | Was      | Now         | Reason                                                                                                                                                                                                                 |
+| ------------------------------------------- | -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `server.locations` (player locations & map) | Verified | **Partial** | The live PRC ER:LC API returns **no per-player coordinates** (`live-client.ts` sets `location` to nulls). The map works only with the simulator. Simulator-only behavior must not be presented as production-complete. |
-| `server.wanted_status` (wanted stars) | Verified | **Partial** | The live PRC ER:LC API returns **no per-player wanted level** (`wantedStars: null` in live mode). Simulator-only. |
+| `server.wanted_status` (wanted stars)       | Verified | **Partial** | The live PRC ER:LC API returns **no per-player wanted level** (`wantedStars: null` in live mode). Simulator-only.                                                                                                      |
 
 All other server tools (status, players, teams, callsigns, vehicles, join/leave, kill, command
 logs, remote commands, health, player history) are genuinely backed by the live PRC API and remain
