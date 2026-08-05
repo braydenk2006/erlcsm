@@ -23,7 +23,8 @@ export function PlanRequired({ feature }: { feature: CapabilityKey }) {
         <Lock className="h-6 w-6 text-[var(--cmd-accent)]" />
       </div>
       <h1 className="font-[family-name:var(--cmd-font-display)] text-2xl">
-        {capabilityLabel(feature)} isn&apos;t on your plan
+        {capabilityLabel(feature)}
+        {" isn\u2019t on your plan"}
       </h1>
       <p className="max-w-md text-[var(--cmd-fg-muted)]">
         {capabilityLabel(feature)} is available on the <strong>{planName}</strong> plan. Upgrade to
