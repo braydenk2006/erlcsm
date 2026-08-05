@@ -728,7 +728,7 @@ function RecordsTab({
           setFine("");
           setNarrative("");
           setCharges([]);
-          reload();
+          await reload();
           onChange();
         }}
       >

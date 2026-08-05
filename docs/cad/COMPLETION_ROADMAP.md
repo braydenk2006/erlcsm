@@ -19,19 +19,35 @@ Gating rule: **do not begin a milestone until the previous one passes** its exit
 
 ## Milestone 2 — CAD foundations
 
-- Final data model: record lifecycle (`status`/`revision`/`lockedAt`), warrant workflow
-  `state`, `expiresAt` on warrants/BOLOs, history tables (unit/call/warrant status events),
-  optimistic-lock/version columns, unique constraints (plate, active callsign).
-- Tenant configuration tables replacing hard-coded constants: status codes, priorities, call
-  types, dispositions, record types, warrant/BOLO types, number formats, penal code.
-- Permission completion: department/agency/authored-record/rank/record-type scopes; remove
-  CAD read from baseline `member` role.
-- Audit coverage for all consequential CAD actions.
+**Part 1 (DONE):**
+- [x] Record lifecycle wired to the domain machine: DRAFT→SUBMITTED→UNDER_REVIEW→
+      REVISION_REQUESTED→APPROVED/REJECTED→LOCKED→ARCHIVED, with record numbers,
+      optimistic `version`, and edit-locking (approved/locked reject edits with 409).
+- [x] Warrant approval lifecycle: SUBMITTED→UNDER_REVIEW→APPROVED/DENIED→ACTIVE→
+      SERVED/RECALLED/DISMISSED/EXPIRED, with warrant numbers, expiry, and a state machine
+      that blocks skipping review (activate-before-approve → 409).
+- [x] Append-only `CadStatusEvent` history for warrant/record transitions.
+- [x] Tenant-configurable penal code (`CadPenalCharge`, seeded from default) + Configuration
+      UI; charge pickers consume tenant codes.
+- [x] BOLO `priority` + `expiresAt`; worker `cad.expiration` job auto-expires overdue
+      warrants/BOLOs (idempotent → reconciles after downtime).
+- [x] Unique constraints (`org+plate`, `org+callsign`); additive migration with legacy
+      backfill (existing records→APPROVED, warrants→ACTIVE state).
+- [x] Audit coverage extended to record/warrant lifecycle + penal-code changes.
+- [x] Security hardening folded in: enforce `erlc:command`; CAD mutations 404 (not 200) on
+      cross-tenant/not-found; removed baseline `member` CAD read.
+
+**Part 2 (remaining):**
 - Real-time infrastructure: tenant-isolated, permission-aware SSE/WebSocket channels with
-  reconnection, ordering, dedup, and conflict handling.
+  reconnection, ordering, dedup, and conflict handling (replace polling).
 - Search infrastructure: trigram/GIN indexes or search read-model; cursor pagination on all
   lists.
-- Exit criteria: build/quality/regression green; tenant-config + real-time smoke tests pass.
+- Remaining tenant-config tables: status codes, priorities, call types, dispositions, record
+  types, warrant/BOLO types, number formats.
+- Permission scopes: department/agency/authored-record/rank/record-type.
+- Full audit coverage for the remaining consequential actions (unit status/assignment, person/
+  vehicle updates, BOLO, config, ER:LC imports).
+- Exit criteria: build/quality/regression green; real-time + search + scope smoke tests pass.
 
 ## Milestone 3 — Dispatch & units
 
