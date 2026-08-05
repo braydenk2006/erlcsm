@@ -16,6 +16,11 @@
     "test": "vitest run --passWithNoTests",
     "generate": "node -e \"process.exit(0)\""
   },
+  "dependencies": {
+    "@commandry/database": "workspace:*",
+    "@commandry/erlc": "workspace:*",
+    "@commandry/shared": "workspace:*"
+  },
   "devDependencies": {
     "vitest": "^4.1.10"
   }

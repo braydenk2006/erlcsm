@@ -3,6 +3,7 @@ import IORedis from "ioredis";
 import { prisma } from "@commandry/database";
 import { createLogger } from "@commandry/observability";
 import { QUEUE_NAMES, type SystemJobName } from "./queues";
+import { runErlcMaintenance } from "./erlc-maintenance";
 
 const log = createLogger({ service: "worker" });
 
@@ -65,12 +66,47 @@ async function main() {
     },
   );
 
+  // Integrations queue: ER:LC health monitoring, CAD sync, player-history.
+  const integrationsQueue = new Queue(QUEUE_NAMES.integrations, { connection });
+  const integrationsWorker = new Worker(
+    QUEUE_NAMES.integrations,
+    async (job) => {
+      if (job.name === "erlc.maintenance") {
+        return runErlcMaintenance();
+      }
+      throw new Error(`Unknown job: ${job.name}`);
+    },
+    { connection },
+  );
+  integrationsWorker.on("failed", (job, error) => {
+    log.error("Integrations job failed", {
+      jobId: job?.id,
+      name: job?.name,
+      error: error.message,
+    });
+  });
+
+  // Run once now, then on a 60s cadence.
+  await integrationsQueue.add("erlc.maintenance", {}, { removeOnComplete: 50, removeOnFail: 50 });
+  const maintenanceTimer = setInterval(() => {
+    void integrationsQueue
+      .add("erlc.maintenance", {}, { removeOnComplete: 50, removeOnFail: 50 })
+      .catch((error) => {
+        log.error("Failed to enqueue ER:LC maintenance", {
+          error: error instanceof Error ? error.message : "unknown",
+        });
+      });
+  }, 60000);
+
   log.info("Ordinex worker started", { queues: Object.values(QUEUE_NAMES) });
 
   const shutdown = async () => {
     log.info("Shutting down worker");
+    clearInterval(maintenanceTimer);
     await worker.close();
+    await integrationsWorker.close();
     await systemQueue.close();
+    await integrationsQueue.close();
     await connection.quit();
     await prisma.$disconnect();
     process.exit(0);

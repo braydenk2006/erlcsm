@@ -150,7 +150,7 @@ model Organization {
   accentColor        String             @default("#0F766E") @map("accent_color")
   logoUrl            String?            @map("logo_url")
   terminology        Json               @default("{}")
-  enabledModules     String[]           @default(["home", "people", "staff", "departments", "sessions", "activity", "settings"]) @map("enabled_modules")
+  enabledModules     String[]           @default(["home", "live_server", "people", "staff", "departments", "moderation", "sessions", "activity", "cad", "integrations", "settings"]) @map("enabled_modules")
   onboardingStep     Int                @default(0) @map("onboarding_step")
   onboardingComplete Boolean            @default(false) @map("onboarding_complete")
   planKey            String             @default("free") @map("plan_key")
@@ -169,6 +169,8 @@ model Organization {
   customDomains         OrganizationDomain[]
   supportAccessSessions SupportAccessSession[]
   notificationPrefs     NotificationPreference[]
+  erlcPlayerSessions    ErlcPlayerSession[]
+  cadCalls              CadCall[]
 
   @@index([status])
   @@map("organizations")
@@ -490,6 +492,68 @@ enum IntegrationStatus {
   CONNECTED
   DEGRADED
   ERROR
+}
+
+// ER:LC player-history correlation. Rolls up per-player presence in the live
+// server and links it to a Roblox identity when one is known for the org.
+model ErlcPlayerSession {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  robloxUserId   String   @map("roblox_user_id")
+  robloxUsername String   @map("roblox_username")
+  callsign       String?
+  team           String?
+  lastWantedStars Int?    @map("last_wanted_stars")
+  firstSeenAt    DateTime @default(now()) @map("first_seen_at")
+  lastSeenAt     DateTime @default(now()) @map("last_seen_at")
+  sessionCount   Int      @default(1) @map("session_count")
+  totalMinutes   Int      @default(0) @map("total_minutes")
+  robloxIdentityId String? @map("roblox_identity_id")
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, robloxUserId])
+  @@index([organizationId, lastSeenAt])
+  @@map("erlc_player_sessions")
+}
+
+// CAD entries synchronized from ER:LC emergency (911) calls.
+model CadCall {
+  id             String        @id @default(cuid())
+  publicId       String        @unique @map("public_id")
+  organizationId String        @map("organization_id")
+  source         String        @default("erlc")
+  externalId     String        @map("external_id")
+  number         String        @default("911")
+  caller         String
+  callerId       String?       @map("caller_id")
+  message        String
+  location       String?
+  priority       Int           @default(3)
+  status         CadCallStatus @default(PENDING)
+  assignedUnit   String?       @map("assigned_unit")
+  openedAt       DateTime      @default(now()) @map("opened_at")
+  syncedAt       DateTime      @default(now()) @map("synced_at")
+  closedAt       DateTime?     @map("closed_at")
+  metadata       Json          @default("{}")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, source, externalId])
+  @@index([organizationId, status])
+  @@map("cad_calls")
+}
+
+enum CadCallStatus {
+  PENDING
+  ACTIVE
+  CLOSED
 }
 
 model SupportAccessSession {

@@ -17,6 +17,8 @@
     "@commandry/audit": "workspace:*",
     "@commandry/auth": "workspace:*",
     "@commandry/database": "workspace:*",
+    "@commandry/erlc": "workspace:*",
+    "@commandry/integrations": "workspace:*",
     "@commandry/observability": "workspace:*",
     "@commandry/permissions": "workspace:*",
     "@commandry/shared": "workspace:*",
