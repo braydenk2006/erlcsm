@@ -7,14 +7,23 @@ as complete is faked; the public Plans page shows unbuilt Start-Up features as *
 ```text
 START-UP CAPABILITIES:
 - Total: 47
-- Verified Complete: 26
+- Verified Complete: 27
 - Partially Implemented: 11
-- Missing: 10
+- Missing: 9
 - Unsafe: 0
 - Simulator Only: 2 (server.locations, server.wanted_status — live PRC API has no data)
 ```
 
-## FEATURES COMPLETED (this task)
+## FEATURES COMPLETED (Phase 3 — Identity)
+
+- `roblox.account_linking` — profile-description verification challenge via the official public
+  Roblox API (`@commandry/roblox` live client) with a deterministic mock adapter for dev/tests.
+  Start → one-time `ORDINEX-` code → user adds it to their Roblox "About" → confirm. Enforces
+  uniqueness (one Roblox account per Ordinex user), 15-minute expiry, safe unlink/relink, avatar +
+  display name retrieval, audit, rate-limit/outage handling. No password, cookie, or scraping.
+  Roblox group sync is intentionally NOT claimed. UI on `/app/settings`. 5 integration tests.
+
+## FEATURES COMPLETED (Phase 2 — Core Organization Management)
 
 - `core.members` — Members directory (`/app/staff`), search + status filter, invitations (create
   with `members.max` enforcement, resend, revoke, shareable link), role + department assignment,
@@ -31,9 +40,8 @@ START-UP CAPABILITIES:
 
 ## FEATURES STILL INCOMPLETE (Start-Up scope — NOT done in this task)
 
-Missing (10):
+Missing (9):
 
-- `roblox.account_linking` (Phase 3)
 - `shifts.tracking`, `activity.tracking`, `sessions.management` (Phase 4)
 - `applications.basic`, `forms.basic`, `training.basic` (Phase 5)
 - `website.builder` (Phase 6)
@@ -87,9 +95,11 @@ Partial (11):
 
 ## KNOWN LIMITATIONS
 
-- Start-Up is **not** fully complete: Phases 3–9 (Roblox linking, shifts, activity, sessions,
-  applications, forms, training, documents, website builder, staff directory, Start-Up AI, dedicated
-  MDT, incident/arrest report workflows, basic CAD analytics, PWA/offline) remain.
+- Start-Up is **not** fully complete: Phases 4–9 (shifts, activity, sessions, applications, forms,
+  training, documents, website builder, staff directory, Start-Up AI, dedicated MDT, incident/arrest
+  report workflows, basic CAD analytics, PWA/offline) remain. Phases 2–3 are done.
+- Roblox verification runs against a mock adapter in this environment (`ROBLOX_MODE` unset). Set
+  `ROBLOX_MODE=live` in production to use the real public Roblox API.
 - Invitations have no email delivery in this environment; the invite link is returned to the admin
   to share (magic-link style), consistent with the existing auth flow.
 - Member/announcement author display name is blank for seed accounts whose `user.name` is empty
@@ -97,10 +107,9 @@ Partial (11):
 
 ## RECOMMENDED NEXT PROMPTS
 
-1. Phase 3 — Roblox account linking (verification challenge, unlink/relink, no cookie/scraping).
-2. Phase 4 — Operational management: shifts + activity + sessions (shared time model).
-3. Phase 5 — Recruitment & training: shared form foundation → applications + forms + training.
-4. Phase 6 — Documents + website builder + public staff directory.
-5. Phase 7 — Start-Up AI infrastructure (provider abstraction + usage metering) + report/application summaries.
-6. Phase 8 — CAD Start-Up completion: dedicated MDT, incident/arrest report workflows, basic analytics.
-7. Phase 9 — Mobile + PWA (service worker, offline shell, install).
+1. Phase 4 — Operational management: shifts + activity + sessions (shared time model).
+2. Phase 5 — Recruitment & training: shared form foundation → applications + forms + training.
+3. Phase 6 — Documents + website builder + public staff directory.
+4. Phase 7 — Start-Up AI infrastructure (provider abstraction + usage metering) + report/application summaries.
+5. Phase 8 — CAD Start-Up completion: dedicated MDT, incident/arrest report workflows, basic analytics.
+6. Phase 9 — Mobile + PWA (service worker, offline shell, install).

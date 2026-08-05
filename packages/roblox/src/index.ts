@@ -176,8 +176,9 @@ export function createMockRobloxClient(): RobloxClient {
         description: descriptions.get(robloxUserId) ?? "",
       };
     },
-    async getAvatarUrl(robloxUserId: string) {
-      return `https://mock.roblox.local/avatar/${robloxUserId}.png`;
+    async getAvatarUrl() {
+      // Inline placeholder so dev/demo UIs render a clean avatar (live client returns the real one).
+      return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><rect width='150' height='150' rx='75' fill='%233B6CFF'/><text x='75' y='95' font-size='60' text-anchor='middle' fill='white' font-family='sans-serif'>R</text></svg>";
     },
     simulateProfileCode(robloxUserId: string, code: string) {
       descriptions.set(robloxUserId, `Verifying my community with Ordinex: ${code}`);

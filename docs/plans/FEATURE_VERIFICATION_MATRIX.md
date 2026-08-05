@@ -5,38 +5,38 @@ Generated from the live capability registry (`@commandry/entitlements`). Every c
 ## Summary
 
 - Total capabilities: **125**
-- Verified Complete: **28**
+- Verified Complete: **29**
 - Partially Implemented: **12**
 - Coming Soon: **4**
-- Missing: **81**
+- Missing: **80**
 
 The public Plans page shows a capability as "included" only when Verified or Partial; everything else renders as **Coming Soon**.
 
 ## Core Platform
 
-| Feature                         | Capability Key              | Lowest Plan | Status                | Evidence / Notes                                                                                                  |
-| ------------------------------- | --------------------------- | ----------- | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Organizations                   | `core.organizations`        | Start-Up    | Verified Complete     | Org CRUD + switch                                                                                                 |
-| Members                         | `core.members`              | Start-Up    | Verified Complete     | Members directory /app/staff + /api/members + invitations (resend/revoke) + members.max limit + integration tests |
-| Departments                     | `core.departments`          | Start-Up    | Verified Complete     | /app/departments + /api/departments CRUD/archive + departments.max limit + integration tests                      |
-| Basic permissions               | `core.permissions.basic`    | Start-Up    | Verified Complete     | authorize() engine + simulator                                                                                    |
-| Advanced permission templates   | `core.permissions.advanced` | Growth      | Missing               | Not implemented                                                                                                   |
-| Basic audit logs                | `core.audit.basic`          | Start-Up    | Verified Complete     | audit_events + recordAuditEvent                                                                                   |
-| Advanced audit logs & retention | `core.audit.advanced`       | Enterprise  | Missing               | Not implemented                                                                                                   |
-| Notifications                   | `core.notifications`        | Start-Up    | Verified Complete     | Notification model + bell (unread/mark-read/all) + /api/notifications + fan-out on announcement publish + tests   |
-| Mobile access                   | `core.mobile`               | Start-Up    | Partially Implemented | Responsive layout                                                                                                 |
-| Installable PWA                 | `core.pwa`                  | Start-Up    | Partially Implemented | Web manifest (not offline)                                                                                        |
+| Feature                         | Capability Key              | Lowest Plan | Status                | Evidence / Notes                                                                 |
+| ------------------------------- | --------------------------- | ----------- | --------------------- | -------------------------------------------------------------------------------- |
+| Organizations                   | `core.organizations`        | Start-Up    | Verified Complete     | Org CRUD + switch                                                                |
+| Members                         | `core.members`              | Start-Up    | Verified Complete     | /app/staff + /api/members + invitations + members.max limit + integration tests  |
+| Departments                     | `core.departments`          | Start-Up    | Verified Complete     | /app/departments + /api/departments CRUD/archive + departments.max limit + tests |
+| Basic permissions               | `core.permissions.basic`    | Start-Up    | Verified Complete     | authorize() engine + simulator                                                   |
+| Advanced permission templates   | `core.permissions.advanced` | Growth      | Missing               | Not implemented                                                                  |
+| Basic audit logs                | `core.audit.basic`          | Start-Up    | Verified Complete     | audit_events + recordAuditEvent                                                  |
+| Advanced audit logs & retention | `core.audit.advanced`       | Enterprise  | Missing               | Not implemented                                                                  |
+| Notifications                   | `core.notifications`        | Start-Up    | Verified Complete     | Notification model + bell + /api/notifications + fan-out + tests                 |
+| Mobile access                   | `core.mobile`               | Start-Up    | Partially Implemented | Responsive layout                                                                |
+| Installable PWA                 | `core.pwa`                  | Start-Up    | Partially Implemented | Web manifest (not offline)                                                       |
 
 ## Community Integrations
 
-| Feature                | Capability Key             | Lowest Plan | Status                | Evidence / Notes                                                                                                    |
-| ---------------------- | -------------------------- | ----------- | --------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Discord integration    | `discord.integration`      | Start-Up    | Partially Implemented | Discord OAuth when configured; bot idle                                                                             |
-| Roblox account linking | `roblox.account_linking`   | Start-Up    | Missing               | Not implemented                                                                                                     |
-| Activity tracking      | `activity.tracking`        | Start-Up    | Missing               | Not implemented                                                                                                     |
-| Shift tracking         | `shifts.tracking`          | Start-Up    | Missing               | Not implemented                                                                                                     |
-| Session management     | `sessions.management`      | Start-Up    | Missing               | Not implemented                                                                                                     |
-| Announcements          | `announcements.management` | Start-Up    | Verified Complete     | /app/announcements + /api/announcements draft/publish/archive + department targeting + notification fan-out + tests |
+| Feature                | Capability Key             | Lowest Plan | Status                | Evidence / Notes                                                                                                                                                                            |
+| ---------------------- | -------------------------- | ----------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Discord integration    | `discord.integration`      | Start-Up    | Partially Implemented | Discord OAuth when configured; bot idle                                                                                                                                                     |
+| Roblox account linking | `roblox.account_linking`   | Start-Up    | Verified Complete     | @commandry/roblox live+mock client; RobloxVerification challenge; /app/settings card; /api/roblox start/confirm/unlink; uniqueness+expiry; 5 integration tests. No password/cookie/scraping |
+| Activity tracking      | `activity.tracking`        | Start-Up    | Missing               | Not implemented                                                                                                                                                                             |
+| Shift tracking         | `shifts.tracking`          | Start-Up    | Missing               | Not implemented                                                                                                                                                                             |
+| Session management     | `sessions.management`      | Start-Up    | Missing               | Not implemented                                                                                                                                                                             |
+| Announcements          | `announcements.management` | Start-Up    | Verified Complete     | /app/announcements + draft/publish/archive + targeting + fan-out + tests                                                                                                                    |
 
 ## Server Management
 
@@ -64,39 +64,39 @@ The public Plans page shows a capability as "included" only when Verified or Par
 
 ## CAD / MDT
 
-| Feature                     | Capability Key             | Lowest Plan | Status                | Evidence / Notes                                     |
-| --------------------------- | -------------------------- | ----------- | --------------------- | ---------------------------------------------------- |
-| CAD access                  | `cad.access`               | Start-Up    | Verified Complete     | CAD workspace gated                                  |
-| Dispatch board              | `cad.dispatch.basic`       | Start-Up    | Verified Complete     | Dispatch board                                       |
-| Advanced dispatch           | `cad.dispatch.advanced`    | Growth      | Missing               | Not implemented                                      |
-| MDT                         | `cad.mdt`                  | Start-Up    | Partially Implemented | Dispatch detail panel (no dedicated MDT surface yet) |
-| Person records              | `cad.people`               | Start-Up    | Verified Complete     | Civilians RMS                                        |
-| Vehicle records             | `cad.vehicles`             | Start-Up    | Verified Complete     | Vehicle records                                      |
-| Incident reports            | `cad.incident_reports`     | Start-Up    | Partially Implemented | Record type only                                     |
-| Arrest reports              | `cad.arrest_reports`       | Start-Up    | Partially Implemented | Record type only                                     |
-| Citations                   | `cad.citations`            | Start-Up    | Verified Complete     | Records (CITATION)                                   |
-| Written warnings            | `cad.warnings`             | Start-Up    | Verified Complete     | Records (WARNING)                                    |
-| Warrants                    | `cad.warrants`             | Start-Up    | Verified Complete     | Warrant lifecycle                                    |
-| BOLOs                       | `cad.bolos`                | Start-Up    | Verified Complete     | BOLOs                                                |
-| Penal code                  | `cad.penal_code`           | Start-Up    | Verified Complete     | Tenant penal code                                    |
-| Basic dispatch analytics    | `cad.analytics.basic`      | Start-Up    | Partially Implemented | Command Center priority distribution only            |
-| Advanced dispatch analytics | `cad.analytics.advanced`   | Growth      | Missing               | Not implemented                                      |
-| Court system                | `cad.court`                | Growth      | Missing               | Not implemented                                      |
-| Evidence locker             | `cad.evidence`             | Growth      | Missing               | Not implemented                                      |
-| Chain of custody            | `cad.chain_of_custody`     | Growth      | Missing               | Not implemented                                      |
-| Fire / EMS workflows        | `cad.fire_ems`             | Growth      | Missing               | Not implemented                                      |
-| Civilian portal             | `cad.civilian_portal`      | Growth      | Missing               | Not implemented                                      |
-| Character management        | `cad.characters`           | Growth      | Missing               | Not implemented                                      |
-| Business registry           | `cad.business_registry`    | Growth      | Missing               | Not implemented                                      |
-| Property registry           | `cad.property_registry`    | Growth      | Missing               | Not implemented                                      |
-| Fleet management            | `cad.fleet`                | Growth      | Missing               | Not implemented                                      |
-| Detective case management   | `cad.detective`            | Growth      | Missing               | Not implemented                                      |
-| Multi-agency dispatch       | `cad.multi_agency`         | Growth      | Partially Implemented | Agencies model, single agency per call               |
-| Unit recommendations        | `cad.unit_recommendations` | Growth      | Missing               | Not implemented                                      |
-| Live unit tracking          | `cad.live_unit_tracking`   | Growth      | Missing               | Not implemented                                      |
-| Report approval workflows   | `cad.report_approvals`     | Growth      | Verified Complete     | Record/warrant review lifecycle                      |
-| PDF export                  | `cad.pdf_export`           | Growth      | Missing               | Not implemented                                      |
-| Digital signatures          | `cad.digital_signatures`   | Growth      | Missing               | Not implemented                                      |
+| Feature                     | Capability Key             | Lowest Plan | Status                | Evidence / Notes                             |
+| --------------------------- | -------------------------- | ----------- | --------------------- | -------------------------------------------- |
+| CAD access                  | `cad.access`               | Start-Up    | Verified Complete     | CAD workspace gated                          |
+| Dispatch board              | `cad.dispatch.basic`       | Start-Up    | Verified Complete     | Dispatch board                               |
+| Advanced dispatch           | `cad.dispatch.advanced`    | Growth      | Missing               | Not implemented                              |
+| MDT                         | `cad.mdt`                  | Start-Up    | Partially Implemented | Dispatch detail panel (no dedicated MDT yet) |
+| Person records              | `cad.people`               | Start-Up    | Verified Complete     | Civilians RMS                                |
+| Vehicle records             | `cad.vehicles`             | Start-Up    | Verified Complete     | Vehicle records                              |
+| Incident reports            | `cad.incident_reports`     | Start-Up    | Partially Implemented | Record type only                             |
+| Arrest reports              | `cad.arrest_reports`       | Start-Up    | Partially Implemented | Record type only                             |
+| Citations                   | `cad.citations`            | Start-Up    | Verified Complete     | Records (CITATION)                           |
+| Written warnings            | `cad.warnings`             | Start-Up    | Verified Complete     | Records (WARNING)                            |
+| Warrants                    | `cad.warrants`             | Start-Up    | Verified Complete     | Warrant lifecycle                            |
+| BOLOs                       | `cad.bolos`                | Start-Up    | Verified Complete     | BOLOs                                        |
+| Penal code                  | `cad.penal_code`           | Start-Up    | Verified Complete     | Tenant penal code                            |
+| Basic dispatch analytics    | `cad.analytics.basic`      | Start-Up    | Partially Implemented | Priority distribution only                   |
+| Advanced dispatch analytics | `cad.analytics.advanced`   | Growth      | Missing               | Not implemented                              |
+| Court system                | `cad.court`                | Growth      | Missing               | Not implemented                              |
+| Evidence locker             | `cad.evidence`             | Growth      | Missing               | Not implemented                              |
+| Chain of custody            | `cad.chain_of_custody`     | Growth      | Missing               | Not implemented                              |
+| Fire / EMS workflows        | `cad.fire_ems`             | Growth      | Missing               | Not implemented                              |
+| Civilian portal             | `cad.civilian_portal`      | Growth      | Missing               | Not implemented                              |
+| Character management        | `cad.characters`           | Growth      | Missing               | Not implemented                              |
+| Business registry           | `cad.business_registry`    | Growth      | Missing               | Not implemented                              |
+| Property registry           | `cad.property_registry`    | Growth      | Missing               | Not implemented                              |
+| Fleet management            | `cad.fleet`                | Growth      | Missing               | Not implemented                              |
+| Detective case management   | `cad.detective`            | Growth      | Missing               | Not implemented                              |
+| Multi-agency dispatch       | `cad.multi_agency`         | Growth      | Partially Implemented | Agencies model, single agency per call       |
+| Unit recommendations        | `cad.unit_recommendations` | Growth      | Missing               | Not implemented                              |
+| Live unit tracking          | `cad.live_unit_tracking`   | Growth      | Missing               | Not implemented                              |
+| Report approval workflows   | `cad.report_approvals`     | Growth      | Verified Complete     | Record/warrant review lifecycle              |
+| PDF export                  | `cad.pdf_export`           | Growth      | Missing               | Not implemented                              |
+| Digital signatures          | `cad.digital_signatures`   | Growth      | Missing               | Not implemented                              |
 
 ## Applications
 
