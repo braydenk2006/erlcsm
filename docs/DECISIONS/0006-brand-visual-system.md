@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-The original teal/light operational UI did not match the Commandry crest logo (dark field, metallic silver, electric blue → violet gradient, subtle glow). Brand recognition on first viewport was weak.
+The original teal/light operational UI did not match the Ordinex crest logo (dark field, metallic silver, electric blue → violet gradient, subtle glow). Brand recognition on first viewport was weak.
 
 ## Decision
 

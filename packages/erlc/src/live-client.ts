@@ -1,9 +1,4 @@
-import {
-  ErlcAuthError,
-  ErlcError,
-  ErlcOutageError,
-  ErlcRateLimitError,
-} from "./errors";
+import { ErlcAuthError, ErlcError, ErlcOutageError, ErlcRateLimitError } from "./errors";
 import { TokenBucket, parseRateLimitHeaders, retryAfterFromResponse } from "./rate-limit";
 import type {
   ErlcCallLog,
@@ -57,7 +52,11 @@ function normalizeTeam(raw: unknown): ErlcTeam {
 
 function normalizePermission(raw: unknown): ErlcPlayer["permission"] {
   const value = String(raw ?? "Normal");
-  if (value === "Server Owner" || value === "Server Administrator" || value === "Server Moderator") {
+  if (
+    value === "Server Owner" ||
+    value === "Server Administrator" ||
+    value === "Server Moderator"
+  ) {
     return value;
   }
   return "Normal";
@@ -67,7 +66,8 @@ export function createLiveErlcClient(options: LiveClientOptions): ErlcClient {
   const baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
   const fetchImpl: FetchLike = options.fetchImpl ?? (globalThis.fetch as FetchLike);
   const now = options.now ?? Date.now;
-  const sleep = options.sleep ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
+  const sleep =
+    options.sleep ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
   const maxRetries = options.maxRetries ?? 2;
 
   if (!fetchImpl) {
@@ -78,11 +78,7 @@ export function createLiveErlcClient(options: LiveClientOptions): ErlcClient {
   const bucket = new TokenBucket({ capacity: 5, refillPerSecond: 1, now });
   let lastRateLimit: ErlcRateLimit | null = null;
 
-  async function request<T>(
-    path: string,
-    init: RequestInit = {},
-    attempt = 0,
-  ): Promise<T> {
+  async function request<T>(path: string, init: RequestInit = {}, attempt = 0): Promise<T> {
     const wait = bucket.reserve(now());
     if (wait > 0) await sleep(wait);
 
@@ -125,7 +121,11 @@ export function createLiveErlcClient(options: LiveClientOptions): ErlcClient {
       } catch {
         // ignore parse failure
       }
-      throw new ErlcError(message, { code: "BAD_RESPONSE", retryable: false, status: response.status });
+      throw new ErlcError(message, {
+        code: "BAD_RESPONSE",
+        retryable: false,
+        status: response.status,
+      });
     }
 
     if (response.status === 204) return undefined as T;
@@ -168,9 +168,10 @@ export function createLiveErlcClient(options: LiveClientOptions): ErlcClient {
   }
 
   async function getPlayers(): Promise<ErlcPlayer[]> {
-    const data = await request<
-      Array<{ Player?: string; Permission?: string; Callsign?: string | null; Team?: string }>
-    >("/server/players");
+    const data =
+      await request<
+        Array<{ Player?: string; Permission?: string; Callsign?: string | null; Team?: string }>
+      >("/server/players");
     return (Array.isArray(data) ? data : []).map((entry) => {
       const { name, id } = splitNameId(entry.Player);
       return {
@@ -190,9 +191,8 @@ export function createLiveErlcClient(options: LiveClientOptions): ErlcClient {
   }
 
   async function getVehicles(): Promise<ErlcVehicle[]> {
-    const data = await request<Array<{ Texture?: string; Name?: string; Owner?: string }>>(
-      "/server/vehicles",
-    );
+    const data =
+      await request<Array<{ Texture?: string; Name?: string; Owner?: string }>>("/server/vehicles");
     return (Array.isArray(data) ? data : []).map((entry) => ({
       name: entry.Name ?? "Unknown",
       owner: entry.Owner ?? "Unknown",
@@ -208,9 +208,10 @@ export function createLiveErlcClient(options: LiveClientOptions): ErlcClient {
   }
 
   async function getJoinLogs(): Promise<ErlcJoinLeaveLog[]> {
-    const data = await request<Array<{ Join?: boolean; Timestamp?: number; Player?: string }>>(
-      "/server/joinlogs",
-    );
+    const data =
+      await request<Array<{ Join?: boolean; Timestamp?: number; Player?: string }>>(
+        "/server/joinlogs",
+      );
     return (Array.isArray(data) ? data : [])
       .map((entry) => {
         const { name, id } = splitNameId(entry.Player);
@@ -225,9 +226,10 @@ export function createLiveErlcClient(options: LiveClientOptions): ErlcClient {
   }
 
   async function getKillLogs(): Promise<ErlcKillLog[]> {
-    const data = await request<Array<{ Killer?: string; Killed?: string; Timestamp?: number }>>(
-      "/server/killlogs",
-    );
+    const data =
+      await request<Array<{ Killer?: string; Killed?: string; Timestamp?: number }>>(
+        "/server/killlogs",
+      );
     return (Array.isArray(data) ? data : [])
       .map((entry) => {
         const killer = splitNameId(entry.Killer);
@@ -245,9 +247,10 @@ export function createLiveErlcClient(options: LiveClientOptions): ErlcClient {
   }
 
   async function getCommandLogs(): Promise<ErlcCommandLog[]> {
-    const data = await request<Array<{ Player?: string; Timestamp?: number; Command?: string }>>(
-      "/server/commandlogs",
-    );
+    const data =
+      await request<Array<{ Player?: string; Timestamp?: number; Command?: string }>>(
+        "/server/commandlogs",
+      );
     return (Array.isArray(data) ? data : [])
       .map((entry) => {
         const { name, id } = splitNameId(entry.Player);

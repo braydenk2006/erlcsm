@@ -2,7 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import { createLiveErlcClient } from "./live-client";
 import { ErlcAuthError, ErlcOutageError, ErlcRateLimitError } from "./errors";
 
-function jsonResponse(body: unknown, init: { status?: number; headers?: Record<string, string> } = {}) {
+function jsonResponse(
+  body: unknown,
+  init: { status?: number; headers?: Record<string, string> } = {},
+) {
   return new Response(JSON.stringify(body), {
     status: init.status ?? 200,
     headers: { "content-type": "application/json", ...(init.headers ?? {}) },
@@ -14,7 +17,13 @@ describe("createLiveErlcClient", () => {
     const fetchImpl = vi.fn(async (url: string | URL | Request) => {
       const path = String(url);
       if (path.endsWith("/server")) {
-        return jsonResponse({ Name: "Test", OwnerId: 1, CurrentPlayers: 2, MaxPlayers: 40, JoinKey: "abc" });
+        return jsonResponse({
+          Name: "Test",
+          OwnerId: 1,
+          CurrentPlayers: 2,
+          MaxPlayers: 40,
+          JoinKey: "abc",
+        });
       }
       if (path.endsWith("/server/players")) {
         return jsonResponse([
@@ -25,20 +34,31 @@ describe("createLiveErlcClient", () => {
       return jsonResponse([]);
     });
 
-    const client = createLiveErlcClient({ serverKey: "k", fetchImpl: fetchImpl as unknown as typeof fetch });
+    const client = createLiveErlcClient({
+      serverKey: "k",
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
     const status = await client.getServerStatus();
     expect(status.connected).toBe(true);
     expect(status.name).toBe("Test");
 
     const players = await client.getPlayers();
     expect(players).toHaveLength(2);
-    expect(players[0]).toMatchObject({ id: 123, name: "Ava", team: "Police", permission: "Server Owner" });
+    expect(players[0]).toMatchObject({
+      id: 123,
+      name: "Ava",
+      team: "Police",
+      permission: "Server Owner",
+    });
     expect(players[0]?.wantedStars).toBeNull();
   });
 
   it("raises ErlcAuthError on 401/403", async () => {
     const fetchImpl = vi.fn(async () => jsonResponse({ message: "invalid" }, { status: 403 }));
-    const client = createLiveErlcClient({ serverKey: "bad", fetchImpl: fetchImpl as unknown as typeof fetch });
+    const client = createLiveErlcClient({
+      serverKey: "bad",
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
     await expect(client.getServerStatus()).rejects.toBeInstanceOf(ErlcAuthError);
   });
 
@@ -62,7 +82,10 @@ describe("createLiveErlcClient", () => {
     let calls = 0;
     const fetchImpl = vi.fn(async () => {
       calls += 1;
-      return jsonResponse({ message: "slow down" }, { status: 429, headers: { "retry-after": "0" } });
+      return jsonResponse(
+        { message: "slow down" },
+        { status: 429, headers: { "retry-after": "0" } },
+      );
     });
     const sleep = vi.fn(async () => {});
     const client = createLiveErlcClient({

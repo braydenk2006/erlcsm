@@ -14,7 +14,13 @@ describe("verifyErlcWebhook", () => {
   it("rejects a tampered body, wrong secret, and missing signature", () => {
     const sig = signErlcWebhook(body, secret);
     expect(verifyErlcWebhook({ rawBody: body + "x", signature: sig, secret })).toBe(false);
-    expect(verifyErlcWebhook({ rawBody: body, signature: sig, secret: "other-secret-value-32chars-min" })).toBe(false);
+    expect(
+      verifyErlcWebhook({
+        rawBody: body,
+        signature: sig,
+        secret: "other-secret-value-32chars-min",
+      }),
+    ).toBe(false);
     expect(verifyErlcWebhook({ rawBody: body, signature: null, secret })).toBe(false);
   });
 });
@@ -23,11 +29,24 @@ describe("parseCallWebhook", () => {
   it("parses a recognizable 911 call payload", () => {
     const now = new Date("2026-01-01T00:00:00Z");
     const call = parseCallWebhook(
-      { id: "c1", message: "Fire reported", caller: "Liam", callerId: 9, location: "Downtown", status: "active" },
+      {
+        id: "c1",
+        message: "Fire reported",
+        caller: "Liam",
+        callerId: 9,
+        location: "Downtown",
+        status: "active",
+      },
       now,
     );
     expect(call).not.toBeNull();
-    expect(call).toMatchObject({ id: "c1", caller: "Liam", callerId: 9, status: "active", number: "911" });
+    expect(call).toMatchObject({
+      id: "c1",
+      caller: "Liam",
+      callerId: 9,
+      status: "active",
+      number: "911",
+    });
   });
 
   it("returns null for unrecognized payloads", () => {

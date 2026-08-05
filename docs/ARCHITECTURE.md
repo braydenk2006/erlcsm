@@ -2,7 +2,7 @@
 
 ## Style: modular monolith
 
-Commandry is a **modular monolith**. One deployable web app owns HTTP, one worker process owns background jobs, and domain logic lives in workspace packages with clear boundaries. Packages may become extractable services later; they are not separate networked services today.
+Ordinex is a **modular monolith**. One deployable web app owns HTTP, one worker process owns background jobs, and domain logic lives in workspace packages with clear boundaries. Packages may become extractable services later; they are not separate networked services today.
 
 Why this shape for R0/R1:
 

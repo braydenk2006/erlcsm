@@ -37,7 +37,10 @@ describe("createErlcSimulator", () => {
   });
 
   it("reports wanted stars within 0..5 and callsigns for staff teams", async () => {
-    const snapshot = await createErlcSimulator({ seed: "stars", now: () => 1_700_000_100_000 }).getSnapshot();
+    const snapshot = await createErlcSimulator({
+      seed: "stars",
+      now: () => 1_700_000_100_000,
+    }).getSnapshot();
     for (const player of snapshot.players) {
       if (player.wantedStars !== null) {
         expect(player.wantedStars).toBeGreaterThanOrEqual(1);

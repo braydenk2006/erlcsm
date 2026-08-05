@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Commandry are documented here. Format inspired by [Keep a Changelog](https://keepachangelog.com/).
+All notable changes to Ordinex are documented here. Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [0.1.0] — 2026-08-02
 

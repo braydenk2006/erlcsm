@@ -18,15 +18,30 @@ export function ErlcMap({ players }: { players: PlayerView[] }) {
   return (
     <div className="space-y-3">
       <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[var(--cmd-radius-xl)] border border-[var(--cmd-border)] bg-[#070912]">
-        <svg viewBox="0 0 160 100" className="h-full w-full" role="img" aria-label="Live player map">
+        <svg
+          viewBox="0 0 160 100"
+          className="h-full w-full"
+          role="img"
+          aria-label="Live player map"
+        >
           <defs>
             <pattern id="grid" width="16" height="16" patternUnits="userSpaceOnUse">
-              <path d="M 16 0 L 0 0 0 16" fill="none" stroke="rgba(120,140,200,0.12)" strokeWidth="0.5" />
+              <path
+                d="M 16 0 L 0 0 0 16"
+                fill="none"
+                stroke="rgba(120,140,200,0.12)"
+                strokeWidth="0.5"
+              />
             </pattern>
           </defs>
           <rect width="160" height="100" fill="url(#grid)" />
           {/* Stylized roads */}
-          <path d="M0 50 H160 M80 0 V100 M20 0 L60 100 M140 0 L110 100" stroke="rgba(120,140,200,0.14)" strokeWidth="1" fill="none" />
+          <path
+            d="M0 50 H160 M80 0 V100 M20 0 L60 100 M140 0 L110 100"
+            stroke="rgba(120,140,200,0.14)"
+            strokeWidth="1"
+            fill="none"
+          />
           {onMap.map((player) => {
             const cx = (player.location.x ?? 0) * 160;
             const cy = (player.location.y ?? 0) * 100;
@@ -35,7 +50,15 @@ export function ErlcMap({ players }: { players: PlayerView[] }) {
             return (
               <g key={player.id}>
                 {wanted ? (
-                  <circle cx={cx} cy={cy} r={4.4} fill="none" stroke="#EF4444" strokeWidth="0.8" opacity="0.9" />
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={4.4}
+                    fill="none"
+                    stroke="#EF4444"
+                    strokeWidth="0.8"
+                    opacity="0.9"
+                  />
                 ) : null}
                 <circle cx={cx} cy={cy} r={2.2} fill={color} stroke="#05060A" strokeWidth="0.6">
                   <title>

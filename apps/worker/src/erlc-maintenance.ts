@@ -1,9 +1,5 @@
 import { prisma } from "@commandry/database";
-import {
-  checkErlcHealth,
-  correlatePlayerHistory,
-  syncCadFromErlc,
-} from "@commandry/integrations";
+import { checkErlcHealth, correlatePlayerHistory, syncCadFromErlc } from "@commandry/integrations";
 import { createLogger } from "@commandry/observability";
 
 const log = createLogger({ service: "worker" });

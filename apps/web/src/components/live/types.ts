@@ -36,7 +36,15 @@ export type SnapshotView = {
   joinLogs: { type: "join" | "leave"; player: string; at: string }[];
   killLogs: { killer: string; victim: string; weapon: string | null; at: string }[];
   commandLogs: { player: string; command: string; at: string }[];
-  callLogs: { id: string; number: string; caller: string; message: string; location: string | null; status: string; at: string }[];
+  callLogs: {
+    id: string;
+    number: string;
+    caller: string;
+    message: string;
+    location: string | null;
+    status: string;
+    at: string;
+  }[];
 };
 
 export type SnapshotResponse = {

@@ -3,8 +3,7 @@ import { createLiveErlcClient, type LiveClientOptions } from "./live-client";
 import type { ErlcClient, ErlcMode } from "./types";
 
 export type ErlcClientConfig =
-  | ({ mode: "simulator" } & SimulatorOptions)
-  | ({ mode: "live" } & LiveClientOptions);
+  ({ mode: "simulator" } & SimulatorOptions) | ({ mode: "live" } & LiveClientOptions);
 
 /**
  * Build the appropriate ER:LC client for a given mode. The rest of the app

@@ -5,12 +5,7 @@
  */
 
 export type ErlcErrorCode =
-  | "NOT_CONFIGURED"
-  | "UNAUTHORIZED"
-  | "RATE_LIMITED"
-  | "OUTAGE"
-  | "BAD_RESPONSE"
-  | "COMMAND_FAILED";
+  "NOT_CONFIGURED" | "UNAUTHORIZED" | "RATE_LIMITED" | "OUTAGE" | "BAD_RESPONSE" | "COMMAND_FAILED";
 
 export class ErlcError extends Error {
   readonly code: ErlcErrorCode;
@@ -57,7 +52,10 @@ export class ErlcRateLimitError extends ErlcError {
 
 /** Upstream network failure or 5xx — the ER:LC service is degraded/unavailable. */
 export class ErlcOutageError extends ErlcError {
-  constructor(message = "The ER:LC service is currently unavailable", status: number | null = null) {
+  constructor(
+    message = "The ER:LC service is currently unavailable",
+    status: number | null = null,
+  ) {
     super(message, { code: "OUTAGE", retryable: true, status });
     this.name = "ErlcOutageError";
   }

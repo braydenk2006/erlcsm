@@ -185,7 +185,10 @@ function buildRoster(seed: number): RosterEntry[] {
   return roster;
 }
 
-function buildSnapshot(options: Required<Pick<SimulatorOptions, "seed" | "serverName" | "maxPlayers">>, nowMs: number): ErlcSnapshot {
+function buildSnapshot(
+  options: Required<Pick<SimulatorOptions, "seed" | "serverName" | "maxPlayers">>,
+  nowMs: number,
+): ErlcSnapshot {
   const baseSeed = hashSeed(options.seed);
   const roster = buildRoster(baseSeed);
   // Tick every 20 seconds so repeated reads within a refresh window agree,
@@ -254,7 +257,17 @@ function buildSnapshot(options: Required<Pick<SimulatorOptions, "seed" | "server
 
   const staff = players.filter((player) => player.permission !== "Normal");
   const commandLogs: ErlcCommandLog[] = [];
-  const COMMANDS = [":pm", ":m", ":kick", ":ban", ":tp", ":wanted", ":jail", ":refresh", ":weather"];
+  const COMMANDS = [
+    ":pm",
+    ":m",
+    ":kick",
+    ":ban",
+    ":tp",
+    ":wanted",
+    ":jail",
+    ":refresh",
+    ":weather",
+  ];
   for (let i = 0; i < 8; i += 1) {
     const author = staff.length > 0 ? pick(rng, staff) : pick(rng, players);
     commandLogs.push({

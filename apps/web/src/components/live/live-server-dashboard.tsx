@@ -61,7 +61,10 @@ function WantedStars({ stars }: { stars: number | null }) {
 function TeamTag({ team }: { team: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 text-sm">
-      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: TEAM_DOT[team] ?? "#9AA4BF" }} />
+      <span
+        className="h-2.5 w-2.5 rounded-full"
+        style={{ backgroundColor: TEAM_DOT[team] ?? "#9AA4BF" }}
+      />
       {team}
     </span>
   );
@@ -115,15 +118,21 @@ export function LiveServerDashboard() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ command: trimmed }),
       });
-      const json = (await res.json()) as { ok?: boolean; result?: { message: string }; error?: string };
-      setHistory((prev) => [
-        {
-          command: trimmed,
-          ok: Boolean(json.ok),
-          message: json.result?.message ?? json.error ?? "No response",
-        },
-        ...prev,
-      ].slice(0, 8));
+      const json = (await res.json()) as {
+        ok?: boolean;
+        result?: { message: string };
+        error?: string;
+      };
+      setHistory((prev) =>
+        [
+          {
+            command: trimmed,
+            ok: Boolean(json.ok),
+            message: json.result?.message ?? json.error ?? "No response",
+          },
+          ...prev,
+        ].slice(0, 8),
+      );
       setCommand("");
     } catch {
       setHistory((prev) => [{ command: trimmed, ok: false, message: "Request failed" }, ...prev]);
@@ -141,7 +150,7 @@ export function LiveServerDashboard() {
   }
 
   const snapshot = data?.snapshot ?? null;
-  const outage = data && !data.ok ? data.outage?.message ?? "ER:LC service unavailable" : null;
+  const outage = data && !data.ok ? (data.outage?.message ?? "ER:LC service unavailable") : null;
 
   return (
     <div className="space-y-5">
@@ -180,12 +189,21 @@ export function LiveServerDashboard() {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-6">
-          <Stat label="Players" value={snapshot ? `${snapshot.status.currentPlayers}/${snapshot.status.maxPlayers}` : "—"} />
+          <Stat
+            label="Players"
+            value={
+              snapshot ? `${snapshot.status.currentPlayers}/${snapshot.status.maxPlayers}` : "—"
+            }
+          />
           <Stat label="Queue" value={snapshot ? String(snapshot.queue.length) : "—"} />
           <Stat label="Region" value={snapshot?.status.region ?? "—"} />
           <Stat
             label="Uptime"
-            value={snapshot?.status.uptimeSeconds != null ? `${Math.floor(snapshot.status.uptimeSeconds / 3600)}h` : "—"}
+            value={
+              snapshot?.status.uptimeSeconds != null
+                ? `${Math.floor(snapshot.status.uptimeSeconds / 3600)}h`
+                : "—"
+            }
           />
           <Stat label="Join key" value={snapshot?.status.joinKey ?? "—"} mono />
           <Stat label="Integration" value={data?.integration.status ?? "—"} />
@@ -209,7 +227,10 @@ export function LiveServerDashboard() {
                 key={t.team}
                 className="cmd-glass inline-flex items-center gap-2 rounded-[var(--cmd-radius-pill)] px-3 py-1.5 text-sm"
               >
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: TEAM_DOT[t.team] ?? "#9AA4BF" }} />
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: TEAM_DOT[t.team] ?? "#9AA4BF" }}
+                />
                 {t.team}
                 <Badge tone="neutral">{t.count}</Badge>
               </span>
@@ -281,7 +302,9 @@ export function LiveServerDashboard() {
               {tab === "calls" ? <CallsList calls={snapshot.callLogs} /> : null}
             </div>
           ) : (
-            <p className="p-6 text-sm text-[var(--cmd-fg-muted)]">No live data available right now.</p>
+            <p className="p-6 text-sm text-[var(--cmd-fg-muted)]">
+              No live data available right now.
+            </p>
           )}
         </div>
 
@@ -306,8 +329,17 @@ export function LiveServerDashboard() {
               disabled={sending}
               aria-label="ER:LC command"
             />
-            <Button type="submit" size="icon" disabled={sending || !command.trim()} aria-label="Send command">
-              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            <Button
+              type="submit"
+              size="icon"
+              disabled={sending || !command.trim()}
+              aria-label="Send command"
+            >
+              {sending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </form>
           <div className="mt-3 flex flex-wrap gap-1.5">
@@ -329,9 +361,19 @@ export function LiveServerDashboard() {
               </p>
             ) : (
               history.map((entry, i) => (
-                <div key={i} className="rounded-[var(--cmd-radius-sm)] border border-[var(--cmd-border)] p-2 text-xs">
-                  <p className="font-[family-name:var(--cmd-font-mono)] text-[var(--cmd-fg)]">{entry.command}</p>
-                  <p className={cn("mt-1", entry.ok ? "text-[var(--cmd-success)]" : "text-[var(--cmd-danger)]")}>
+                <div
+                  key={i}
+                  className="rounded-[var(--cmd-radius-sm)] border border-[var(--cmd-border)] p-2 text-xs"
+                >
+                  <p className="font-[family-name:var(--cmd-font-mono)] text-[var(--cmd-fg)]">
+                    {entry.command}
+                  </p>
+                  <p
+                    className={cn(
+                      "mt-1",
+                      entry.ok ? "text-[var(--cmd-success)]" : "text-[var(--cmd-danger)]",
+                    )}
+                  >
                     {entry.message}
                   </p>
                 </div>
@@ -348,7 +390,12 @@ function Stat({ label, value, mono }: { label: string; value: string; mono?: boo
   return (
     <div className="rounded-[var(--cmd-radius)] border border-[var(--cmd-border)] bg-[var(--cmd-bg-muted)] px-3 py-2">
       <p className="text-[11px] uppercase tracking-wide text-[var(--cmd-fg-muted)]">{label}</p>
-      <p className={cn("mt-0.5 truncate text-sm font-semibold", mono && "font-[family-name:var(--cmd-font-mono)]")}>
+      <p
+        className={cn(
+          "mt-0.5 truncate text-sm font-semibold",
+          mono && "font-[family-name:var(--cmd-font-mono)]",
+        )}
+      >
         {value}
       </p>
     </div>
@@ -395,7 +442,11 @@ function PlayersTable({ players }: { players: PlayerView[] }) {
                 {p.location.zone ?? <span className="text-[var(--cmd-fg-muted)]">Unknown</span>}
               </td>
               <td className="py-2 pr-3">
-                {p.permission !== "Normal" ? <Badge tone="accent">{p.permission.replace("Server ", "")}</Badge> : <span className="text-[var(--cmd-fg-muted)]">—</span>}
+                {p.permission !== "Normal" ? (
+                  <Badge tone="accent">{p.permission.replace("Server ", "")}</Badge>
+                ) : (
+                  <span className="text-[var(--cmd-fg-muted)]">—</span>
+                )}
               </td>
             </tr>
           ))}
@@ -405,14 +456,21 @@ function PlayersTable({ players }: { players: PlayerView[] }) {
   );
 }
 
-function VehiclesTable({ vehicles }: { vehicles: { name: string; owner: string; texture: string | null }[] }) {
+function VehiclesTable({
+  vehicles,
+}: {
+  vehicles: { name: string; owner: string; texture: string | null }[];
+}) {
   if (vehicles.length === 0) {
     return <p className="p-4 text-sm text-[var(--cmd-fg-muted)]">No spawned vehicles.</p>;
   }
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {vehicles.map((v, i) => (
-        <div key={i} className="flex items-center gap-3 rounded-[var(--cmd-radius)] border border-[var(--cmd-border)] p-3">
+        <div
+          key={i}
+          className="flex items-center gap-3 rounded-[var(--cmd-radius)] border border-[var(--cmd-border)] p-3"
+        >
           <Car className="h-4 w-4 text-[var(--cmd-accent)]" />
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{v.name}</p>
@@ -427,7 +485,13 @@ function VehiclesTable({ vehicles }: { vehicles: { name: string; owner: string; 
   );
 }
 
-type LogRow = { at: string; left: string; right: string; tone: "success" | "neutral" | "danger" | "accent"; mono?: boolean };
+type LogRow = {
+  at: string;
+  left: string;
+  right: string;
+  tone: "success" | "neutral" | "danger" | "accent";
+  mono?: boolean;
+};
 
 function LogList({ rows }: { rows: LogRow[] }) {
   if (rows.length === 0) {
@@ -438,9 +502,26 @@ function LogList({ rows }: { rows: LogRow[] }) {
       {rows.map((row, i) => (
         <li key={i} className="flex items-center justify-between gap-3 py-2 text-sm">
           <div className="flex min-w-0 items-center gap-2">
-            <Badge tone={row.tone}>{row.tone === "success" ? "IN" : row.tone === "danger" ? "KILL" : row.tone === "accent" ? "CMD" : "OUT"}</Badge>
-            <span className={cn("truncate", row.mono && "font-[family-name:var(--cmd-font-mono)] text-xs")}>{row.left}</span>
-            {row.right ? <span className="truncate text-[var(--cmd-fg-muted)]">{row.right}</span> : null}
+            <Badge tone={row.tone}>
+              {row.tone === "success"
+                ? "IN"
+                : row.tone === "danger"
+                  ? "KILL"
+                  : row.tone === "accent"
+                    ? "CMD"
+                    : "OUT"}
+            </Badge>
+            <span
+              className={cn(
+                "truncate",
+                row.mono && "font-[family-name:var(--cmd-font-mono)] text-xs",
+              )}
+            >
+              {row.left}
+            </span>
+            {row.right ? (
+              <span className="truncate text-[var(--cmd-fg-muted)]">{row.right}</span>
+            ) : null}
           </div>
           <span className="shrink-0 text-xs text-[var(--cmd-fg-muted)]">{timeAgo(row.at)}</span>
         </li>
@@ -449,7 +530,18 @@ function LogList({ rows }: { rows: LogRow[] }) {
   );
 }
 
-function CallsList({ calls }: { calls: { id: string; caller: string; message: string; location: string | null; status: string; at: string }[] }) {
+function CallsList({
+  calls,
+}: {
+  calls: {
+    id: string;
+    caller: string;
+    message: string;
+    location: string | null;
+    status: string;
+    at: string;
+  }[];
+}) {
   if (calls.length === 0) {
     return <p className="p-4 text-sm text-[var(--cmd-fg-muted)]">No active emergency calls.</p>;
   }
@@ -457,7 +549,10 @@ function CallsList({ calls }: { calls: { id: string; caller: string; message: st
   return (
     <ul className="space-y-2">
       {calls.map((call) => (
-        <li key={call.id} className="rounded-[var(--cmd-radius)] border border-[var(--cmd-border)] p-3">
+        <li
+          key={call.id}
+          className="rounded-[var(--cmd-radius)] border border-[var(--cmd-border)] p-3"
+        >
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <PhoneCall className="h-4 w-4 text-[var(--cmd-danger)]" />
@@ -467,7 +562,9 @@ function CallsList({ calls }: { calls: { id: string; caller: string; message: st
             <span className="text-xs text-[var(--cmd-fg-muted)]">{timeAgo(call.at)}</span>
           </div>
           <p className="mt-1.5 text-sm">{call.message}</p>
-          {call.location ? <p className="mt-0.5 text-xs text-[var(--cmd-fg-muted)]">📍 {call.location}</p> : null}
+          {call.location ? (
+            <p className="mt-0.5 text-xs text-[var(--cmd-fg-muted)]">📍 {call.location}</p>
+          ) : null}
         </li>
       ))}
     </ul>

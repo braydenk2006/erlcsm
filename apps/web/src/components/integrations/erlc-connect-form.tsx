@@ -142,7 +142,11 @@ export function ErlcConnectForm({
               id="serverKey"
               value={serverKey}
               onChange={(e) => setServerKey(e.target.value)}
-              placeholder={integration.hasCredentials ? "•••••••• (stored) — enter to replace" : "ER:LC server key"}
+              placeholder={
+                integration.hasCredentials
+                  ? "•••••••• (stored) — enter to replace"
+                  : "ER:LC server key"
+              }
               className="font-[family-name:var(--cmd-font-mono)] text-sm"
             />
           </div>
@@ -169,8 +173,16 @@ export function ErlcConnectForm({
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button onClick={() => void connect()} disabled={busy !== null || !serverKey.trim()} size="sm">
-            {busy === "connect" ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlugZap className="h-4 w-4" />}
+          <Button
+            onClick={() => void connect()}
+            disabled={busy !== null || !serverKey.trim()}
+            size="sm"
+          >
+            {busy === "connect" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <PlugZap className="h-4 w-4" />
+            )}
             {integration.hasCredentials ? "Update credentials" : "Connect"}
           </Button>
           <Button onClick={() => void test()} disabled={busy !== null} variant="outline" size="sm">
@@ -178,14 +190,21 @@ export function ErlcConnectForm({
             Test connection
           </Button>
           {integration.hasCredentials ? (
-            <Button onClick={() => void disconnect()} disabled={busy !== null} variant="ghost" size="sm">
+            <Button
+              onClick={() => void disconnect()}
+              disabled={busy !== null}
+              variant="ghost"
+              size="sm"
+            >
               Disconnect
             </Button>
           ) : null}
         </div>
 
         {message ? (
-          <p className={`mt-3 flex items-center gap-2 text-sm ${message.ok ? "text-[var(--cmd-success)]" : "text-[var(--cmd-danger)]"}`}>
+          <p
+            className={`mt-3 flex items-center gap-2 text-sm ${message.ok ? "text-[var(--cmd-success)]" : "text-[var(--cmd-danger)]"}`}
+          >
             {message.ok ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
             {message.text}
           </p>
@@ -212,7 +231,11 @@ export function ErlcConnectForm({
               setTimeout(() => setCopied(false), 1500);
             }}
           >
-            {copied ? <CheckCircle2 className="h-4 w-4 text-[var(--cmd-success)]" /> : <Copy className="h-4 w-4" />}
+            {copied ? (
+              <CheckCircle2 className="h-4 w-4 text-[var(--cmd-success)]" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
           </Button>
         </div>
         <p className="mt-2 text-xs text-[var(--cmd-fg-muted)]">

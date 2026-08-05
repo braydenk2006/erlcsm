@@ -4,7 +4,7 @@ Package: `@commandry/ai`.
 
 ## Principle
 
-**AI assists humans; humans decide.** Commandry will use models to draft, summarize, and retrieve — never to autonomously discipline members, alter roles, or execute ER:LC commands without explicit human confirmation.
+**AI assists humans; humans decide.** Ordinex will use models to draft, summarize, and retrieve — never to autonomously discipline members, alter roles, or execute ER:LC commands without explicit human confirmation.
 
 ## Default policy
 

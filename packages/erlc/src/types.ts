@@ -20,10 +20,7 @@ export const ERLC_TEAMS: readonly ErlcTeam[] = [
 
 /** In-server staff permission level as reported by the ER:LC API. */
 export type ErlcPermission =
-  | "Normal"
-  | "Server Moderator"
-  | "Server Administrator"
-  | "Server Owner";
+  "Normal" | "Server Moderator" | "Server Administrator" | "Server Owner";
 
 /** Approximate world position used for the map display. */
 export type ErlcLocation = {

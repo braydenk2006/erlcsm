@@ -8,7 +8,9 @@ export default async function LiveServerPage() {
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-sm uppercase tracking-[0.18em] text-[var(--cmd-fg-muted)]">Live Server</p>
+        <p className="text-sm uppercase tracking-[0.18em] text-[var(--cmd-fg-muted)]">
+          Live Server
+        </p>
         <h1 className="mt-1 font-[family-name:var(--cmd-font-display)] text-4xl tracking-tight">
           ER:LC Operations
         </h1>

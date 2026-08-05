@@ -1,6 +1,6 @@
 # Security
 
-Commandry treats multi-tenant isolation, credential handling, and audit integrity as first-class constraints from day one. This document describes current controls and the threat model for R0/early R1 and near-term releases.
+Ordinex treats multi-tenant isolation, credential handling, and audit integrity as first-class constraints from day one. This document describes current controls and the threat model for R0/early R1 and near-term releases.
 
 ## Current controls
 
@@ -32,7 +32,7 @@ Commandry treats multi-tenant isolation, credential handling, and audit integrit
 
 ### Account-link takeover (Discord / Roblox)
 
-**Risk:** Attacker links a victim’s Discord/Roblox identity to their Commandry account.  
+**Risk:** Attacker links a victim’s Discord/Roblox identity to their Ordinex account.  
 **Mitigations:** Schema enforces unique external IDs per provider; Roblox package documents official verification only (no cookie scraping).  
 **Residual:** Link/verify flows are not productized yet — implement proof-of-ownership and unlink challenges before enabling.
 

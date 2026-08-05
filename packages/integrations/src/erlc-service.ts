@@ -118,7 +118,9 @@ export async function connectErlc(input: ErlcConnectInput): Promise<ErlcIntegrat
   const encrypted = encryptSecret(JSON.stringify(payload));
 
   await prisma.integrationCredential.upsert({
-    where: { organizationId_provider: { organizationId: input.organizationId, provider: PROVIDER } },
+    where: {
+      organizationId_provider: { organizationId: input.organizationId, provider: PROVIDER },
+    },
     create: {
       publicId: createPublicId("int"),
       organizationId: input.organizationId,
@@ -168,9 +170,7 @@ export async function checkErlcHealth(organizationId: string): Promise<ErlcHealt
   return health;
 }
 
-export async function getErlcIntegration(
-  organizationId: string,
-): Promise<ErlcIntegrationSummary> {
+export async function getErlcIntegration(organizationId: string): Promise<ErlcIntegrationSummary> {
   const mode = resolveErlcMode(process.env.ERLC_MODE);
   const credential = await prisma.integrationCredential.findUnique({
     where: { organizationId_provider: { organizationId, provider: PROVIDER } },
@@ -217,7 +217,8 @@ export async function syncCadFromErlc(organizationId: string): Promise<{ synced:
   let synced = 0;
 
   for (const call of calls) {
-    const status = call.status === "active" ? "ACTIVE" : call.status === "closed" ? "CLOSED" : "PENDING";
+    const status =
+      call.status === "active" ? "ACTIVE" : call.status === "closed" ? "CLOSED" : "PENDING";
     await prisma.cadCall.upsert({
       where: {
         organizationId_source_externalId: {
@@ -330,7 +331,8 @@ export async function recordErlcCallWebhook(input: {
     return { ok: false, reason: "unrecognized event" };
   }
 
-  const status = call.status === "active" ? "ACTIVE" : call.status === "closed" ? "CLOSED" : "PENDING";
+  const status =
+    call.status === "active" ? "ACTIVE" : call.status === "closed" ? "CLOSED" : "PENDING";
   await prisma.cadCall.upsert({
     where: {
       organizationId_source_externalId: {
@@ -368,10 +370,7 @@ export type CadCallView = {
   openedAt: Date;
 };
 
-export async function listCadCalls(
-  organizationId: string,
-  limit = 50,
-): Promise<CadCallView[]> {
+export async function listCadCalls(organizationId: string, limit = 50): Promise<CadCallView[]> {
   const calls = await prisma.cadCall.findMany({
     where: { organizationId },
     orderBy: { openedAt: "desc" },

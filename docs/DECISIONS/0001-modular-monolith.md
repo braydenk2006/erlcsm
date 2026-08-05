@@ -5,7 +5,7 @@ Status: Accepted
 
 ## Context
 
-Commandry needs strong multi-tenant isolation, shared authorization/audit, and many domain modules (staff, CAD, ER:LC, Discord). A distributed microservices start would slow R0/R1 and complicate transactional consistency across memberships, roles, and audit.
+Ordinex needs strong multi-tenant isolation, shared authorization/audit, and many domain modules (staff, CAD, ER:LC, Discord). A distributed microservices start would slow R0/R1 and complicate transactional consistency across memberships, roles, and audit.
 
 ## Decision
 
