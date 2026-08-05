@@ -5,6 +5,7 @@ import { createLogger } from "@commandry/observability";
 import { QUEUE_NAMES, type SystemJobName } from "./queues";
 import { runErlcMaintenance } from "./erlc-maintenance";
 import { runCadExpiration } from "./cad-maintenance";
+import { runOperationsMaintenance } from "./operations-maintenance";
 
 const log = createLogger({ service: "worker" });
 
@@ -78,6 +79,9 @@ async function main() {
       if (job.name === "cad.expiration") {
         return runCadExpiration();
       }
+      if (job.name === "operations.maintenance") {
+        return runOperationsMaintenance();
+      }
       throw new Error(`Unknown job: ${job.name}`);
     },
     { connection },
@@ -93,6 +97,11 @@ async function main() {
   // Run once now, then on a 60s cadence (ER:LC health/player-history + CAD expiration).
   await integrationsQueue.add("erlc.maintenance", {}, { removeOnComplete: 50, removeOnFail: 50 });
   await integrationsQueue.add("cad.expiration", {}, { removeOnComplete: 50, removeOnFail: 50 });
+  await integrationsQueue.add(
+    "operations.maintenance",
+    {},
+    { removeOnComplete: 50, removeOnFail: 50 },
+  );
   const maintenanceTimer = setInterval(() => {
     void integrationsQueue
       .add("erlc.maintenance", {}, { removeOnComplete: 50, removeOnFail: 50 })
@@ -105,6 +114,13 @@ async function main() {
       .add("cad.expiration", {}, { removeOnComplete: 50, removeOnFail: 50 })
       .catch((error) => {
         log.error("Failed to enqueue CAD expiration", {
+          error: error instanceof Error ? error.message : "unknown",
+        });
+      });
+    void integrationsQueue
+      .add("operations.maintenance", {}, { removeOnComplete: 50, removeOnFail: 50 })
+      .catch((error) => {
+        log.error("Failed to enqueue operations maintenance", {
           error: error instanceof Error ? error.message : "unknown",
         });
       });

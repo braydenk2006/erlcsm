@@ -205,6 +205,11 @@ model Organization {
   usageCounters         UsageCounter[]
   notifications         Notification[]
   announcements         Announcement[]
+  participationEvents   ParticipationEvent[]
+  shifts                Shift[]
+  operationalSessions   OperationalSession[]
+  attendanceRecords     AttendanceRecord[]
+  operationsSettings    OperationsSettings?
 
   @@index([status])
   @@map("organizations")
@@ -1109,6 +1114,126 @@ model AnnouncementRead {
 
   @@unique([announcementId, userId])
   @@map("announcement_reads")
+}
+
+// =============================================================================
+// Operational Time Platform
+// Single append-only ledger of participation events. Shifts, sessions,
+// attendance, activity, metrics, history, and analytics all derive from this —
+// no feature stores its own time/activity totals.
+// =============================================================================
+
+model ParticipationEvent {
+  id              String   @id @default(cuid())
+  publicId        String   @unique @map("public_id")
+  organizationId  String   @map("organization_id")
+  membershipId    String   @map("membership_id")
+  userId          String   @map("user_id")
+  type            String
+  category        String
+  occurredAt      DateTime @map("occurred_at")
+  durationMinutes Int?     @map("duration_minutes")
+  sourceType      String?  @map("source_type")
+  sourceId        String?  @map("source_id")
+  metadata        Json     @default("{}")
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, membershipId, occurredAt])
+  @@index([organizationId, type])
+  @@map("participation_events")
+}
+
+model Shift {
+  id                    String    @id @default(cuid())
+  publicId              String    @unique @map("public_id")
+  organizationId        String    @map("organization_id")
+  membershipId          String    @map("membership_id")
+  userId                String    @map("user_id")
+  departmentId          String?   @map("department_id")
+  type                  String    @default("patrol")
+  status                String    @default("ACTIVE")
+  notes                 String?
+  startedAt             DateTime  @map("started_at")
+  endedAt               DateTime? @map("ended_at")
+  breakMinutes          Int       @default(0) @map("break_minutes")
+  activeMinutes         Int       @default(0) @map("active_minutes")
+  currentBreakStartedAt DateTime? @map("current_break_started_at")
+  correctedByUserId     String?   @map("corrected_by_user_id")
+  correctionNote        String?   @map("correction_note")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, membershipId, status])
+  @@index([organizationId, status])
+  @@map("shifts")
+}
+
+model OperationalSession {
+  id               String    @id @default(cuid())
+  publicId         String    @unique @map("public_id")
+  organizationId   String    @map("organization_id")
+  title            String
+  type             String    @default("general")
+  status           String    @default("DRAFT")
+  notes            String?
+  scheduledFor     DateTime? @map("scheduled_for")
+  startedAt        DateTime? @map("started_at")
+  endedAt          DateTime? @map("ended_at")
+  hostMembershipId String?   @map("host_membership_id")
+  erlcServer       String?   @map("erlc_server")
+  createdByUserId  String    @map("created_by_user_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("operational_sessions")
+}
+
+// Generic attendance engine — reusable by sessions, training, meetings, and any
+// future event via (contextType, contextId).
+model AttendanceRecord {
+  id               String    @id @default(cuid())
+  organizationId   String    @map("organization_id")
+  contextType      String    @map("context_type")
+  contextId        String    @map("context_id")
+  membershipId     String    @map("membership_id")
+  userId           String    @map("user_id")
+  status           String    @default("REGISTERED")
+  registeredAt     DateTime? @map("registered_at")
+  joinedAt         DateTime? @map("joined_at")
+  leftAt           DateTime? @map("left_at")
+  minutes          Int       @default(0)
+  note             String?
+  recordedByUserId String?   @map("recorded_by_user_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([contextType, contextId, membershipId])
+  @@index([organizationId, membershipId])
+  @@map("attendance_records")
+}
+
+model OperationsSettings {
+  id                       String   @id @default(cuid())
+  organizationId           String   @unique @map("organization_id")
+  requiredMinutesPerPeriod Int      @default(180) @map("required_minutes_per_period")
+  periodDays               Int      @default(7) @map("period_days")
+  maxShiftMinutes          Int      @default(720) @map("max_shift_minutes")
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("operations_settings")
 }
 
 // =============================================================================

@@ -7,12 +7,20 @@ as complete is faked; the public Plans page shows unbuilt Start-Up features as *
 ```text
 START-UP CAPABILITIES:
 - Total: 47
-- Verified Complete: 27
+- Verified Complete: 30
 - Partially Implemented: 11
-- Missing: 9
+- Missing: 6
 - Unsafe: 0
 - Simulator Only: 2 (server.locations, server.wanted_status — live PRC API has no data)
 ```
+
+## FEATURES COMPLETED (Phase 4 — Operational Time Platform)
+
+- `shifts.tracking`, `activity.tracking`, `sessions.management` — a shared participation-event
+  ledger with Shift, Session, and generic Attendance engines. Activity/metrics/history/analytics all
+  derive from the ledger (no duplicated time logic). Includes stale-shift auto-close worker and
+  notifications. See `docs/plans/OPERATIONAL_TIME_PLATFORM.md`. `@commandry/operations` domain (8
+  unit tests) + 3 API integration tests.
 
 ## FEATURES COMPLETED (Phase 3 — Identity)
 
@@ -40,9 +48,8 @@ START-UP CAPABILITIES:
 
 ## FEATURES STILL INCOMPLETE (Start-Up scope — NOT done in this task)
 
-Missing (9):
+Missing (6):
 
-- `shifts.tracking`, `activity.tracking`, `sessions.management` (Phase 4)
 - `applications.basic`, `forms.basic`, `training.basic` (Phase 5)
 - `website.builder` (Phase 6)
 - `ai.report_summary`, `ai.application_summary` (Phase 7 — needs AI infrastructure)

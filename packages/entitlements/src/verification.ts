@@ -29,6 +29,10 @@ const OVERRIDES: Partial<Record<CapabilityKey, VerificationStatus>> = {
   "roblox.account_linking": "verified",
   // Integrations core
   "discord.integration": "partial",
+  // Operational Time Platform (Phase 4)
+  "shifts.tracking": "verified",
+  "activity.tracking": "verified",
+  "sessions.management": "verified",
   // Server management (verified — ER:LC live suite)
   "server.live_status": "verified",
   "server.players": "verified",

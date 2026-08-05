@@ -63,3 +63,32 @@ export {
   type RobloxLinkView,
   type RobloxChallengeView,
 } from "./roblox/service";
+export {
+  recordParticipationEvent,
+  ensureOperationsSettings,
+  getMemberParticipation,
+  type MemberTimeline,
+  type OperationsSettingsView,
+} from "./operations/participation";
+export {
+  getActiveShift,
+  startShift,
+  startBreak,
+  endBreak,
+  endShift,
+  correctShift,
+  listShifts,
+  autoCloseStaleShifts,
+  type ShiftView,
+} from "./operations/shifts";
+export {
+  listSessions,
+  getSession,
+  createSession,
+  transitionSession,
+  registerForSession,
+  markSessionAttendance,
+  type SessionView,
+} from "./operations/sessions";
+export { recordAttendance, listAttendance, type AttendanceView } from "./operations/attendance";
+export { getOrgAnalytics, type OrgAnalytics } from "./operations/analytics";
