@@ -19,19 +19,23 @@
 
 - [x] Mandatory audit + six planning docs produced.
 - [x] Baseline test results recorded (35/35 Turbo tasks).
-- [ ] Granular `cad.*` permissions added (additive) and **enforced server-side** in
-      CAD routes; unauthorized members receive 403.
-- [ ] CAD domain core (unit-status + call-status state machines, call numbering,
+- [x] Granular `cad.*` permissions added (additive) and **enforced server-side** in
+      every CAD route via the shared engine (`buildActorForUser` + `authorize`);
+      unauthorized callers receive `ForbiddenError` (403). Role denial unit-tested.
+- [x] CAD domain core (unit-status + call-status state machines, call numbering,
       response-time metrics, record/warrant workflow states, expiration) implemented
-      as pure functions with passing unit tests.
-- [ ] Additive, non-destructive migration adds `CadAgency`, `CadSettings`, and
-      optional unit/call columns; existing data preserved (row counts unchanged).
-- [ ] Per-tenant CAD settings + feature flag exist and gate the module.
-- [ ] CAD Command Center renders real org data inside a CAD secondary navigation,
-      without replacing the main Ordinex dashboard or global navigation.
-- [ ] Consequential CAD actions write to the shared audit log.
-- [ ] Existing CAD dispatch/records workflows still function (no regression).
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` all green (≥ 35 tasks).
+      as pure functions with passing unit tests (9 domain tests).
+- [x] Additive, non-destructive migration adds `CadAgency`, `CadSettings`, and
+      optional unit/call columns; verified no DROP/DELETE — existing data preserved.
+- [x] Per-tenant CAD settings + feature flag (`v1`/`v2`, enabled, sections,
+      default landing, call-number prefix) exist and gate the module.
+- [x] CAD Command Center renders real org data (+ live ER:LC via the shared
+      integration) inside a CAD secondary navigation, without replacing the main
+      Ordinex dashboard or global navigation.
+- [x] Consequential CAD actions (call create/close, warrant create) write to the
+      shared audit log.
+- [x] Existing CAD dispatch/records workflows still function (no regression).
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm test` all green (35/35 tasks).
 
 ## Cross-cutting invariants (every milestone)
 

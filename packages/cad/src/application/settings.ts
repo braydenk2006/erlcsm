@@ -31,7 +31,7 @@ export async function getCadSettings(organizationId: string): Promise<CadSetting
     return {
       enabled: true,
       version: "v1",
-      defaultLanding: "dispatch",
+      defaultLanding: "command",
       enabledSections: DEFAULT_SECTIONS,
       callNumberPrefix: null,
     };
@@ -61,7 +61,7 @@ export async function updateCadSettings(
       organizationId,
       enabled: patch.enabled ?? true,
       version: patch.version ?? "v1",
-      defaultLanding: patch.defaultLanding ?? "dispatch",
+      defaultLanding: patch.defaultLanding ?? "command",
       enabledSections: patch.enabledSections ?? DEFAULT_SECTIONS,
       callNumberPrefix: patch.callNumberPrefix ?? null,
     },
