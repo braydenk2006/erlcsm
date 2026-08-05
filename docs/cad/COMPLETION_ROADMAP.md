@@ -20,6 +20,7 @@ Gating rule: **do not begin a milestone until the previous one passes** its exit
 ## Milestone 2 — CAD foundations
 
 **Part 1 (DONE):**
+
 - [x] Record lifecycle wired to the domain machine: DRAFT→SUBMITTED→UNDER_REVIEW→
       REVISION_REQUESTED→APPROVED/REJECTED→LOCKED→ARCHIVED, with record numbers,
       optimistic `version`, and edit-locking (approved/locked reject edits with 409).
@@ -38,6 +39,7 @@ Gating rule: **do not begin a milestone until the previous one passes** its exit
       cross-tenant/not-found; removed baseline `member` CAD read.
 
 **Part 2 (remaining):**
+
 - Real-time infrastructure: tenant-isolated, permission-aware SSE/WebSocket channels with
   reconnection, ordering, dedup, and conflict handling (replace polling).
 - Search infrastructure: trigram/GIN indexes or search read-model; cursor pagination on all
