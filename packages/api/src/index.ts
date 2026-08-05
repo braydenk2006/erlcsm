@@ -119,3 +119,12 @@ export {
   syncActiveShiftsPrc,
   reconcileMissedShifts,
 } from "./operations/scheduling-jobs";
+export {
+  syncShiftPresence,
+  finalizeShiftLoggedMinutes,
+  getPresenceReview,
+  adjustLoggedMinutes,
+  submitCorrectionRequest,
+  decideCorrectionRequest,
+  type PresenceReviewRow,
+} from "./operations/presence-tracking";

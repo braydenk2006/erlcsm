@@ -8,8 +8,36 @@ data only supplements it.
 
 While a shift is `ACTIVE` with an ER:LC server, the worker (`syncActiveShiftsPrc`) periodically
 pulls supported live data (current players, Roblox IDs, teams, callsigns) and correlates Roblox IDs
-with linked `RobloxIdentity` records. Matches are stored in `PrcPresenceMatch` (first/last seen,
-accrued presence minutes, team, callsign).
+with linked `RobloxIdentity` records. For each linked player it opens/closes **presence intervals**
+(`PresenceInterval`) — the authoritative source of logged minutes.
+
+## Verified logged minutes (authoritative)
+
+Logged/activity minutes are derived **only** from verified private-server presence intervals,
+computed server-side. The scheduled duration, attendance status, Discord participation, page
+activity, and manual check-in never award minutes.
+
+- Interval-based: each disconnect/rejoin is a separate interval; overlaps are merged (no
+  double-count); gaps within the configured reconnection tolerance are joined.
+- Exact seconds are summed first, clamped to the allowed window (scheduled/actual start ± grace),
+  then the org rounding policy is applied for display (`computeLoggedMinutes`). Storage is exact.
+- A minimum-presence gate and a max-countable cap are applied. Example: present 6:08–6:47 (39m) +
+  6:55–7:42 (47m) → **86 logged minutes**, not the 120-minute scheduled shift.
+- On completion, `finalizeShiftLoggedMinutes` writes `ShiftLoggedMinutes` (automatic + adjustment =
+  final) and emits one `SHIFT_COMPLETED` participation event per member with `durationMinutes =
+final` — credited to the shared activity ledger **exactly once** (stable `sourceId`).
+
+**Attendance status is separate from logged minutes.** A member may be Present with 42 logged
+minutes; Excused with 0. Only eligible-team presence counts; ineligible-team intervals are recorded
+but excluded from minutes unless an authorized host approves an exception.
+
+## Manual adjustments & corrections
+
+Managers (`shifts.attendance.override`) adjust final minutes without overwriting the automatic
+calculation (`ShiftLoggedMinutes` stores automatic + adjustment + final); post-completion
+adjustments emit a `MANUAL_ADJUSTMENT` delta so activity stays correct. Staff can submit correction
+requests (`CorrectionRequest`) which reviewers approve/partial/deny/ask-info; approvals apply through
+the same adjustment path. All are audited.
 
 ## Policies (default: SUGGEST_ONLY)
 

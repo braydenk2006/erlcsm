@@ -216,6 +216,9 @@ model Organization {
   prcPresenceMatches    PrcPresenceMatch[]
   shiftRecurrences      ShiftRecurrence[]
   shiftSchedulingSettings ShiftSchedulingSettings?
+  presenceIntervals     PresenceInterval[]
+  shiftLoggedMinutes    ShiftLoggedMinutes[]
+  correctionRequests    CorrectionRequest[]
 
   @@index([status])
   @@map("organizations")
@@ -1270,6 +1273,7 @@ model ScheduledShift {
   claimPolicy          String    @default("FIRST_ELIGIBLE") @map("claim_policy")
   attendancePolicy     String    @default("MANUAL") @map("attendance_policy")
   prcSyncPolicy        String    @default("SUGGEST_ONLY") @map("prc_sync_policy")
+  eligibleTeams        String[]  @default([]) @map("eligible_teams")
   status               String    @default("DRAFT")
   hostMembershipId     String?   @map("host_membership_id")
   coHostMembershipIds  String[]  @default([]) @map("co_host_membership_ids")
@@ -1400,12 +1404,109 @@ model ShiftSchedulingSettings {
   reminderOffsets       Int[]    @default([1440, 60, 15]) @map("reminder_offsets")
   allowPublishWithoutHost Boolean @default(false) @map("allow_publish_without_host")
   startWindowMinutes    Int      @default(30) @map("start_window_minutes")
+  // Verified private-server logged-minute policy
+  graceBeforeMinutes    Int      @default(15) @map("grace_before_minutes")
+  graceAfterMinutes     Int      @default(15) @map("grace_after_minutes")
+  reconnectionToleranceSeconds Int @default(0) @map("reconnection_tolerance_seconds")
+  minPresenceSeconds    Int      @default(60) @map("min_presence_seconds")
+  roundingPolicy        String   @default("EXACT") @map("rounding_policy")
+  maxCountableMinutes   Int      @default(100000) @map("max_countable_minutes")
+  windowMode            String   @default("SCHEDULED_START") @map("window_mode")
+  requireHostConfirmation Boolean @default(false) @map("require_host_confirmation")
+  blockCompletionOnDiscrepancy Boolean @default(false) @map("block_completion_on_discrepancy")
+  eligibleTeams         String[] @default([]) @map("eligible_teams")
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("shift_scheduling_settings")
+}
+
+// Raw verified private-server presence intervals. Logged minutes are summed from
+// these in exact seconds — never from scheduled duration or attendance status.
+model PresenceInterval {
+  id                   String    @id @default(cuid())
+  organizationId       String    @map("organization_id")
+  scheduledShiftId     String    @map("scheduled_shift_id")
+  membershipId         String    @map("membership_id")
+  userId               String    @map("user_id")
+  robloxUserId         String    @map("roblox_user_id")
+  erlcServer           String?   @map("erlc_server")
+  firstSeenAt          DateTime  @map("first_seen_at")
+  lastSeenAt           DateTime  @map("last_seen_at")
+  joinAt               DateTime? @map("join_at")
+  leaveAt              DateTime? @map("leave_at")
+  intervalStart        DateTime  @map("interval_start")
+  intervalEnd          DateTime? @map("interval_end")
+  durationSeconds      Int       @default(0) @map("duration_seconds")
+  team                 String?
+  callsign             String?
+  permissionLevel      String?   @map("permission_level")
+  source               String    @default("prc_snapshot")
+  confidence           String    @default("CONFIRMED")
+  reconciliationStatus String    @default("OPEN") @map("reconciliation_status")
+  open                 Boolean   @default(true)
+  eligible             Boolean   @default(true)
+  metadata             Json      @default("{}")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([scheduledShiftId, membershipId])
+  @@index([scheduledShiftId, robloxUserId, open])
+  @@map("presence_intervals")
+}
+
+// Finalized verified minutes per member per shift (automatic + adjustment = final).
+model ShiftLoggedMinutes {
+  id                   String    @id @default(cuid())
+  organizationId       String    @map("organization_id")
+  scheduledShiftId     String    @map("scheduled_shift_id")
+  membershipId         String    @map("membership_id")
+  userId               String    @map("user_id")
+  automaticMinutes     Int       @default(0) @map("automatic_minutes")
+  adjustmentMinutes    Int       @default(0) @map("adjustment_minutes")
+  finalMinutes         Int       @default(0) @map("final_minutes")
+  rawSeconds           Int       @default(0) @map("raw_seconds")
+  eligibleSeconds      Int       @default(0) @map("eligible_seconds")
+  confidence           String    @default("CONFIRMED")
+  reconciliationStatus String    @default("CONFIRMED") @map("reconciliation_status")
+  finalizedAt          DateTime? @map("finalized_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([scheduledShiftId, membershipId])
+  @@index([organizationId, membershipId])
+  @@map("shift_logged_minutes")
+}
+
+model CorrectionRequest {
+  id                String    @id @default(cuid())
+  publicId          String    @unique @map("public_id")
+  organizationId    String    @map("organization_id")
+  scheduledShiftId  String    @map("scheduled_shift_id")
+  membershipId      String    @map("membership_id")
+  userId            String    @map("user_id")
+  calculatedMinutes Int       @map("calculated_minutes")
+  requestedMinutes  Int       @map("requested_minutes")
+  explanation       String
+  attachmentUrl     String?   @map("attachment_url")
+  status            String    @default("SUBMITTED")
+  reviewerUserId    String?   @map("reviewer_user_id")
+  decisionNote      String?   @map("decision_note")
+  appliedMinutes    Int?      @map("applied_minutes")
+  decidedAt         DateTime? @map("decided_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, membershipId])
+  @@map("correction_requests")
 }
 
 // =============================================================================

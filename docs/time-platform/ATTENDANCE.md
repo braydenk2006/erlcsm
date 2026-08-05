@@ -18,10 +18,11 @@ decision always wins.
 
 ## Recording
 
-Hosts/managers (`shifts.attendance.manage`) mark present/late/excused/absent/left-early/removed, set
-minutes, and add attendees. On completion, each attended record emits a `SHIFT_COMPLETED`
-participation event into the shared ledger (duration = recorded minutes or the shift duration), so
-activity, metrics, history, and analytics update from one source.
+Hosts/managers (`shifts.attendance.manage`) mark present/late/excused/absent/left-early/removed and
+add attendees. **Attendance status is separate from logged minutes** — marking Present does not award
+minutes. For scheduled shifts, logged minutes are computed from verified private-server presence
+intervals (see `PRC_ATTENDANCE_SYNC.md`), and the shared-ledger `SHIFT_COMPLETED` credit uses those
+**verified** minutes, not the scheduled duration or attendance status.
 
 ## Completion
 

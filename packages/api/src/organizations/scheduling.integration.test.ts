@@ -63,8 +63,8 @@ describe.skipIf(!hasDb)("scheduled shift workflow", () => {
       actor,
       organizationId: orgId,
       title: "Evening Patrol",
-      scheduledStart: new Date(Date.now() + 3600_000),
-      scheduledEnd: new Date(Date.now() + 3 * 3600_000),
+      scheduledStart: new Date(Date.now() - 5 * 60_000),
+      scheduledEnd: new Date(Date.now() + 115 * 60_000),
       erlcServer: "Main",
       ...overrides,
     });
@@ -95,6 +95,25 @@ describe.skipIf(!hasDb)("scheduled shift workflow", () => {
       membershipId: actor.membershipId,
       status: "PRESENT",
       minutes: 90,
+    });
+    // Verified private-server presence within the window is what earns minutes.
+    await prisma.presenceInterval.create({
+      data: {
+        organizationId: orgId,
+        scheduledShiftId: shift.id,
+        membershipId: actor.membershipId,
+        userId: actor.userId,
+        robloxUserId: "999100",
+        firstSeenAt: new Date(Date.now() - 4 * 60_000),
+        lastSeenAt: new Date(),
+        intervalStart: new Date(Date.now() - 4 * 60_000),
+        intervalEnd: new Date(),
+        durationSeconds: 240,
+        team: "Police",
+        eligible: true,
+        open: false,
+        reconciliationStatus: "CLOSED",
+      },
     });
 
     const before = (
@@ -153,16 +172,15 @@ describe.skipIf(!hasDb)("scheduled shift workflow", () => {
     await claimShift({ actor, organizationId: orgId, id: shift.id });
     await startScheduledShift({ actor, organizationId: orgId, id: shift.id, override: true });
 
+    // Sync opens a verified presence interval and (AUTO_PRESENT) sets attendance
+    // STATUS. Minutes are NOT awarded here — they come from intervals at completion.
     const first = await syncShiftPrcPresence({ organizationId: orgId, id: shift.id });
     expect(first.matched).toBeGreaterThanOrEqual(1); // owner detected via linked identity
-    // First pass has ~0 presence minutes -> below threshold -> not applied yet.
-    // Age the match so the second sync accrues enough presence.
-    await prisma.prcPresenceMatch.updateMany({
-      where: { scheduledShiftId: shift.id },
-      data: { lastSeenAt: new Date(Date.now() - 30 * 60_000) },
+    expect(first.applied).toBeGreaterThanOrEqual(1); // attendance STATUS auto-set
+    const interval = await prisma.presenceInterval.findFirst({
+      where: { scheduledShiftId: shift.id, membershipId: actor.membershipId },
     });
-    const second = await syncShiftPrcPresence({ organizationId: orgId, id: shift.id });
-    expect(second.applied).toBeGreaterThanOrEqual(1);
+    expect(interval).not.toBeNull();
     const auto = await prisma.attendanceRecord.findUnique({
       where: {
         contextType_contextId_membershipId: {

@@ -281,3 +281,4 @@ export function formatMinutes(minutes: number): string {
 }
 
 export * from "./scheduling";
+export * from "./presence";

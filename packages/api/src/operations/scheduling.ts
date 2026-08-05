@@ -1,16 +1,11 @@
 import { recordAuditEvent } from "@commandry/audit";
 import { prisma } from "@commandry/database";
-import {
-  getDiscordClientForOrganization,
-  getErlcClientForOrganization,
-} from "@commandry/integrations";
+import { getDiscordClientForOrganization } from "@commandry/integrations";
 import {
   DEFAULT_ANNOUNCEMENT_TEMPLATE,
   canTransitionScheduledShift,
   detectConflicts,
   evaluateEligibility,
-  minutesBetween,
-  prcAttendanceDecision,
   renderAnnouncementTemplate,
   type PrcSyncPolicy,
   type ScheduledShiftStatus,
@@ -26,6 +21,12 @@ import {
 import { createNotification, notifyUsers } from "../notifications/service";
 import { recordAttendance } from "./attendance";
 import { recordParticipationEvent } from "./participation";
+import {
+  finalizeShiftLoggedMinutes,
+  getPresenceReview,
+  syncShiftPresence,
+  type PresenceReviewRow,
+} from "./presence-tracking";
 
 function ensurePerm(actor: Actor, organizationId: string, action: Action): void {
   const decision = authorize({ actor, organizationId, action });
@@ -254,6 +255,7 @@ export type ScheduledShiftDetail = {
     presenceMinutes: number;
     applied: boolean;
   }[];
+  loggedMinutes: PresenceReviewRow[];
 };
 
 export async function getScheduledShiftDetail(input: {
@@ -287,9 +289,14 @@ export async function getScheduledShiftDetail(input: {
     select: { id: true, name: true },
   });
   const nameById = new Map(users.map((u) => [u.id, u.name]));
+  const loggedMinutes = await getPresenceReview({
+    organizationId: input.organizationId,
+    shiftId: shift.id,
+  });
 
   return {
     shift: toView(shift),
+    loggedMinutes,
     claims: claims.map((c) => ({
       id: c.id,
       membershipId: c.membershipId,
@@ -869,9 +876,10 @@ export async function markShiftAttendance(input: {
 }
 
 /**
- * PRC synchronization for an active shift. Correlates live/simulated players to
- * linked Roblox identities, records presence matches, and applies attendance per
- * the shift's policy. Never overwrites a manual attendance record.
+ * PRC synchronization for an active shift. Delegates verified presence-interval
+ * tracking to the presence engine (the authoritative source of logged minutes),
+ * then applies attendance STATUS per policy. Attendance status is separate from
+ * verified logged minutes — marking present never awards minutes.
  */
 export async function syncShiftPrcPresence(input: {
   organizationId: string;
@@ -882,103 +890,41 @@ export async function syncShiftPrcPresence(input: {
   });
   if (!shift || shift.status !== "ACTIVE") return { matched: 0, applied: 0 };
 
-  let players;
-  try {
-    const { client } = await getErlcClientForOrganization(input.organizationId);
-    players = await client.getPlayers();
-  } catch {
-    // PRC outage: preserve the shift, leave attendance to manual entry.
-    await prisma.scheduledShift.update({
-      where: { id: shift.id },
-      data: { prcSyncState: "STALE" },
-    });
-    return { matched: 0, applied: 0 };
-  }
-
-  const now = new Date();
-  let matched = 0;
-  let applied = 0;
+  const res = await syncShiftPresence({ organizationId: input.organizationId, id: input.id });
   const policy = shift.prcSyncPolicy as PrcSyncPolicy;
+  let applied = 0;
 
-  for (const player of players) {
-    const robloxUserId = String(player.id);
-    const identity = await prisma.robloxIdentity.findUnique({ where: { robloxUserId } });
-    // A player with no linked Roblox identity is never matched by username alone.
-    if (!identity) continue;
-    matched += 1;
-
-    const existing = await prisma.prcPresenceMatch.findUnique({
-      where: { scheduledShiftId_robloxUserId: { scheduledShiftId: shift.id, robloxUserId } },
+  if (policy === "AUTO_PRESENT" || policy === "AUTO_CHECKIN") {
+    const intervals = await prisma.presenceInterval.findMany({
+      where: { scheduledShiftId: shift.id, eligible: true },
     });
-    const presenceMinutes = existing
-      ? existing.presenceMinutes + Math.max(1, minutesBetween(existing.lastSeenAt, now))
-      : 0;
-    const match = await prisma.prcPresenceMatch.upsert({
-      where: { scheduledShiftId_robloxUserId: { scheduledShiftId: shift.id, robloxUserId } },
-      create: {
-        organizationId: input.organizationId,
-        scheduledShiftId: shift.id,
-        robloxUserId,
-        robloxUsername: player.name,
-        membershipId: identity
-          ? ((
-              await prisma.membership.findFirst({
-                where: { organizationId: input.organizationId, userId: identity.userId },
-                select: { id: true },
-              })
-            )?.id ?? null)
-          : null,
-        userId: identity?.userId ?? null,
-        team: player.team,
-        callsign: player.callsign,
-        firstSeenAt: now,
-        lastSeenAt: now,
-        presenceMinutes: 0,
-      },
-      update: { lastSeenAt: now, presenceMinutes, team: player.team, callsign: player.callsign },
-    });
-
-    const decision = prcAttendanceDecision(policy, match.presenceMinutes);
-    if (
-      (decision === "present" || decision === "checkin") &&
-      match.membershipId &&
-      match.userId &&
-      !match.applied
-    ) {
+    const seen = new Set<string>();
+    for (const interval of intervals) {
+      if (seen.has(interval.membershipId)) continue;
+      seen.add(interval.membershipId);
       const manual = await prisma.attendanceRecord.findUnique({
         where: {
           contextType_contextId_membershipId: {
             contextType: CTX,
             contextId: shift.id,
-            membershipId: match.membershipId,
+            membershipId: interval.membershipId,
           },
         },
       });
-      // Do not overwrite a manually confirmed attendance record with automated data.
-      if (!manual || manual.recordedByUserId === null) {
-        await recordAttendance({
-          organizationId: input.organizationId,
-          contextType: CTX,
-          contextId: shift.id,
-          membershipId: match.membershipId,
-          userId: match.userId,
-          status: decision === "present" ? "PRESENT" : "REGISTERED",
-        });
-        await prisma.prcPresenceMatch.update({ where: { id: match.id }, data: { applied: true } });
-        await recordShiftEvent(input.organizationId, shift.id, "PRC_MATCH_APPLIED", null, {
-          robloxUserId,
-          decision,
-        });
-        applied += 1;
-      }
-    } else if (decision === "suggest") {
-      await recordShiftEvent(input.organizationId, shift.id, "PRC_MATCH_DETECTED", null, {
-        robloxUserId,
+      // Manual attendance always takes precedence over automated status.
+      if (manual && manual.recordedByUserId !== null) continue;
+      await recordAttendance({
+        organizationId: input.organizationId,
+        contextType: CTX,
+        contextId: shift.id,
+        membershipId: interval.membershipId,
+        userId: interval.userId,
+        status: policy === "AUTO_PRESENT" ? "PRESENT" : "REGISTERED",
       });
+      applied += 1;
     }
   }
-  await prisma.scheduledShift.update({ where: { id: shift.id }, data: { prcSyncState: "ACTIVE" } });
-  return { matched, applied };
+  return { matched: res.matched, applied };
 }
 
 export async function completeScheduledShift(input: {
@@ -992,8 +938,6 @@ export async function completeScheduledShift(input: {
   if (shift.status !== "ACTIVE") throw new ValidationError("Only an active shift can be completed");
 
   const actualEnd = new Date();
-  const actualStart = shift.actualStart ?? shift.scheduledStart;
-  const durationMinutes = minutesBetween(actualStart, actualEnd);
 
   await prisma.scheduledShift.update({
     where: { id: shift.id },
@@ -1005,43 +949,48 @@ export async function completeScheduledShift(input: {
     },
   });
 
-  // Emit participation credit into the SHARED ledger for host + present attendees.
-  const attendance = await prisma.attendanceRecord.findMany({
-    where: { organizationId: input.organizationId, contextType: CTX, contextId: shift.id },
-  });
-  const credited = new Set<string>();
-  for (const record of attendance) {
-    if (!["PRESENT", "LATE", "LEFT_EARLY"].includes(record.status)) continue;
-    await recordParticipationEvent({
+  // Verified logged minutes come ONLY from private-server presence intervals —
+  // never from the scheduled duration or attendance status. Finalize per member
+  // and credit the shared activity ledger exactly once (stable source id).
+  const finals = await finalizeShiftLoggedMinutes(
+    {
+      id: shift.id,
       organizationId: input.organizationId,
-      membershipId: record.membershipId,
-      userId: record.userId,
-      type: "SHIFT_COMPLETED",
-      occurredAt: actualEnd,
-      durationMinutes: record.minutes > 0 ? record.minutes : durationMinutes,
-      sourceType: CTX,
-      sourceId: shift.id,
-      metadata: { scheduled: true, breakMinutes: 0 },
-    });
-    credited.add(record.membershipId);
-  }
-  // Ensure the host is credited even if not in the attendance list.
-  if (shift.hostMembershipId && !credited.has(shift.hostMembershipId)) {
-    const host = await prisma.membership.findUnique({ where: { id: shift.hostMembershipId } });
-    if (host) {
-      await recordParticipationEvent({
+      scheduledStart: shift.scheduledStart,
+      scheduledEnd: shift.scheduledEnd,
+      actualStart: shift.actualStart,
+    },
+    actualEnd,
+  );
+  let credited = 0;
+  let totalMinutes = 0;
+  for (const [membershipId, { userId, finalMinutes }] of finals) {
+    if (finalMinutes <= 0) continue;
+    const already = await prisma.participationEvent.findFirst({
+      where: {
         organizationId: input.organizationId,
-        membershipId: host.id,
-        userId: host.userId,
-        type: "SHIFT_COMPLETED",
-        occurredAt: actualEnd,
-        durationMinutes,
+        membershipId,
         sourceType: CTX,
         sourceId: shift.id,
-        metadata: { scheduled: true, host: true, breakMinutes: 0 },
-      });
-    }
+        type: "SHIFT_COMPLETED",
+      },
+    });
+    if (already) continue; // exactly once
+    await recordParticipationEvent({
+      organizationId: input.organizationId,
+      membershipId,
+      userId,
+      type: "SHIFT_COMPLETED",
+      occurredAt: actualEnd,
+      durationMinutes: finalMinutes,
+      sourceType: CTX,
+      sourceId: shift.id,
+      metadata: { scheduled: true, verified: true, breakMinutes: 0 },
+    });
+    credited += 1;
+    totalMinutes += finalMinutes;
   }
+  const durationMinutes = totalMinutes;
 
   // Complete/cancel the Discord event where supported.
   if (shift.discordEventId) {
@@ -1056,11 +1005,11 @@ export async function completeScheduledShift(input: {
   }
   await recordShiftEvent(input.organizationId, shift.id, "SHIFT_COMPLETED", input.actor.userId, {
     durationMinutes,
-    attendees: credited.size,
+    attendees: credited,
   });
   await recordShiftEvent(input.organizationId, shift.id, "SHIFT_SUMMARY", input.actor.userId, {
     durationMinutes,
-    attendees: credited.size,
+    attendees: credited,
   });
   await recordAuditEvent({
     organizationId: input.organizationId,

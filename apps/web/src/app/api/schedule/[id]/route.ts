@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
+  adjustLoggedMinutes,
   assignHost,
   cancelScheduledShift,
   claimShift,
@@ -11,6 +12,7 @@ import {
   openClaiming,
   publishShift,
   startScheduledShift,
+  submitCorrectionRequest,
   syncShiftPrcPresence,
   withdrawClaim,
 } from "@commandry/api";
@@ -41,6 +43,17 @@ const patchSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("prc_sync") }),
   z.object({ action: z.literal("complete"), notes: z.string().max(2000).optional() }),
   z.object({ action: z.literal("cancel"), reason: z.string().min(3).max(500) }),
+  z.object({
+    action: z.literal("adjust_minutes"),
+    membershipId: z.string(),
+    finalMinutes: z.number().int().min(0).max(100000),
+    reason: z.string().min(3).max(500),
+  }),
+  z.object({
+    action: z.literal("correction_request"),
+    requestedMinutes: z.number().int().min(0).max(100000),
+    explanation: z.string().min(3).max(2000),
+  }),
 ]);
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -102,6 +115,25 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         break;
       case "cancel":
         await cancelScheduledShift({ ...base, reason: d.reason });
+        break;
+      case "adjust_minutes":
+        await adjustLoggedMinutes({
+          actor,
+          organizationId,
+          shiftId: id,
+          membershipId: d.membershipId,
+          finalMinutes: d.finalMinutes,
+          reason: d.reason,
+        });
+        break;
+      case "correction_request":
+        await submitCorrectionRequest({
+          actor,
+          organizationId,
+          shiftId: id,
+          requestedMinutes: d.requestedMinutes,
+          explanation: d.explanation,
+        });
         break;
     }
     return NextResponse.json(result ?? { ok: true });

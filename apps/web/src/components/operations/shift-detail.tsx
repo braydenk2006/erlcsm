@@ -35,6 +35,26 @@ type Detail = {
     presenceMinutes: number;
     applied: boolean;
   }[];
+  loggedMinutes: {
+    membershipId: string;
+    name: string;
+    firstSeen: string | null;
+    lastSeen: string | null;
+    intervals: {
+      start: string;
+      end: string;
+      seconds: number;
+      team: string | null;
+      eligible: boolean;
+      confidence: string;
+      reconciliation: string;
+    }[];
+    automaticMinutes: number;
+    adjustmentMinutes: number;
+    finalMinutes: number;
+    confidence: string;
+    reconciliation: string;
+  }[];
 };
 
 async function api(path: string, init?: RequestInit) {
@@ -300,6 +320,87 @@ export function ShiftDetail({
                 <span className="text-xs text-[var(--cmd-fg-muted)]">
                   {m.applied ? "applied" : "suggested"} · {m.presenceMinutes}m
                 </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {/* Verified server minutes (derived from private-server presence, not scheduled duration) */}
+      {detail.loggedMinutes.length > 0 ? (
+        <div className="cmd-glass rounded-[var(--cmd-radius)] p-3">
+          <p className="mb-2 text-xs font-semibold uppercase text-[var(--cmd-fg-muted)]">
+            Verified server minutes
+          </p>
+          <ul className="space-y-3">
+            {detail.loggedMinutes.map((row) => (
+              <li
+                key={row.membershipId}
+                className="border-b border-[var(--cmd-border)]/40 pb-3 text-sm last:border-0"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-medium">{row.name}</span>
+                  <span>
+                    <span className="text-[var(--cmd-fg-muted)]">Final logged: </span>
+                    <span className="font-semibold">{row.finalMinutes}m</span>
+                    {row.adjustmentMinutes !== 0 ? (
+                      <span className="text-xs text-[var(--cmd-accent)]">
+                        {" "}
+                        (auto {row.automaticMinutes}m {row.adjustmentMinutes > 0 ? "+" : ""}
+                        {row.adjustmentMinutes})
+                      </span>
+                    ) : null}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-[var(--cmd-fg-muted)]">
+                  {row.firstSeen
+                    ? `First confirmed join ${new Date(row.firstSeen).toLocaleTimeString()}`
+                    : "No confirmed join"}
+                  {row.lastSeen
+                    ? ` · Last confirmed leave ${new Date(row.lastSeen).toLocaleTimeString()}`
+                    : ""}
+                  {row.confidence !== "CONFIRMED"
+                    ? ` · ${row.confidence.replace(/_/g, " ").toLowerCase()}`
+                    : ""}
+                </p>
+                {row.intervals.length > 0 ? (
+                  <ul className="mt-1 text-xs text-[var(--cmd-fg-muted)]">
+                    {row.intervals.map((interval, idx) => (
+                      <li key={idx}>
+                        {new Date(interval.start).toLocaleTimeString()}–
+                        {new Date(interval.end).toLocaleTimeString()} ·{" "}
+                        {Math.round(interval.seconds / 60)}m{" "}
+                        {interval.team ? `· ${interval.team}` : ""}{" "}
+                        {interval.eligible ? "" : "· ineligible"}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {canManage && (s.status === "ACTIVE" || s.status === "COMPLETED") ? (
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={0}
+                      placeholder="Final minutes"
+                      defaultValue={row.finalMinutes}
+                      className="h-8 w-28 rounded-[var(--cmd-radius)] border border-[var(--cmd-border)] bg-[var(--cmd-bg-muted)] px-2 text-sm"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          const value = Number((e.target as HTMLInputElement).value);
+                          void act({
+                            action: "adjust_minutes",
+                            membershipId: row.membershipId,
+                            finalMinutes: value,
+                            reason: "Host review adjustment",
+                          });
+                        }
+                      }}
+                    />
+                    <span className="text-xs text-[var(--cmd-fg-muted)]">
+                      press Enter to adjust
+                    </span>
+                  </div>
+                ) : null}
               </li>
             ))}
           </ul>
