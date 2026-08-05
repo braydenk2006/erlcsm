@@ -1,11 +1,16 @@
 import { getErlcIntegration } from "@commandry/integrations";
 import { ErlcConnectForm } from "@/components/integrations/erlc-connect-form";
 import { requireActiveOrganization } from "@/lib/organization";
+import { hasFeature } from "@/lib/entitlements";
+import { PlanRequired } from "@/components/plan-required";
 
 export const metadata = { title: "Integrations" };
 
 export default async function IntegrationsPage() {
   const { organizationId, organization } = await requireActiveOrganization();
+  if (!(await hasFeature(organizationId, "server.health_monitoring"))) {
+    return <PlanRequired feature="server.health_monitoring" />;
+  }
   const integration = await getErlcIntegration(organizationId);
 
   return (

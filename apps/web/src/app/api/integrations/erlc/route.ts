@@ -3,6 +3,7 @@ import { z } from "zod";
 import { connectErlc, disconnectErlc, getErlcIntegration } from "@commandry/integrations";
 import { ValidationError } from "@commandry/shared";
 import { requireActiveOrganization } from "@/lib/organization";
+import { requireFeature, assertWithinLimit } from "@/lib/entitlements";
 import { handleRouteError } from "@/lib/api";
 
 const connectSchema = z.object({
@@ -27,6 +28,12 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { organizationId } = await requireActiveOrganization();
+    await requireFeature(organizationId, "server.health_monitoring");
+    const existing = await getErlcIntegration(organizationId);
+    // Only count against the ER:LC server limit when adding a new connection.
+    if (!existing.hasCredentials) {
+      await assertWithinLimit(organizationId, "erlc_servers.max");
+    }
     const parsed = connectSchema.safeParse(await request.json());
     if (!parsed.success) {
       throw new ValidationError(parsed.error.issues[0]?.message ?? "Invalid credentials");

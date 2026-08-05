@@ -1,5 +1,5 @@
 {
-  "name": "@commandry/api",
+  "name": "@commandry/entitlements",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -14,16 +14,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src --max-warnings=0",
     "test": "vitest run",
-    "test:integration": "vitest run --config vitest.integration.config.ts",
     "generate": "node -e \"process.exit(0)\""
-  },
-  "dependencies": {
-    "@commandry/audit": "workspace:*",
-    "@commandry/database": "workspace:*",
-    "@commandry/entitlements": "workspace:*",
-    "@commandry/permissions": "workspace:*",
-    "@commandry/shared": "workspace:*",
-    "@commandry/validation": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^4.1.10"

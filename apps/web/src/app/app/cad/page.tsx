@@ -2,11 +2,16 @@ import { getCadSettings } from "@commandry/cad";
 import { EmptyState } from "@commandry/ui";
 import { CadWorkspace } from "@/components/cad/cad-workspace";
 import { requireActiveOrganization } from "@/lib/organization";
+import { hasFeature } from "@/lib/entitlements";
+import { PlanRequired } from "@/components/plan-required";
 
 export const metadata = { title: "CAD / MDT" };
 
 export default async function CadPage() {
   const { organizationId } = await requireActiveOrganization();
+  if (!(await hasFeature(organizationId, "cad.access"))) {
+    return <PlanRequired feature="cad.access" />;
+  }
   const settings = await getCadSettings(organizationId);
 
   return (

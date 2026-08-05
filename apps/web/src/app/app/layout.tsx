@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
-import { listMembershipsForUser } from "@commandry/api";
+import { buildActorForUser, listMembershipsForUser } from "@commandry/api";
+import { authorize } from "@commandry/permissions";
 import { getSession } from "@/lib/session";
+import { getManifest } from "@/lib/entitlements";
+import { NAV_REGISTRY, type NavItem } from "@/lib/nav-registry";
 import { AppShell } from "@/components/app-shell";
 
 // Every route under /app is authenticated and renders per-user, per-organization
@@ -24,6 +27,30 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     memberships[0] ??
     null;
 
+  // Build navigation from the entitlement manifest + actor permissions. Only
+  // entries whose feature is entitled AND permission is satisfied are rendered.
+  let nav: NavItem[] = [];
+  if (activeMembership) {
+    const orgId = activeMembership.organizationId;
+    const [manifest, actor] = await Promise.all([
+      getManifest(orgId),
+      buildActorForUser(session.user.id, orgId),
+    ]);
+    nav = NAV_REGISTRY.filter((entry) => {
+      if (entry.feature && !manifest.hasFeature(entry.feature)) return false;
+      if (entry.permission) {
+        const decision = authorize({ actor, organizationId: orgId, action: entry.permission });
+        if (!decision.allowed) return false;
+      }
+      return true;
+    }).map((entry) => ({
+      key: entry.key,
+      label: entry.label,
+      href: entry.href,
+      iconName: entry.iconName,
+    }));
+  }
+
   return (
     <AppShell
       user={{
@@ -44,10 +71,10 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
               publicId: activeMembership.organization.publicId,
               name: activeMembership.organization.name,
               slug: activeMembership.organization.slug,
-              enabledModules: activeMembership.organization.enabledModules,
             }
           : null
       }
+      nav={nav}
     >
       {children}
     </AppShell>

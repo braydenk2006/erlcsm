@@ -2,6 +2,7 @@ import { buildActorForUser } from "@commandry/api";
 import { authorize, type Action } from "@commandry/permissions";
 import { ForbiddenError } from "@commandry/shared";
 import { requireActiveOrganization, type ActiveOrganizationContext } from "@/lib/organization";
+import { requireFeature } from "@/lib/entitlements";
 
 /**
  * Server-side authorization for the active organization. Reuses the shared
@@ -19,5 +20,12 @@ export async function requirePermission(action: Action): Promise<ActiveOrganizat
   return context;
 }
 
-/** CAD-scoped alias of {@link requirePermission}. */
-export const requireCadPermission = requirePermission;
+/**
+ * CAD authorization: the caller's org must be entitled to `cad.access` (feature
+ * gate, 402) AND the caller must hold the granular CAD action (permission, 403).
+ */
+export async function requireCadPermission(action: Action): Promise<ActiveOrganizationContext> {
+  const context = await requirePermission(action);
+  await requireFeature(context.organizationId, "cad.access");
+  return context;
+}

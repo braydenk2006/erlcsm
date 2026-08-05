@@ -1,10 +1,15 @@
 import { LiveServerDashboard } from "@/components/live/live-server-dashboard";
 import { requireActiveOrganization } from "@/lib/organization";
+import { hasFeature } from "@/lib/entitlements";
+import { PlanRequired } from "@/components/plan-required";
 
 export const metadata = { title: "Live Server" };
 
 export default async function LiveServerPage() {
-  await requireActiveOrganization();
+  const { organizationId } = await requireActiveOrganization();
+  if (!(await hasFeature(organizationId, "server.live_status"))) {
+    return <PlanRequired feature="server.live_status" />;
+  }
   return (
     <div className="space-y-5">
       <div>

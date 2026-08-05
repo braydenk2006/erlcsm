@@ -181,6 +181,8 @@ model Organization {
   cadSettings           CadSettings?
   cadStatusEvents       CadStatusEvent[]
   cadPenalCharges       CadPenalCharge[]
+  subscription          Subscription?
+  usageCounters         UsageCounter[]
 
   @@index([status])
   @@map("organizations")
@@ -503,6 +505,48 @@ enum IntegrationStatus {
   CONNECTED
   DEGRADED
   ERROR
+}
+
+// Subscription drives the organization's entitlement manifest. Plan features and
+// limits live in @commandry/entitlements config; this row holds only the org's
+// subscription state + overrides/grants/add-ons (JSON), never scattered plan logic.
+model Subscription {
+  id                     String    @id @default(cuid())
+  organizationId         String    @unique @map("organization_id")
+  planKey                String    @default("startup") @map("plan_key")
+  status                 String    @default("active")
+  provider               String?
+  providerSubscriptionId String?   @map("provider_subscription_id")
+  currentPeriodStart     DateTime? @map("current_period_start")
+  currentPeriodEnd       DateTime? @map("current_period_end")
+  cancelAtPeriodEnd      Boolean   @default(false) @map("cancel_at_period_end")
+  trialEndsAt            DateTime? @map("trial_ends_at")
+  graceEndsAt            DateTime? @map("grace_ends_at")
+  overrides              Json      @default("{}")
+  grants                 Json      @default("[]")
+  addOns                 Json      @default("[]") @map("add_ons")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// Per-organization, per-billing-period usage counters (atomic increments).
+model UsageCounter {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  key            String
+  period         String
+  value          Int      @default(0)
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, key, period])
+  @@index([organizationId])
+  @@map("usage_counters")
 }
 
 // ER:LC player-history correlation. Rolls up per-player presence in the live

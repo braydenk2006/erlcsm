@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getErlcClientForOrganization, getErlcIntegration } from "@commandry/integrations";
 import { requireActiveOrganization } from "@/lib/organization";
+import { requireFeature } from "@/lib/entitlements";
 import { handleRouteError } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const { organizationId } = await requireActiveOrganization();
+    await requireFeature(organizationId, "server.live_status");
     const [{ client, mode, hasCredentials }, integration] = await Promise.all([
       getErlcClientForOrganization(organizationId),
       getErlcIntegration(organizationId),

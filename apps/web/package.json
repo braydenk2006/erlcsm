@@ -18,6 +18,7 @@
     "@commandry/auth": "workspace:*",
     "@commandry/cad": "workspace:*",
     "@commandry/database": "workspace:*",
+    "@commandry/entitlements": "workspace:*",
     "@commandry/erlc": "workspace:*",
     "@commandry/integrations": "workspace:*",
     "@commandry/observability": "workspace:*",

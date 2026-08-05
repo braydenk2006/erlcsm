@@ -6,6 +6,13 @@ import { logger } from "@commandry/observability";
 /** Map thrown errors (AppError, ER:LC transport errors, unknown) to responses. */
 export function handleRouteError(error: unknown): NextResponse {
   if (error instanceof AppError) {
+    // Structured entitlement/limit errors carry safe, non-sensitive details.
+    if (error.code === "FEATURE_NOT_ENTITLED" || error.code === "LIMIT_EXCEEDED") {
+      return NextResponse.json(
+        { error: { code: error.code, message: error.message, ...(error.details ?? {}) } },
+        { status: error.status },
+      );
+    }
     return NextResponse.json(
       { error: error.expose ? error.message : "Request failed", code: error.code },
       { status: error.status },

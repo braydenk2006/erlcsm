@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 import { Badge, EmptyState } from "@commandry/ui";
 import { MODULES, type ModuleKey } from "@commandry/shared";
+import { hasFeature } from "@/lib/entitlements";
+import { requireActiveOrganization } from "@/lib/organization";
+import { navEntryForSlug } from "@/lib/nav-registry";
+import { PlanRequired } from "@/components/plan-required";
 
 const TITLES: Record<ModuleKey, string> = {
   home: "Home",
@@ -52,6 +56,16 @@ export default async function ModulePlaceholderPage({
   const moduleKey = SLUG_TO_MODULE[slug];
   if (!moduleKey || !MODULES.includes(moduleKey)) {
     notFound();
+  }
+
+  // Entitlement gate: if this module maps to a capability the org's plan does not
+  // include, render the plan-information page instead of the feature.
+  const entry = navEntryForSlug(slug);
+  if (entry?.feature) {
+    const { organizationId } = await requireActiveOrganization();
+    if (!(await hasFeature(organizationId, entry.feature))) {
+      return <PlanRequired feature={entry.feature} />;
+    }
   }
 
   return (

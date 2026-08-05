@@ -24,63 +24,56 @@ import {
   CalendarRange,
   Briefcase,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import { Badge, Button, cn } from "@commandry/ui";
 import { BrandLockup } from "@/components/brand-mark";
 import { OrganizationSwitcher } from "@/components/organization-switcher";
+import type { NavItem } from "@/lib/nav-registry";
 
-const NAV_ITEMS = [
-  { href: "/app", label: "Home", icon: Home, module: "home" },
-  { href: "/app/live", label: "Live Server", icon: Radio, module: "live_server" },
-  { href: "/app/people", label: "People", icon: Users, module: "people" },
-  { href: "/app/staff", label: "Staff", icon: Briefcase, module: "staff" },
-  { href: "/app/departments", label: "Departments", icon: Building2, module: "departments" },
-  { href: "/app/moderation", label: "Moderation", icon: Shield, module: "moderation" },
-  { href: "/app/sessions", label: "Sessions", icon: CalendarRange, module: "sessions" },
-  { href: "/app/activity", label: "Activity", icon: Activity, module: "activity" },
-  { href: "/app/applications", label: "Applications", icon: FormInput, module: "applications" },
-  { href: "/app/training", label: "Training", icon: BookOpen, module: "training" },
-  { href: "/app/cad", label: "CAD", icon: Gauge, module: "cad" },
-  { href: "/app/documents", label: "Documents", icon: FileText, module: "documents" },
-  { href: "/app/forms", label: "Forms", icon: FormInput, module: "forms" },
-  { href: "/app/automations", label: "Automations", icon: Workflow, module: "automations" },
-  { href: "/app/analytics", label: "Analytics", icon: Gauge, module: "analytics" },
-  { href: "/app/website", label: "Website", icon: Globe, module: "website" },
-  { href: "/app/integrations", label: "Integrations", icon: Link2, module: "integrations" },
-  { href: "/app/settings", label: "Settings", icon: Settings, module: "settings" },
-] as const;
+const ICONS: Record<string, LucideIcon> = {
+  Home,
+  Radio,
+  Gauge,
+  Users,
+  Briefcase,
+  Building2,
+  Shield,
+  CalendarRange,
+  Activity,
+  FormInput,
+  BookOpen,
+  FileText,
+  Workflow,
+  Globe,
+  Link2,
+  Settings,
+};
 
 type OrgSummary = {
   id: string;
   publicId: string;
   name: string;
   slug: string;
-  enabledModules?: string[];
 };
 
 export function AppShell({
   user,
   organizations,
   activeOrganization,
+  nav,
   children,
 }: {
   user: { id: string; name: string; email: string };
   organizations: Array<{ id: string; publicId: string; name: string; slug: string }>;
   activeOrganization: OrgSummary | null;
+  nav: NavItem[];
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const enabledModules = useMemo(
-    () => new Set(activeOrganization?.enabledModules ?? ["home", "people", "staff", "settings"]),
-    [activeOrganization],
-  );
-
-  const visibleNav = NAV_ITEMS.filter(
-    (item) =>
-      item.module === "home" || item.module === "settings" || enabledModules.has(item.module),
-  );
+  const visibleNav = nav;
 
   return (
     <div className="min-h-screen md:grid md:grid-cols-[272px_1fr] md:gap-4 md:p-4">
@@ -117,12 +110,12 @@ export function AppShell({
 
         <nav aria-label="Primary" className="mt-5 min-h-0 flex-1 space-y-1 overflow-y-auto pb-8">
           {visibleNav.map((item) => {
-            const Icon = item.icon;
+            const Icon = ICONS[item.iconName] ?? Home;
             const active =
               item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
             return (
               <Link
-                key={item.href}
+                key={item.key}
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 rounded-[var(--cmd-radius-pill)] px-3.5 py-2.5 text-sm transition",
@@ -185,12 +178,12 @@ export function AppShell({
         className="cmd-glass-strong fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-[var(--cmd-radius-pill)] px-2 py-2 md:hidden"
       >
         {visibleNav.slice(0, 5).map((item) => {
-          const Icon = item.icon;
+          const Icon = ICONS[item.iconName] ?? Home;
           const active =
             item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
           return (
             <Link
-              key={item.href}
+              key={item.key}
               href={item.href}
               className={cn(
                 "flex flex-col items-center gap-1 rounded-[var(--cmd-radius-pill)] px-1 py-2 text-[11px]",

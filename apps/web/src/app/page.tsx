@@ -21,6 +21,9 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-2 md:gap-3">
             <Button asChild variant="ghost" size="sm">
+              <Link href="/plans">Plans</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
               <Link href="/sign-in">Sign in</Link>
             </Button>
             <Button asChild size="sm">
