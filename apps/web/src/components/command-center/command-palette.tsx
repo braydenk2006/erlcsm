@@ -17,6 +17,7 @@ export function CommandPalette() {
   const [actions, setActions] = useState<Action[]>([]);
   const [destinations, setDestinations] = useState<Action[]>([]);
   const [results, setResults] = useState<Result[]>([]);
+  const [searching, setSearching] = useState(false);
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -51,12 +52,15 @@ export function CommandPalette() {
   useEffect(() => {
     if (!open || query.trim().length < 2) {
       setResults([]);
+      setSearching(false);
       return;
     }
+    setSearching(true);
     const id = setTimeout(() => {
       void fetch(`/api/command-palette?q=${encodeURIComponent(query)}`)
         .then((r) => (r.ok ? r.json() : { results: [] }))
-        .then((j: { results: Result[] }) => setResults(j.results ?? []));
+        .then((j: { results: Result[] }) => setResults(j.results ?? []))
+        .finally(() => setSearching(false));
     }, 180);
     return () => clearTimeout(id);
   }, [query, open]);
@@ -142,9 +146,11 @@ export function CommandPalette() {
             <ul className="max-h-[50vh] overflow-y-auto p-2" role="listbox" aria-label="Results">
               {items.length === 0 ? (
                 <li className="px-3 py-6 text-center text-sm text-[var(--cmd-fg-muted)]">
-                  {query.trim().length >= 2
-                    ? "No results."
-                    : "Type to search, or pick a destination."}
+                  {searching
+                    ? "Searching…"
+                    : query.trim().length >= 2
+                      ? "No results."
+                      : "Type to search, or pick a destination."}
                 </li>
               ) : null}
               {items.map((item, idx) => (

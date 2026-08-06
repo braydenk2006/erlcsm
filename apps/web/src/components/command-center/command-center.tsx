@@ -133,32 +133,33 @@ export function CommandCenter({ initial, orgName }: { initial: Payload; orgName:
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {visible.map((item) => {
           const span = item.size === "lg" ? "md:col-span-2" : "";
+          const ring = customizing ? "ring-2 ring-[var(--cmd-accent)]/50" : "";
           return (
             <section
               key={item.key}
-              className={`cmd-glass motion-reduce:transition-none flex flex-col rounded-[var(--cmd-radius-xl)] p-4 ${span}`}
+              className={`cmd-glass motion-reduce:transition-none flex flex-col rounded-[var(--cmd-radius-xl)] p-4 ${span} ${ring}`}
               aria-label={titleFor(item.key)}
             >
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-sm font-semibold">{titleFor(item.key)}</h2>
                 {customizing ? (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 rounded-[var(--cmd-radius-pill)] border border-[var(--cmd-border)] bg-[var(--cmd-bg-muted)] p-0.5">
                     <button
-                      className="rounded p-1 hover:bg-[var(--cmd-bg-muted)]"
+                      className="rounded-full p-1 hover:bg-[var(--cmd-accent)]/20"
                       aria-label={`Move ${titleFor(item.key)} up`}
                       onClick={() => move(item.key, -1)}
                     >
                       <ChevronUp className="h-4 w-4" />
                     </button>
                     <button
-                      className="rounded p-1 hover:bg-[var(--cmd-bg-muted)]"
+                      className="rounded-full p-1 hover:bg-[var(--cmd-accent)]/20"
                       aria-label={`Move ${titleFor(item.key)} down`}
                       onClick={() => move(item.key, 1)}
                     >
                       <ChevronDown className="h-4 w-4" />
                     </button>
                     <button
-                      className="rounded p-1 hover:bg-[var(--cmd-bg-muted)]"
+                      className="rounded-full p-1 hover:bg-[var(--cmd-danger)]/20"
                       aria-label={`Hide ${titleFor(item.key)}`}
                       onClick={() => setHidden(item.key, true)}
                     >
