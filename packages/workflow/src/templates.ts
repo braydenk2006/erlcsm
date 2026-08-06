@@ -208,10 +208,39 @@ const training: WorkflowTemplateSeed = {
   },
 };
 
+// Knowledge Platform reuses this template for document approval — the Knowledge
+// module never re-implements approval logic; it routes through this workflow.
+const documentApproval: WorkflowTemplateSeed = {
+  key: "document_approval",
+  name: "Document Approval",
+  category: "document",
+  description: "Review and approve a knowledge document before it is published.",
+  form: {
+    fields: [
+      { id: "document", type: "short_text", label: "Document" },
+      { id: "changeSummary", type: "long_text", label: "Change summary" },
+    ],
+  },
+  workflow: {
+    initialStageId: "review",
+    stages: [
+      {
+        id: "review",
+        name: "Document Review",
+        approvalMode: "SINGLE",
+        assignment: { strategy: "ROLE", target: "admin" },
+        onApprove: "COMPLETE",
+        allowRevision: true,
+      },
+    ],
+  },
+};
+
 export const BUILT_IN_TEMPLATES: WorkflowTemplateSeed[] = [
   application,
   leave,
   promotion,
   general,
   training,
+  documentApproval,
 ];

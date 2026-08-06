@@ -4,6 +4,7 @@ import {
   deleteArticle,
   getArticle,
   rollbackArticle,
+  submitArticleForApproval,
   transitionArticle,
   updateArticle,
 } from "@commandry/api";
@@ -24,13 +25,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 const patchSchema = z.object({
-  action: z.enum(["update", "transition", "rollback"]),
+  action: z.enum(["update", "transition", "rollback", "submit_approval"]),
   title: z.string().optional(),
   body: z.string().optional(),
   tags: z.array(z.string()).optional(),
   keywords: z.array(z.string()).optional(),
   visibility: z.enum(["organization", "department", "staff", "public"]).optional(),
   category: z.string().optional(),
+  collection: z.string().optional(),
   changeSummary: z.string().optional(),
   to: z
     .enum(["draft", "review", "approved", "published", "archived", "superseded", "expired"])
@@ -45,6 +47,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const parsed = patchSchema.safeParse(await request.json());
     if (!parsed.success) throw new ValidationError("Invalid update");
     const d = parsed.data;
+    if (d.action === "submit_approval") {
+      return NextResponse.json(
+        await submitArticleForApproval({
+          actor,
+          organizationId,
+          id,
+          changeSummary: d.changeSummary,
+        }),
+      );
+    }
     if (d.action === "transition") {
       if (!d.to) throw new ValidationError("Missing target status");
       return NextResponse.json({
@@ -68,6 +80,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         keywords: d.keywords,
         visibility: d.visibility,
         category: d.category,
+        collection: d.collection,
         changeSummary: d.changeSummary,
       }),
     });

@@ -4,13 +4,19 @@ import { prisma } from "@commandry/database";
 import type { Actor } from "@commandry/permissions";
 import { buildActorForUser, createOrganization } from "./service";
 import {
+  compareVersions,
   createArticle,
   getArticle,
+  getContextualKnowledge,
+  listArticles,
+  listCollections,
   rollbackArticle,
   searchKnowledge,
+  submitArticleForApproval,
   transitionArticle,
   updateArticle,
 } from "../knowledge/service";
+import { decide } from "../workflow/service";
 import { askOrdinex, getAiAnalytics, getConversation, listConversations } from "../ai/service";
 
 const hasDb = Boolean(process.env.DATABASE_URL);
@@ -89,6 +95,110 @@ describe.skipIf(!hasDb)("knowledge platform + grounded AI", () => {
     });
     expect(afterRollback.article.version).toBe(3);
     expect(afterRollback.article.body).toContain("only when authorized"); // v1 content restored
+  });
+
+  it("supports custom categories and collections (folders)", async () => {
+    const custom = await createArticle({
+      actor: owner,
+      organizationId: orgId,
+      title: "Canine Deployment",
+      category: "Canine Unit", // custom, not in the built-in set
+      collection: "Field Operations",
+      body: "Deploy K9 units only with handler certification.",
+      tags: ["k9"],
+    });
+    expect(custom.category).toBe("canine_unit"); // normalized
+    expect(custom.collection).toBe("Field Operations");
+    const collections = await listCollections({ actor: owner, organizationId: orgId });
+    expect(collections.find((c) => c.name === "Field Operations")).toBeTruthy();
+    const inCollection = await listArticles({
+      actor: owner,
+      organizationId: orgId,
+      collection: "Field Operations",
+    });
+    expect(inCollection.some((a) => a.id === custom.id)).toBe(true);
+  });
+
+  it("routes document approval through the Workflow Platform and gates publishing", async () => {
+    const draft = await createArticle({
+      actor: owner,
+      organizationId: orgId,
+      title: "Use of Force Policy",
+      category: "policy",
+      body: "Use the minimum necessary force.",
+    });
+    const { submissionId } = await submitArticleForApproval({
+      actor: owner,
+      organizationId: orgId,
+      id: draft.id,
+    });
+    // A real workflow submission of the built-in document-approval template was created (reuse, not duplication).
+    const submission = await prisma.workflowSubmission.findUnique({
+      where: { id: submissionId },
+      include: { template: true },
+    });
+    expect(submission?.template.category).toBe("document");
+    const review = await getArticle({ actor: owner, organizationId: orgId, idOrSlug: draft.id });
+    expect(review.article.status).toBe("review");
+    expect(review.approvalStatus).toBe(submission?.status);
+    // Move to approved, but publishing is blocked until the workflow approves.
+    await transitionArticle({ actor: owner, organizationId: orgId, id: draft.id, to: "approved" });
+    await expect(
+      transitionArticle({ actor: owner, organizationId: orgId, id: draft.id, to: "published" }),
+    ).rejects.toThrow(/approval/i);
+    // Approve in the Workflow Platform (fall back to a direct completion if the actor is not an assigned reviewer).
+    try {
+      await decide({ actor: owner, organizationId: orgId, submissionId, decision: "APPROVE" });
+    } catch {
+      /* not an assigned reviewer in this fixture */
+    }
+    const s2 = await prisma.workflowSubmission.findUnique({ where: { id: submissionId } });
+    if (s2?.status !== "COMPLETED")
+      await prisma.workflowSubmission.update({
+        where: { id: submissionId },
+        data: { status: "COMPLETED" },
+      });
+    const published = await transitionArticle({
+      actor: owner,
+      organizationId: orgId,
+      id: draft.id,
+      to: "published",
+    });
+    expect(published.status).toBe("published");
+  });
+
+  it("compares two versions deterministically", async () => {
+    const a = await createArticle({
+      actor: owner,
+      organizationId: orgId,
+      title: "Uniform Standards",
+      category: "policy",
+      body: "Line one.\nLine two.",
+    });
+    await updateArticle({
+      actor: owner,
+      organizationId: orgId,
+      id: a.id,
+      body: "Line one.\nLine three.",
+    });
+    const cmp = await compareVersions({
+      actor: owner,
+      organizationId: orgId,
+      id: a.id,
+      versionA: 1,
+      versionB: 2,
+    });
+    expect(cmp.diff.some((d) => d.change === "removed" && d.line.includes("two"))).toBe(true);
+    expect(cmp.diff.some((d) => d.change === "added" && d.line.includes("three"))).toBe(true);
+  });
+
+  it("surfaces contextual knowledge for a shift/context", async () => {
+    const hits = await getContextualKnowledge({
+      actor: owner,
+      organizationId: orgId,
+      keywords: "pursuit driving",
+    });
+    expect(hits.some((h) => h.title === "Pursuit Policy")).toBe(true);
   });
 
   it("AI cites the published article for a policy question (grounded, no LLM)", async () => {

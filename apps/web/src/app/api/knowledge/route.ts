@@ -16,6 +16,7 @@ export async function GET(request: Request) {
       organizationId,
       query: url.searchParams.get("query") ?? undefined,
       category: url.searchParams.get("category") ?? undefined,
+      collection: url.searchParams.get("collection") ?? undefined,
       status: url.searchParams.get("status") ?? undefined,
     });
     return NextResponse.json({ articles });
@@ -27,6 +28,7 @@ export async function GET(request: Request) {
 const createSchema = z.object({
   title: z.string().min(2).max(160),
   category: z.string(),
+  collection: z.string().optional(),
   body: z.string().default(""),
   tags: z.array(z.string()).optional(),
   keywords: z.array(z.string()).optional(),

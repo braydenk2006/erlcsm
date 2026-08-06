@@ -102,6 +102,32 @@ const STOPWORDS = new Set([
   "our",
 ]);
 
+// Category-descriptor words appear in most titles ("policy", "sop", …). They are
+// too generic to establish relevance alone, so a hit must also match a specific
+// term — otherwise "boat patrol policy" would wrongly surface any policy.
+const GENERIC_TERMS = new Set([
+  "policy",
+  "policies",
+  "sop",
+  "sops",
+  "procedure",
+  "procedures",
+  "guide",
+  "guides",
+  "manual",
+  "manuals",
+  "handbook",
+  "handbooks",
+  "requirement",
+  "requirements",
+  "article",
+  "articles",
+  "faq",
+  "rank",
+  "document",
+  "documents",
+]);
+
 export function tokenize(text: string): string[] {
   return text
     .toLowerCase()
@@ -126,16 +152,25 @@ export function scoreArticle(article: SearchableArticle, query: string): number 
   for (const t of bodyTokens) bodyCount.set(t, (bodyCount.get(t) ?? 0) + 1);
 
   let score = 0;
+  let specificScore = 0; // score contributed by non-generic (meaningful) terms
   for (const term of terms) {
-    if (title.includes(term)) score += 10;
-    if (tagSet.has(term)) score += 6;
-    if (kwSet.has(term)) score += 6;
-    if (article.category.toLowerCase().includes(term)) score += 4;
-    score += Math.min(4, bodyCount.get(term) ?? 0);
+    const generic = GENERIC_TERMS.has(term);
+    let termScore = 0;
+    if (title.includes(term)) termScore += generic ? 1 : 10;
+    if (tagSet.has(term)) termScore += 6;
+    if (kwSet.has(term)) termScore += 6;
+    if (!generic && article.category.toLowerCase().includes(term)) termScore += 4;
+    termScore += Math.min(4, bodyCount.get(term) ?? 0);
+    score += termScore;
+    if (!generic) specificScore += termScore;
   }
-  // Whole-phrase title match bonus.
-  if (title.includes(query.toLowerCase().trim())) score += 8;
-  return score;
+  // Whole-phrase title match bonus (a strong specific signal).
+  if (title.includes(query.toLowerCase().trim())) {
+    score += 8;
+    specificScore += 8;
+  }
+  // A result must be relevant on a meaningful term, not just a generic word.
+  return specificScore > 0 ? score : 0;
 }
 
 export function rankArticles<T extends SearchableArticle>(

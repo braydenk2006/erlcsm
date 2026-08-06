@@ -8,6 +8,7 @@ type Article = {
   title: string;
   slug: string;
   category: string;
+  collection: string | null;
   status: string;
   visibility: string;
   body: string;
@@ -20,6 +21,7 @@ type Detail = {
   article: Article;
   versions: { version: number; changeSummary: string | null; createdAt: string }[];
   related: Article[];
+  approvalStatus: string | null;
 };
 
 const CATEGORIES = [
@@ -73,25 +75,34 @@ export function KnowledgeView({
   const [form, setForm] = useState({
     title: "",
     category: "policy",
+    customCategory: "",
+    collection: "",
     visibility: "organization",
     body: "",
     tags: "",
   });
   const [editBody, setEditBody] = useState("");
+  const [collections, setCollections] = useState<{ name: string; count: number }[]>([]);
+  const [collectionFilter, setCollectionFilter] = useState("");
 
   const load = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (query) params.set("query", query);
       if (category) params.set("category", category);
-      const json = await api(`/api/knowledge?${params.toString()}`);
+      if (collectionFilter) params.set("collection", collectionFilter);
+      const [json, cols] = await Promise.all([
+        api(`/api/knowledge?${params.toString()}`),
+        api("/api/knowledge/collections"),
+      ]);
       setArticles(json.articles);
+      setCollections(cols.collections);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
     } finally {
       setLoading(false);
     }
-  }, [query, category]);
+  }, [query, category, collectionFilter]);
 
   useEffect(() => {
     void load();
@@ -114,12 +125,24 @@ export function KnowledgeView({
       const json = await api("/api/knowledge", {
         method: "POST",
         body: JSON.stringify({
-          ...form,
+          title: form.title,
+          category: form.category === "__custom" ? form.customCategory : form.category,
+          collection: form.collection || undefined,
+          visibility: form.visibility,
+          body: form.body,
           tags: form.tags ? form.tags.split(",").map((t) => t.trim()) : [],
         }),
       });
       setCreating(false);
-      setForm({ title: "", category: "policy", visibility: "organization", body: "", tags: "" });
+      setForm({
+        title: "",
+        category: "policy",
+        customCategory: "",
+        collection: "",
+        visibility: "organization",
+        body: "",
+        tags: "",
+      });
       await load();
       await open(json.article.id);
     } catch (err) {
@@ -141,6 +164,15 @@ export function KnowledgeView({
     api(`/api/knowledge/${detail.article.id}`, {
       method: "PATCH",
       body: JSON.stringify({ action: "update", body: editBody, changeSummary: "Edited content" }),
+    })
+      .then(() => open(detail.article.id))
+      .then(load)
+      .catch((e) => setError(e.message));
+  const submitApproval = () =>
+    detail &&
+    api(`/api/knowledge/${detail.article.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ action: "submit_approval" }),
     })
       .then(() => open(detail.article.id))
       .then(load)
@@ -202,7 +234,31 @@ export function KnowledgeView({
                     {c.replace(/_/g, " ")}
                   </option>
                 ))}
+                <option value="__custom">Custom category…</option>
               </select>
+              {form.category === "__custom" ? (
+                <Input
+                  className="mt-2"
+                  value={form.customCategory}
+                  onChange={(e) => setForm({ ...form, customCategory: e.target.value })}
+                  placeholder="e.g. canine_unit"
+                />
+              ) : null}
+            </div>
+            <div>
+              <Label htmlFor="k-collection">Collection (folder)</Label>
+              <Input
+                id="k-collection"
+                value={form.collection}
+                onChange={(e) => setForm({ ...form, collection: e.target.value })}
+                placeholder="e.g. Field Operations"
+                list="k-collections"
+              />
+              <datalist id="k-collections">
+                {collections.map((c) => (
+                  <option key={c.name} value={c.name} />
+                ))}
+              </datalist>
             </div>
             <div>
               <Label htmlFor="k-vis">Visibility</Label>
@@ -264,6 +320,20 @@ export function KnowledgeView({
             </option>
           ))}
         </select>
+        {collections.length > 0 ? (
+          <select
+            className="h-10 rounded-[var(--cmd-radius)] border border-[var(--cmd-border)] bg-[var(--cmd-bg-muted)] px-2 text-sm"
+            value={collectionFilter}
+            onChange={(e) => setCollectionFilter(e.target.value)}
+          >
+            <option value="">All collections</option>
+            {collections.map((c) => (
+              <option key={c.name} value={c.name}>
+                {c.name} ({c.count})
+              </option>
+            ))}
+          </select>
+        ) : null}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
@@ -299,7 +369,13 @@ export function KnowledgeView({
               <span className="text-xs text-[var(--cmd-fg-muted)]">
                 {detail.article.category.replace(/_/g, " ")} · v{detail.article.version} ·{" "}
                 {detail.article.visibility}
+                {detail.article.collection ? ` · ${detail.article.collection}` : ""}
               </span>
+              {detail.approvalStatus ? (
+                <Badge tone={detail.approvalStatus === "COMPLETED" ? "success" : "accent"}>
+                  {detail.approvalStatus === "COMPLETED" ? "approved" : "awaiting approval"}
+                </Badge>
+              ) : null}
             </div>
             <h2 className="mt-1 font-[family-name:var(--cmd-font-display)] text-2xl">
               {detail.article.title}
@@ -315,8 +391,19 @@ export function KnowledgeView({
                   <Button size="sm" variant="outline" onClick={save}>
                     Save version
                   </Button>
+                  {detail.article.status === "draft" && !detail.approvalStatus ? (
+                    <Button size="sm" variant="outline" onClick={submitApproval}>
+                      Submit for approval
+                    </Button>
+                  ) : null}
                   {detail.article.status !== "published" ? (
-                    <Button size="sm" onClick={() => transition("published")}>
+                    <Button
+                      size="sm"
+                      onClick={() => transition("published")}
+                      disabled={
+                        Boolean(detail.approvalStatus) && detail.approvalStatus !== "COMPLETED"
+                      }
+                    >
                       Publish
                     </Button>
                   ) : (
@@ -325,6 +412,11 @@ export function KnowledgeView({
                     </Button>
                   )}
                 </div>
+                {detail.approvalStatus && detail.approvalStatus !== "COMPLETED" ? (
+                  <p className="mt-1 text-xs text-[var(--cmd-fg-muted)]">
+                    Routed to the Workflow Platform for approval — publish unlocks once approved.
+                  </p>
+                ) : null}
               </div>
             ) : (
               <p className="mt-3 whitespace-pre-wrap text-sm">{detail.article.body}</p>

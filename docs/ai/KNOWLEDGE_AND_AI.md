@@ -28,11 +28,17 @@ archived/superseded/expired` with enforced transitions), visibility (organizatio
 - **DB**: `KnowledgeArticle` (+ unique `(org, slug)`) and append-only `KnowledgeVersion` (version
   history, change summaries, rollback, compare).
 - **Service** `@commandry/api/knowledge`: CRUD, lifecycle transitions (publish requires
-  `knowledge.publish`), **versioning + rollback**, permission + visibility-aware `listArticles`/
-  `getArticle`, `searchKnowledge` (published only, filtered), and `getRelated` (explicit `relatedIds`
-  plus inferred by shared category/tags/department — no manual linking required).
-- **UI** `/app/knowledge`: search + category filter, article reader, and (for authors) a create/edit
-  editor with publish/archive, version history, and rollback.
+  `knowledge.publish`), **versioning + rollback + compare** (`compareVersions` line diff), permission +
+  visibility-aware `listArticles`/`getArticle`, `searchKnowledge` (published only, filtered), `getRelated`
+  (explicit `relatedIds` plus inferred by shared category/tags/department — no manual linking), custom
+  **categories** (org-defined, normalized), **collections/folders** (`listCollections`), and
+  `getContextualKnowledge` (surface relevant SOPs/policies for a context, e.g. a patrol shift).
+- **Approval reuses the Workflow Platform** — `submitArticleForApproval` routes a document through the
+  built-in **"Document Approval"** workflow (the Knowledge module never re-implements review/approval
+  logic); publishing is **gated** on that workflow submission being approved (`COMPLETED`).
+- **UI** `/app/knowledge`: search + category + collection filters, article reader, and (for authors) a
+  create/edit editor with custom category, collection, **submit-for-approval**, approval status,
+  publish/archive, version history, and rollback.
 
 ## 2. AI Platform
 
@@ -61,8 +67,9 @@ archived/superseded/expired` with enforced transitions), visibility (organizatio
   changes deterministic platform data.
 - **Analytics**: questions asked, by intent, answer rate, **knowledge gaps** (unanswered), and most-cited
   documents. Provider retention controls are org-scoped.
-- **UI**: `/app/assistant` (Ask Ordinex — modes, cited answers, evidence, confidence, suggested actions),
-  a Command Center **Ask Ordinex** widget, and Command Palette destinations. Available platform-wide.
+- **UI**: `/app/assistant` (Ask Ordinex — all 11 modes, cited answers, evidence, confidence, suggested
+  actions, and **conversation history** with resume/new-chat), a Command Center **Ask Ordinex** widget,
+  and Command Palette destinations. Available platform-wide.
 
 ## Permissions & security
 
@@ -100,8 +107,11 @@ fabrication, conversation persistence + analytics, and tenant isolation (cross-o
 
 - No language-model vendor is configured in this environment, so the shipped default is the grounded
   deterministic composer; wiring a live model is a config-only change (`resolveProvider`).
-- Deeper per-module retrieval (raw workflow/CAD/website records beyond the deterministic summary) and the
-  rich editor's advanced blocks (tables/diagrams/embeds) are follow-ups; content is markdown today.
+- Document approval reuses the Workflow Platform's single-stage "Document Approval" template; richer
+  multi-stage/judicial approval chains reuse the same engine by swapping the template.
+- Deeper per-module retrieval (raw workflow/CAD/website records beyond the deterministic summary), the
+  rich editor's advanced blocks (tables/diagrams/embeds), and embedding contextual knowledge inline on
+  every module page (the `getContextualKnowledge` API is ready) are follow-ups; content is markdown today.
 - Semantic search is deterministic lexical ranking (title/tags/keywords/body); embeddings-based semantic
   search is a future drop-in behind the same `searchKnowledge` interface.
 - Voice/meeting/mobile assistants and marketplace skills are architected-for but not implemented.

@@ -65,6 +65,12 @@ describe("deterministic search", () => {
   it("returns nothing for an unrelated query", () => {
     expect(rankArticles(articles, "pizza delivery")).toHaveLength(0);
   });
+  it("does not match on a generic word alone (no false positives)", () => {
+    // "policy" is generic; "boat patrol" matches no article → no results.
+    expect(rankArticles(articles, "boat patrol policy")).toHaveLength(0);
+    // but a specific term still surfaces the right article.
+    expect(rankArticles(articles, "uniform policy")[0]!.article.id).toBe("3");
+  });
   it("tokenizes and drops stopwords", () => {
     expect(tokenize("What is the pursuit policy")).toEqual(["pursuit", "policy"]);
   });

@@ -21,7 +21,26 @@ type Answer = {
 };
 type Turn = { question: string; answer: Answer };
 
-const MODES = ["ask", "explain", "summarize", "draft", "search", "recommend"] as const;
+const MODES = [
+  "ask",
+  "explain",
+  "summarize",
+  "draft",
+  "review",
+  "search",
+  "recommend",
+  "analyze",
+  "translate",
+  "compare",
+  "generate",
+] as const;
+type Conversation = {
+  id: string;
+  title: string;
+  pinned: boolean;
+  shared: boolean;
+  updatedAt: string;
+};
 const EXAMPLES = [
   "Why is Community Health low?",
   "Find the pursuit policy",
@@ -55,8 +74,55 @@ export function AssistantView({ initialQuestion }: { initialQuestion?: string })
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | undefined>(undefined);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
   const submittedInitial = useRef(false);
+
+  const loadConversations = async () => {
+    const res = await fetch("/api/ai/conversations");
+    if (res.ok) setConversations((await res.json()).conversations ?? []);
+  };
+  useEffect(() => {
+    void loadConversations();
+  }, []);
+
+  const resume = async (id: string) => {
+    const res = await fetch(`/api/ai/conversations/${id}`);
+    if (!res.ok) return;
+    const convo = await res.json();
+    const loaded: Turn[] = [];
+    let pendingQ = "";
+    for (const m of convo.messages as {
+      role: string;
+      content: string;
+      citations: Citation[];
+      evidence: Evidence[];
+      actions: ActionRef[];
+      confidence: string;
+      mode: string;
+      intent: string;
+      usedLLM: boolean;
+    }[]) {
+      if (m.role === "user") pendingQ = m.content;
+      else
+        loaded.push({
+          question: pendingQ,
+          answer: {
+            text: m.content,
+            mode: m.mode,
+            intent: m.intent,
+            citations: m.citations,
+            evidence: m.evidence,
+            confidence: m.confidence,
+            suggestedActions: m.actions,
+            isDraft: false,
+            usedLLM: m.usedLLM,
+          },
+        });
+    }
+    setTurns(loaded);
+    setConversationId(id);
+  };
 
   const ask = async (q: string) => {
     const trimmed = q.trim();
@@ -74,6 +140,7 @@ export function AssistantView({ initialQuestion }: { initialQuestion?: string })
       if (!res.ok) throw new Error(json?.error?.message ?? "Request failed");
       setConversationId(json.conversationId);
       setTurns((t) => [...t, { question: trimmed, answer: json.answer }]);
+      void loadConversations();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
     } finally {
@@ -94,16 +161,52 @@ export function AssistantView({ initialQuestion }: { initialQuestion?: string })
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <header>
-        <p className="flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-[var(--cmd-fg-muted)]">
-          <Sparkles className="h-3.5 w-3.5" /> Ask Ordinex
-        </p>
-        <h1 className="font-[family-name:var(--cmd-font-display)] text-3xl">AI Assistant</h1>
-        <p className="mt-1 text-sm text-[var(--cmd-fg-muted)]">
-          Grounded in deterministic platform intelligence and your published knowledge — every
-          factual answer is cited, and it never invents data.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-[var(--cmd-fg-muted)]">
+            <Sparkles className="h-3.5 w-3.5" /> Ask Ordinex
+          </p>
+          <h1 className="font-[family-name:var(--cmd-font-display)] text-3xl">AI Assistant</h1>
+          <p className="mt-1 text-sm text-[var(--cmd-fg-muted)]">
+            Grounded in deterministic platform intelligence and your published knowledge — every
+            factual answer is cited, and it never invents data.
+          </p>
+        </div>
+        {turns.length > 0 ? (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setTurns([]);
+              setConversationId(undefined);
+            }}
+          >
+            New chat
+          </Button>
+        ) : null}
       </header>
+
+      {conversations.length > 0 ? (
+        <details className="cmd-glass rounded-[var(--cmd-radius-xl)] p-3">
+          <summary className="cursor-pointer text-sm text-[var(--cmd-fg-muted)]">
+            Recent conversations ({conversations.length})
+          </summary>
+          <ul className="mt-2 space-y-1">
+            {conversations.slice(0, 8).map((c) => (
+              <li key={c.id}>
+                <button
+                  onClick={() => resume(c.id)}
+                  className={`w-full truncate rounded-[var(--cmd-radius)] px-2.5 py-1.5 text-left text-sm hover:bg-[var(--cmd-bg-muted)] ${conversationId === c.id ? "bg-[var(--cmd-bg-muted)]" : ""}`}
+                >
+                  {c.pinned ? "📌 " : ""}
+                  {c.shared ? "· shared · " : ""}
+                  {c.title}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
 
       {turns.length === 0 ? (
         <div className="flex flex-wrap gap-2">

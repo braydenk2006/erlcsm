@@ -1969,6 +1969,7 @@ model KnowledgeArticle {
   title           String
   slug            String
   category        String    @default("article")
+  collection      String?
   status          String    @default("draft")
   visibility      String    @default("organization")
   body            String    @default("")
@@ -1977,6 +1978,7 @@ model KnowledgeArticle {
   keywords        String[]  @default([])
   relatedIds      String[]  @default([]) @map("related_ids")
   departmentId    String?   @map("department_id")
+  workflowSubmissionId String? @map("workflow_submission_id")
   version         Int       @default(1)
   authorUserId    String?   @map("author_user_id")
   approverUserId  String?   @map("approver_user_id")

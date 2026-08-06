@@ -172,8 +172,13 @@ export {
   transitionArticle,
   rollbackArticle,
   deleteArticle,
+  submitArticleForApproval,
+  compareVersions,
+  getContextualKnowledge,
+  listCollections,
   type ArticleView,
   type KnowledgeSearchHit,
+  type VersionCompare,
 } from "./knowledge/service";
 export {
   askOrdinex,

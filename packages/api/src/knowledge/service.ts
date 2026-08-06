@@ -4,7 +4,6 @@ import {
   buildExcerpt,
   canTransitionKnowledge,
   citationFor,
-  isKnowledgeCategory,
   rankArticles,
   slugify,
   type KnowledgeStatus,
@@ -13,6 +12,14 @@ import {
 } from "@commandry/knowledge";
 import { authorize, type Action, type Actor } from "@commandry/permissions";
 import { ForbiddenError, NotFoundError, ValidationError, createPublicId } from "@commandry/shared";
+import { createDraft, submitSubmission, listTemplates } from "../workflow/service";
+
+/** Categories are open — organizations may use custom ones. Normalize to a slug. */
+function normalizeCategory(category: string): string {
+  const c = slugify(category).replace(/-/g, "_");
+  if (c.length < 2) throw new ValidationError("Invalid category");
+  return c;
+}
 
 function can(actor: Actor, organizationId: string, action: Action): boolean {
   return authorize({ actor, organizationId, action }).allowed;
@@ -27,6 +34,7 @@ type ArticleRow = {
   title: string;
   slug: string;
   category: string;
+  collection: string | null;
   status: string;
   visibility: string;
   body: string;
@@ -35,6 +43,7 @@ type ArticleRow = {
   keywords: string[];
   relatedIds: string[];
   departmentId: string | null;
+  workflowSubmissionId: string | null;
   version: number;
   authorUserId: string | null;
   approverUserId: string | null;
@@ -70,6 +79,7 @@ export type ArticleView = {
   title: string;
   slug: string;
   category: string;
+  collection: string | null;
   status: string;
   visibility: string;
   body: string;
@@ -90,6 +100,7 @@ function toView(a: ArticleRow): ArticleView {
     title: a.title,
     slug: a.slug,
     category: a.category,
+    collection: a.collection,
     status: a.status,
     visibility: a.visibility,
     body: a.body,
@@ -108,6 +119,7 @@ export async function listArticles(input: {
   actor: Actor;
   organizationId: string;
   category?: string;
+  collection?: string;
   status?: string;
   query?: string;
 }): Promise<ArticleView[]> {
@@ -116,6 +128,7 @@ export async function listArticles(input: {
     where: {
       organizationId: input.organizationId,
       ...(input.category ? { category: input.category } : {}),
+      ...(input.collection ? { collection: input.collection } : {}),
       ...(input.status ? { status: input.status } : {}),
     },
     orderBy: { updatedAt: "desc" },
@@ -192,6 +205,7 @@ export async function getArticle(input: {
   article: ArticleView;
   versions: { version: number; changeSummary: string | null; createdAt: string }[];
   related: ArticleView[];
+  approvalStatus: string | null;
 }> {
   requirePerm(input.actor, input.organizationId, "knowledge.view");
   const article = await prisma.knowledgeArticle.findFirst({
@@ -218,6 +232,14 @@ export async function getArticle(input: {
     organizationId: input.organizationId,
     articleId: article.id,
   });
+  let approvalStatus: string | null = null;
+  if (article.workflowSubmissionId) {
+    const submission = await prisma.workflowSubmission.findFirst({
+      where: { id: article.workflowSubmissionId, organizationId: input.organizationId },
+      select: { status: true },
+    });
+    approvalStatus = submission?.status ?? null;
+  }
   return {
     article: toView(article as unknown as ArticleRow),
     versions: versions.map((v) => ({
@@ -226,6 +248,7 @@ export async function getArticle(input: {
       createdAt: v.createdAt.toISOString(),
     })),
     related,
+    approvalStatus,
   };
 }
 
@@ -271,10 +294,11 @@ export async function createArticle(input: {
   visibility?: KnowledgeVisibility;
   departmentId?: string;
   relatedIds?: string[];
+  collection?: string;
 }): Promise<ArticleView> {
   requirePerm(input.actor, input.organizationId, "knowledge.manage");
   if (input.title.trim().length < 2) throw new ValidationError("Title too short");
-  if (!isKnowledgeCategory(input.category)) throw new ValidationError("Unknown category");
+  const category = normalizeCategory(input.category);
   const baseSlug = slugify(input.title);
   let slug = baseSlug || `article-${Date.now()}`;
   if (
@@ -290,7 +314,8 @@ export async function createArticle(input: {
       organizationId: input.organizationId,
       title: input.title.trim(),
       slug,
-      category: input.category,
+      category,
+      collection: input.collection?.trim() || null,
       body: input.body,
       excerpt: buildExcerpt(input.body),
       tags: input.tags ?? [],
@@ -328,6 +353,7 @@ export async function updateArticle(input: {
   keywords?: string[];
   visibility?: KnowledgeVisibility;
   category?: string;
+  collection?: string;
   relatedIds?: string[];
   changeSummary?: string;
 }): Promise<ArticleView> {
@@ -349,9 +375,8 @@ export async function updateArticle(input: {
       ...(input.tags ? { tags: input.tags } : {}),
       ...(input.keywords ? { keywords: input.keywords } : {}),
       ...(input.visibility ? { visibility: input.visibility } : {}),
-      ...(input.category && isKnowledgeCategory(input.category)
-        ? { category: input.category }
-        : {}),
+      ...(input.category ? { category: normalizeCategory(input.category) } : {}),
+      ...(input.collection !== undefined ? { collection: input.collection?.trim() || null } : {}),
       ...(input.relatedIds ? { relatedIds: input.relatedIds } : {}),
       version: nextVersion,
     },
@@ -387,6 +412,18 @@ export async function transitionArticle(input: {
   if (!existing) throw new NotFoundError("Article not found");
   if (!canTransitionKnowledge(existing.status as KnowledgeStatus, input.to))
     throw new ValidationError(`Cannot move from ${existing.status} to ${input.to}`);
+  // If this article was routed through the Workflow Platform for approval, it may
+  // only be published once that workflow submission is approved (COMPLETED).
+  if (input.to === "published" && existing.workflowSubmissionId) {
+    const submission = await prisma.workflowSubmission.findFirst({
+      where: { id: existing.workflowSubmissionId, organizationId: input.organizationId },
+    });
+    if (submission && submission.status !== "COMPLETED") {
+      throw new ValidationError(
+        "This document is awaiting approval in the Workflow Platform and cannot be published yet.",
+      );
+    }
+  }
   const updated = await prisma.knowledgeArticle.update({
     where: { id: existing.id },
     data: {
@@ -446,4 +483,124 @@ export async function deleteArticle(input: {
   });
   if (!existing) throw new NotFoundError("Article not found");
   await prisma.knowledgeArticle.delete({ where: { id: existing.id } });
+}
+
+/**
+ * Route a document through the Workflow Platform for approval. Reuses the
+ * built-in "Document Approval" workflow — the Knowledge module never
+ * re-implements approval/review logic. Publishing is then gated on that workflow
+ * submission being approved (see transitionArticle).
+ */
+export async function submitArticleForApproval(input: {
+  actor: Actor;
+  organizationId: string;
+  id: string;
+  changeSummary?: string;
+}): Promise<{ submissionId: string }> {
+  requirePerm(input.actor, input.organizationId, "knowledge.manage");
+  const existing = await prisma.knowledgeArticle.findFirst({
+    where: { id: input.id, organizationId: input.organizationId },
+  });
+  if (!existing) throw new NotFoundError("Article not found");
+  const templates = await listTemplates({
+    actor: input.actor,
+    organizationId: input.organizationId,
+    category: "document",
+  });
+  const template = templates.find((t) => t.category === "document");
+  if (!template) throw new ValidationError("Document approval workflow is unavailable");
+  const draft = await createDraft({
+    actor: input.actor,
+    organizationId: input.organizationId,
+    templateId: template.id,
+  });
+  await submitSubmission({
+    actor: input.actor,
+    organizationId: input.organizationId,
+    submissionId: draft.id,
+    data: { document: existing.title, changeSummary: input.changeSummary ?? "" },
+  });
+  await prisma.knowledgeArticle.update({
+    where: { id: existing.id },
+    data: { status: "review", workflowSubmissionId: draft.id },
+  });
+  return { submissionId: draft.id };
+}
+
+export type VersionCompare = {
+  a: { version: number; title: string; body: string };
+  b: { version: number; title: string; body: string };
+  diff: { line: string; change: "added" | "removed" | "same" }[];
+};
+
+/** Deterministic line-level comparison between two article versions. */
+export async function compareVersions(input: {
+  actor: Actor;
+  organizationId: string;
+  id: string;
+  versionA: number;
+  versionB: number;
+}): Promise<VersionCompare> {
+  requirePerm(input.actor, input.organizationId, "knowledge.view");
+  const [va, vb] = await Promise.all([
+    prisma.knowledgeVersion.findFirst({
+      where: { articleId: input.id, organizationId: input.organizationId, version: input.versionA },
+    }),
+    prisma.knowledgeVersion.findFirst({
+      where: { articleId: input.id, organizationId: input.organizationId, version: input.versionB },
+    }),
+  ]);
+  if (!va || !vb) throw new NotFoundError("Version not found");
+  const linesB = vb.body.split("\n");
+  const setA = new Set(va.body.split("\n").map((l) => l.trim()));
+  const setB = new Set(linesB.map((l) => l.trim()));
+  const diff: VersionCompare["diff"] = [];
+  for (const line of va.body.split("\n"))
+    diff.push({ line, change: setB.has(line.trim()) ? "same" : "removed" });
+  for (const line of linesB) if (!setA.has(line.trim())) diff.push({ line, change: "added" });
+  return {
+    a: { version: va.version, title: va.title, body: va.body },
+    b: { version: vb.version, title: vb.title, body: vb.body },
+    diff,
+  };
+}
+
+/**
+ * Contextual knowledge surfacing — given a context (e.g. a patrol shift's title/
+ * type/department) return related published SOPs/policies/guides, so relevant
+ * documents surface automatically without manual linking.
+ */
+export async function getContextualKnowledge(input: {
+  actor: Actor;
+  organizationId: string;
+  keywords: string;
+  limit?: number;
+}): Promise<KnowledgeSearchHit[]> {
+  if (input.keywords.trim().length === 0) return [];
+  return searchKnowledge({
+    actor: input.actor,
+    organizationId: input.organizationId,
+    query: input.keywords,
+    limit: input.limit ?? 5,
+  });
+}
+
+/** Distinct collections (folders) the actor can see. */
+export async function listCollections(input: {
+  actor: Actor;
+  organizationId: string;
+}): Promise<{ name: string; count: number }[]> {
+  requirePerm(input.actor, input.organizationId, "knowledge.view");
+  const rows = await prisma.knowledgeArticle.findMany({
+    where: { organizationId: input.organizationId, collection: { not: null } },
+    select: { collection: true, visibility: true, departmentId: true },
+  });
+  const counts = new Map<string, number>();
+  for (const r of rows) {
+    if (!r.collection || !canSeeArticle(input.actor, input.organizationId, r)) continue;
+    counts.set(r.collection, (counts.get(r.collection) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
