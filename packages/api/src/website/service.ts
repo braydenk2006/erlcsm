@@ -41,36 +41,40 @@ export async function ensureDefaultSite(organizationId: string): Promise<void> {
     where: { id: organizationId },
     select: { name: true },
   });
-  const existing = await prisma.websiteSettings.findUnique({ where: { organizationId } });
-  if (!existing) {
-    await prisma.websiteSettings.create({
-      data: {
-        organizationId,
-        branding: defaultBranding(org?.name ?? "Community") as object,
-        theme: DEFAULT_THEME as object,
-        nav: DEFAULT_NAV as unknown as object,
-        seo: {},
-        publicToggles: DEFAULT_PUBLIC_TOGGLES as object,
-        published: false,
-      },
-    });
-  }
+  const name = org?.name ?? "Community";
+  // Upsert is idempotent under concurrent first-load requests (settings + pages).
+  await prisma.websiteSettings.upsert({
+    where: { organizationId },
+    create: {
+      organizationId,
+      branding: defaultBranding(name) as object,
+      theme: DEFAULT_THEME as object,
+      nav: DEFAULT_NAV as unknown as object,
+      seo: {},
+      publicToggles: DEFAULT_PUBLIC_TOGGLES as object,
+      published: false,
+    },
+    update: {},
+  });
   const pageCount = await prisma.websitePage.count({ where: { organizationId } });
   if (pageCount === 0) {
-    for (const page of defaultPages(org?.name ?? "Community")) {
-      await prisma.websitePage.create({
-        data: {
-          publicId: createPublicId("wpg"),
-          organizationId,
-          slug: page.slug,
-          title: page.title,
-          status: page.status,
-          visibility: page.visibility,
-          blocks: page.blocks as unknown as object,
-          seo: page.seo as object,
-          system: page.system ?? false,
-        },
-      });
+    for (const page of defaultPages(name)) {
+      // Tolerate races on the (organizationId, slug) unique constraint.
+      await prisma.websitePage
+        .create({
+          data: {
+            publicId: createPublicId("wpg"),
+            organizationId,
+            slug: page.slug,
+            title: page.title,
+            status: page.status,
+            visibility: page.visibility,
+            blocks: page.blocks as unknown as object,
+            seo: page.seo as object,
+            system: page.system ?? false,
+          },
+        })
+        .catch(() => undefined);
     }
   }
 }
