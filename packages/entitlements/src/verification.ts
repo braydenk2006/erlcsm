@@ -33,6 +33,11 @@ const OVERRIDES: Partial<Record<CapabilityKey, VerificationStatus>> = {
   "shifts.tracking": "verified",
   "activity.tracking": "verified",
   "sessions.management": "verified",
+  // Workflow Platform (Phase 5) — forms, applications, training on one engine
+  "forms.basic": "verified",
+  "applications.basic": "verified",
+  "training.basic": "verified",
+  "workflows.builder": "partial",
   // Server management (verified — ER:LC live suite)
   "server.live_status": "verified",
   "server.players": "verified",

@@ -215,6 +215,9 @@ importers:
       '@commandry/validation':
         specifier: workspace:*
         version: link:../validation
+      '@commandry/workflow':
+        specifier: workspace:*
+        version: link:../workflow
     devDependencies:
       vitest:
         specifier: ^4.1.10
@@ -444,6 +447,12 @@ importers:
       zod:
         specifier: ^4.4.3
         version: 4.4.3
+    devDependencies:
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@26.1.2)(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))
+
+  packages/workflow:
     devDependencies:
       vitest:
         specifier: ^4.1.10

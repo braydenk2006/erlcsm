@@ -26,7 +26,8 @@
     "@commandry/permissions": "workspace:*",
     "@commandry/roblox": "workspace:*",
     "@commandry/shared": "workspace:*",
-    "@commandry/validation": "workspace:*"
+    "@commandry/validation": "workspace:*",
+    "@commandry/workflow": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^4.1.10"

@@ -219,6 +219,12 @@ model Organization {
   presenceIntervals     PresenceInterval[]
   shiftLoggedMinutes    ShiftLoggedMinutes[]
   correctionRequests    CorrectionRequest[]
+  workflowTemplates     WorkflowTemplate[]
+  workflowSubmissions   WorkflowSubmission[]
+  workflowEvents        WorkflowEvent[]
+  workflowComments      WorkflowComment[]
+  workflowAssignments   WorkflowAssignment[]
+  workflowAttachments   WorkflowAttachment[]
 
   @@index([status])
   @@map("organizations")
@@ -1507,6 +1513,142 @@ model CorrectionRequest {
 
   @@index([organizationId, membershipId])
   @@map("correction_requests")
+}
+
+// =============================================================================
+// Workflow Platform — one reusable engine for forms, applications, training,
+// approvals, reviews, and any future submission/approval process. No feature
+// stores its own form/approval/submission logic.
+// =============================================================================
+
+model WorkflowTemplate {
+  id              String   @id @default(cuid())
+  publicId        String   @unique @map("public_id")
+  organizationId  String   @map("organization_id")
+  key             String
+  name            String
+  category        String   @default("general")
+  description     String?
+  form            Json     @default("{}")
+  workflow        Json     @default("{}")
+  isBuiltIn       Boolean  @default(false) @map("is_built_in")
+  active          Boolean  @default(true)
+  submitRoleKeys  String[] @default([]) @map("submit_role_keys")
+  reviewRoleKeys  String[] @default([]) @map("review_role_keys")
+  version         Int      @default(1)
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  submissions  WorkflowSubmission[]
+
+  @@unique([organizationId, key])
+  @@index([organizationId, category])
+  @@map("workflow_templates")
+}
+
+model WorkflowSubmission {
+  id                    String    @id @default(cuid())
+  publicId              String    @unique @map("public_id")
+  organizationId        String    @map("organization_id")
+  templateId            String    @map("template_id")
+  submitterMembershipId String    @map("submitter_membership_id")
+  submitterUserId       String    @map("submitter_user_id")
+  status                String    @default("DRAFT")
+  currentStageId        String?   @map("current_stage_id")
+  data                  Json      @default("{}")
+  version               Int       @default(0)
+  submittedAt           DateTime? @map("submitted_at")
+  completedAt           DateTime? @map("completed_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  template     WorkflowTemplate     @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  events       WorkflowEvent[]
+  comments     WorkflowComment[]
+  assignments  WorkflowAssignment[]
+  attachments  WorkflowAttachment[]
+
+  @@index([organizationId, templateId, status])
+  @@index([organizationId, submitterMembershipId])
+  @@map("workflow_submissions")
+}
+
+// Append-only submission timeline + automation-hook event stream.
+model WorkflowEvent {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  submissionId   String   @map("submission_id")
+  type           String
+  actorUserId    String?  @map("actor_user_id")
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  submission   WorkflowSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId, createdAt])
+  @@index([organizationId, type])
+  @@map("workflow_events")
+}
+
+model WorkflowComment {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  submissionId   String   @map("submission_id")
+  authorUserId   String   @map("author_user_id")
+  body           String
+  visibility     String   @default("APPLICANT")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  submission   WorkflowSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@map("workflow_comments")
+}
+
+model WorkflowAssignment {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  submissionId        String    @map("submission_id")
+  stageId             String    @map("stage_id")
+  assigneeMembershipId String   @map("assignee_membership_id")
+  assigneeUserId      String    @map("assignee_user_id")
+  decision            String?
+  decisionNote        String?   @map("decision_note")
+  decidedAt           DateTime? @map("decided_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  submission   WorkflowSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId, stageId])
+  @@index([assigneeMembershipId, decision])
+  @@map("workflow_assignments")
+}
+
+// Attachment metadata. Files are served through a permission-checked endpoint by
+// id — never a predictable public URL. Storage backend is pluggable.
+model WorkflowAttachment {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  submissionId   String   @map("submission_id")
+  uploaderUserId String   @map("uploader_user_id")
+  filename       String
+  contentType    String   @map("content_type")
+  sizeBytes      Int      @map("size_bytes")
+  storageKey     String   @map("storage_key")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  submission   WorkflowSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@map("workflow_attachments")
 }
 
 // =============================================================================

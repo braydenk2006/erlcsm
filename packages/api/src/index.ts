@@ -128,3 +128,21 @@ export {
   decideCorrectionRequest,
   type PresenceReviewRow,
 } from "./operations/presence-tracking";
+export {
+  ensureBuiltInTemplates,
+  listTemplates,
+  createTemplate,
+  createDraft,
+  saveDraft,
+  submitSubmission,
+  decide,
+  assignReviewer,
+  addComment,
+  getSubmission,
+  listSubmissions,
+  getWorkflowAnalytics,
+  type TemplateView,
+  type SubmissionView,
+  type SubmissionDetail,
+  type WorkflowAnalytics,
+} from "./workflow/service";

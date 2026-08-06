@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     "@commandry/erlc",
     "@commandry/operations",
     "@commandry/roblox",
+    "@commandry/workflow",
     "@commandry/integrations",
     "@commandry/observability",
     "@commandry/permissions",
