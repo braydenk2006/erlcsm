@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     "@commandry/command-center",
     "@commandry/database",
     "@commandry/entitlements",
+    "@commandry/insights",
     "@commandry/erlc",
     "@commandry/operations",
     "@commandry/roblox",

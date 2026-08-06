@@ -480,6 +480,174 @@ function Widget({
         </ul>
       );
     }
+    case "alerts": {
+      const alerts =
+        (data as {
+          id: string;
+          level: string;
+          title: string;
+          body: string | null;
+          status: string;
+        }[]) ?? [];
+      if (alerts.length === 0)
+        return <p className="text-sm text-[var(--cmd-fg-muted)]">No active alerts.</p>;
+      return (
+        <ul className="space-y-1.5">
+          {alerts.slice(0, 6).map((a) => (
+            <li
+              key={a.id}
+              className="flex items-start gap-2 rounded-[var(--cmd-radius)] bg-[var(--cmd-bg-muted)] px-2.5 py-1.5 text-sm"
+            >
+              <Badge
+                tone={
+                  a.level === "critical"
+                    ? "danger"
+                    : a.level === "warning"
+                      ? "warning"
+                      : a.level === "attention"
+                        ? "accent"
+                        : "neutral"
+                }
+              >
+                {a.level}
+              </Badge>
+              <span>{a.title}</span>
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    case "recommendations": {
+      const recs =
+        (data as {
+          key: string;
+          severity: string;
+          text: string;
+          actions: { key: string; label: string; href: string }[];
+        }[]) ?? [];
+      if (recs.length === 0)
+        return (
+          <p className="text-sm text-[var(--cmd-fg-muted)]">
+            No recommendations — everything is on target.
+          </p>
+        );
+      return (
+        <ul className="space-y-2">
+          {recs.slice(0, 6).map((r) => (
+            <li key={r.key} className="rounded-[var(--cmd-radius)] bg-[var(--cmd-bg-muted)] p-2.5">
+              <div className="flex items-start gap-2 text-sm">
+                <Badge tone={sevTone[r.severity] ?? "neutral"}>{r.severity}</Badge>
+                <span>{r.text}</span>
+              </div>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {r.actions.map((a) => (
+                  <Button key={a.key} size="sm" variant="outline" asChild>
+                    <Link href={a.href}>{a.label}</Link>
+                  </Button>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    case "kpis": {
+      const kpis =
+        (data as {
+          key: string;
+          label: string;
+          unit: string;
+          current: number;
+          target: number;
+          severity: string;
+          trend: { type: string };
+        }[]) ?? [];
+      if (kpis.length === 0)
+        return <p className="text-sm text-[var(--cmd-fg-muted)]">No metrics yet.</p>;
+      const fmt = (unit: string, v: number) =>
+        unit === "ratio" || unit === "percent"
+          ? `${Math.round(v * 100)}%`
+          : unit === "hours"
+            ? `${Math.round(v * 10) / 10}h`
+            : `${Math.round(v)}`;
+      const arrow = (t: string) => (t.includes("improv") ? "↑" : t.includes("declin") ? "↓" : "→");
+      return (
+        <ul className="grid gap-1.5 sm:grid-cols-2">
+          {kpis.map((k) => (
+            <li
+              key={k.key}
+              className="flex items-center justify-between rounded-[var(--cmd-radius)] bg-[var(--cmd-bg-muted)] px-2.5 py-1.5 text-sm"
+              title={`Target ${fmt(k.unit, k.target)}`}
+            >
+              <span className="truncate">{k.label}</span>
+              <span className="flex items-center gap-1.5">
+                <span className="text-xs text-[var(--cmd-fg-muted)]">{arrow(k.trend.type)}</span>
+                <Badge tone={sevTone[k.severity] ?? "neutral"}>{fmt(k.unit, k.current)}</Badge>
+              </span>
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    case "goals": {
+      const goals =
+        (data as {
+          id: string;
+          name: string;
+          progress: number;
+          onTarget: boolean;
+          severity: string;
+          estimatedDaysToTarget: number | null;
+        }[]) ?? [];
+      if (goals.length === 0)
+        return (
+          <p className="text-sm text-[var(--cmd-fg-muted)]">
+            No goals set. Create one to track progress.
+          </p>
+        );
+      return (
+        <ul className="space-y-2">
+          {goals.map((g) => (
+            <li key={g.id}>
+              <div className="flex items-center justify-between text-sm">
+                <span className="truncate">{g.name}</span>
+                <span className="text-xs text-[var(--cmd-fg-muted)]">
+                  {Math.round(g.progress * 100)}%
+                  {g.estimatedDaysToTarget !== null ? ` · ~${g.estimatedDaysToTarget}d` : ""}
+                </span>
+              </div>
+              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-[var(--cmd-bg-muted)]">
+                <div
+                  className={`h-full rounded-full ${g.onTarget ? "bg-[var(--cmd-success)]" : g.severity === "critical" || g.severity === "warning" ? "bg-[var(--cmd-warning)]" : "bg-[var(--cmd-accent)]"}`}
+                  style={{ width: `${Math.round(g.progress * 100)}%` }}
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    case "insights_feed": {
+      const feed =
+        (data as {
+          key: string;
+          severity: string;
+          title: string;
+          recommendation: string | null;
+          evidence: string;
+        }[]) ?? [];
+      if (feed.length === 0)
+        return <p className="text-sm text-[var(--cmd-fg-muted)]">No notable changes.</p>;
+      return (
+        <ul className="space-y-1.5">
+          {feed.slice(0, 8).map((i) => (
+            <li key={i.key} className="text-sm" title={i.evidence}>
+              <Badge tone={sevTone[i.severity] ?? "neutral"}>{i.severity}</Badge> {i.title}
+            </li>
+          ))}
+        </ul>
+      );
+    }
     default:
       return <p className="text-sm text-[var(--cmd-fg-muted)]">—</p>;
   }

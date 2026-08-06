@@ -163,6 +163,22 @@ export {
 } from "./automation/service";
 export { getCommandCenter, type CommandCenterSnapshot } from "./command-center/service";
 export {
+  getInsightsBundle,
+  listGoals,
+  createGoal,
+  deleteGoal,
+  listAlerts,
+  updateAlertStatus,
+  getDepartmentInsights,
+  getInsightTimeline,
+  type InsightsBundle,
+  type GoalView,
+  type AlertView,
+  type DepartmentInsights,
+  type TimelineEntry,
+  type CommunityHealthExpanded,
+} from "./insights/service";
+export {
   getDashboard,
   saveDashboardLayout,
   resetDashboardLayout,

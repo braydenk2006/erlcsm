@@ -168,6 +168,15 @@ export const NAV_REGISTRY: NavRegistryEntry[] = [
     permission: null,
   },
   {
+    key: "insights",
+    label: "Insights",
+    href: "/app/insights",
+    iconName: "Sparkles",
+    group: "operations",
+    feature: null,
+    permission: "insights.view",
+  },
+  {
     key: "analytics",
     label: "Analytics",
     href: "/app/analytics",

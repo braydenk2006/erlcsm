@@ -24,6 +24,7 @@ import {
   CalendarClock,
   Briefcase,
   Megaphone,
+  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
@@ -53,6 +54,7 @@ const ICONS: Record<string, LucideIcon> = {
   Settings,
   Megaphone,
   CalendarClock,
+  Sparkles,
 };
 
 type OrgSummary = {

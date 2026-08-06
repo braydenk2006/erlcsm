@@ -235,6 +235,10 @@ model Organization {
   automationEvents      AutomationEventLog[]
   dashboardPreferences  DashboardPreference[]
   healthSnapshots       HealthSnapshot[]
+  goals                 Goal[]
+  alerts                Alert[]
+  insightRecords        InsightRecord[]
+  kpiSnapshots          KpiSnapshot[]
 
   @@index([status])
   @@map("organizations")
@@ -1850,6 +1854,102 @@ model HealthSnapshot {
 
   @@unique([organizationId, day])
   @@map("health_snapshots")
+}
+
+// =============================================================================
+// Insights & Recommendations Engine — deterministic intelligence layer. KPI/day
+// snapshots power trends + projections; insights/alerts are derived, not inferred.
+// =============================================================================
+
+// One row per organization per KPI per day — powers deterministic trends + goal projections.
+model KpiSnapshot {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  kpiKey         String   @map("kpi_key")
+  day            String
+  value          Float
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, kpiKey, day])
+  @@index([organizationId, kpiKey])
+  @@map("kpi_snapshots")
+}
+
+// Append-only insight timeline/history.
+model InsightRecord {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  key            String
+  category       String
+  severity       String
+  title          String
+  explanation    String
+  current        Float?
+  previous       Float?
+  trend          String?
+  recommendation String?
+  evidence       String?
+  departmentId   String?  @map("department_id")
+  day            String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, key, day])
+  @@index([organizationId, category, severity])
+  @@index([organizationId, createdAt])
+  @@map("insight_records")
+}
+
+model Goal {
+  id             String    @id @default(cuid())
+  publicId       String    @unique @map("public_id")
+  organizationId String    @map("organization_id")
+  name           String
+  metricKey      String    @map("metric_key")
+  target         Float
+  scope          String    @default("organization")
+  departmentId   String?   @map("department_id")
+  roleKey        String?   @map("role_key")
+  baseline       Float?
+  recurring      Boolean   @default(false)
+  dueAt          DateTime? @map("due_at")
+  status         String    @default("active")
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("goals")
+}
+
+model Alert {
+  id             String    @id @default(cuid())
+  publicId       String    @unique @map("public_id")
+  organizationId String    @map("organization_id")
+  insightKey     String    @map("insight_key")
+  level          String
+  title          String
+  body           String?
+  status         String    @default("open")
+  departmentId   String?   @map("department_id")
+  resourceType   String?   @map("resource_type")
+  resourceId     String?   @map("resource_id")
+  day            String
+  acknowledgedByUserId String? @map("acknowledged_by_user_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, insightKey, day])
+  @@index([organizationId, status])
+  @@map("alerts")
 }
 
 // =============================================================================

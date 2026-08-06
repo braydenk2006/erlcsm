@@ -76,6 +76,14 @@ export const ACTIONS = [
   "automation.logs",
   "automation.templates",
 
+  // Insights & Recommendations Engine
+  "insights.view",
+  "kpis.view",
+  "recommendations.view",
+  "goals.manage",
+  "alerts.manage",
+  "department.insights",
+
   // Moderation
   "moderation:read",
   "moderation:create",

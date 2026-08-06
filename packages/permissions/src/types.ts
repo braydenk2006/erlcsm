@@ -123,6 +123,15 @@ const SHIFTS_ALL: Action[] = [
   "shifts.analytics.view",
 ];
 
+// Insights engine — viewing is broad; goals/alerts management is staff-level.
+const INSIGHTS_VIEW: Action[] = [
+  "insights.view",
+  "kpis.view",
+  "recommendations.view",
+  "department.insights",
+];
+const INSIGHTS_MANAGE: Action[] = [...INSIGHTS_VIEW, "goals.manage", "alerts.manage"];
+
 // Full automation management (owners/admins).
 const AUTOMATION_ALL: Action[] = [
   "automation.view",
@@ -201,6 +210,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...CAD_V2_ALL,
     ...SHIFTS_ALL,
     ...AUTOMATION_ALL,
+    ...INSIGHTS_MANAGE,
     "erlc:view",
     "erlc:command",
     "erlc:manage",
@@ -256,6 +266,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...CAD_V2_ALL,
     ...SHIFTS_ALL,
     ...AUTOMATION_ALL,
+    ...INSIGHTS_MANAGE,
     "erlc:view",
     "erlc:command",
     "erlc:manage",
@@ -273,6 +284,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "moderation:create",
     ...CAD_V2_OFFICER,
     ...SHIFTS_STAFF,
+    ...INSIGHTS_VIEW,
     "erlc:view",
     "document:read",
   ],
@@ -290,6 +302,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "document:read",
     ...CAD_V2_OFFICER,
     ...SHIFTS_STAFF,
+    ...INSIGHTS_VIEW,
     "erlc:view",
   ],
   // Baseline members do NOT get CAD access — CAD (law-enforcement) records must be

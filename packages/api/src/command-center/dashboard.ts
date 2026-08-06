@@ -19,6 +19,7 @@ import { authorize, isAction, type Action, type Actor } from "@commandry/permiss
 import { ForbiddenError } from "@commandry/shared";
 import { getOrganizationManifest } from "../subscriptions/service";
 import { listNotifications, unreadNotificationCount } from "../notifications/service";
+import { getInsightsBundle, listGoals } from "../insights/service";
 
 function dayKey(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -357,6 +358,23 @@ export async function getDashboard(input: {
       metadata: e.metadata,
     })),
   };
+
+  // Insights & Recommendations Engine widgets (Phase 9) — deterministic intelligence.
+  if (canDo("insights.view")) {
+    try {
+      const [bundle, goals] = await Promise.all([
+        getInsightsBundle({ actor, organizationId: org }),
+        listGoals({ actor, organizationId: org }),
+      ]);
+      data.alerts = bundle.alerts;
+      data.recommendations = bundle.recommendations;
+      data.kpis = bundle.kpis;
+      data.insights_feed = bundle.insights;
+      data.goals = goals;
+    } catch {
+      // Insights are additive; never break the core dashboard.
+    }
+  }
 
   return {
     organizationId: org,
