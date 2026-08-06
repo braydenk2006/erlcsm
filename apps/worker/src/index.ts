@@ -7,6 +7,7 @@ import { runErlcMaintenance } from "./erlc-maintenance";
 import { runCadExpiration } from "./cad-maintenance";
 import { runOperationsMaintenance } from "./operations-maintenance";
 import { runSchedulingMaintenance } from "./scheduling-maintenance";
+import { runAutomationDispatch } from "./automation-dispatch";
 
 const log = createLogger({ service: "worker" });
 
@@ -86,6 +87,9 @@ async function main() {
       if (job.name === "scheduling.maintenance") {
         return runSchedulingMaintenance();
       }
+      if (job.name === "automation.dispatch") {
+        return runAutomationDispatch();
+      }
       throw new Error(`Unknown job: ${job.name}`);
     },
     { connection },
@@ -108,6 +112,11 @@ async function main() {
   );
   await integrationsQueue.add(
     "scheduling.maintenance",
+    {},
+    { removeOnComplete: 50, removeOnFail: 50 },
+  );
+  await integrationsQueue.add(
+    "automation.dispatch",
     {},
     { removeOnComplete: 50, removeOnFail: 50 },
   );
@@ -140,7 +149,14 @@ async function main() {
           error: error instanceof Error ? error.message : "unknown",
         });
       });
-  }, 60000);
+    void integrationsQueue
+      .add("automation.dispatch", {}, { removeOnComplete: 50, removeOnFail: 50 })
+      .catch((error) => {
+        log.error("Failed to enqueue automation dispatch", {
+          error: error instanceof Error ? error.message : "unknown",
+        });
+      });
+  }, 15000);
 
   log.info("Ordinex worker started", { queues: Object.values(QUEUE_NAMES) });
 

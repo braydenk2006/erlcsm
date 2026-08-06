@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@commandry/audit": "workspace:*",
+    "@commandry/automation": "workspace:*",
     "@commandry/database": "workspace:*",
     "@commandry/entitlements": "workspace:*",
     "@commandry/integrations": "workspace:*",

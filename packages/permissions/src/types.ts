@@ -123,6 +123,19 @@ const SHIFTS_ALL: Action[] = [
   "shifts.analytics.view",
 ];
 
+// Full automation management (owners/admins).
+const AUTOMATION_ALL: Action[] = [
+  "automation.view",
+  "automation.create",
+  "automation.edit",
+  "automation.delete",
+  "automation.execute",
+  "automation.pause",
+  "automation.resume",
+  "automation.logs",
+  "automation.templates",
+];
+
 // What a staff host can do (claim, run, take attendance) — no scheduler/approval powers.
 const SHIFTS_STAFF: Action[] = [
   "shifts.claim",
@@ -187,6 +200,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "cad:manage",
     ...CAD_V2_ALL,
     ...SHIFTS_ALL,
+    ...AUTOMATION_ALL,
     "erlc:view",
     "erlc:command",
     "erlc:manage",
@@ -241,6 +255,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     "cad:manage",
     ...CAD_V2_ALL,
     ...SHIFTS_ALL,
+    ...AUTOMATION_ALL,
     "erlc:view",
     "erlc:command",
     "erlc:manage",

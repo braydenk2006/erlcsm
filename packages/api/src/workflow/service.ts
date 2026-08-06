@@ -17,6 +17,7 @@ import {
   type WorkflowStage,
 } from "@commandry/workflow";
 import { createNotification } from "../notifications/service";
+import { publishEvent } from "../automation/service";
 
 function has(actor: Actor, organizationId: string, action: Action): boolean {
   return authorize({ actor, organizationId, action }).allowed;
@@ -445,6 +446,28 @@ async function advanceFrom(
     title: `Your submission is ${status.replace(/_/g, " ").toLowerCase()}`,
     linkUrl: "/app/applications",
   }).catch(() => undefined);
+
+  // Publish standardized events onto the Automation bus.
+  if (status === "COMPLETED") {
+    const full = await prisma.workflowSubmission.findUnique({
+      where: { id: submissionId },
+      include: { template: { select: { category: true, name: true } } },
+    });
+    if (full) {
+      const base = {
+        organizationId,
+        resourceId: submissionId,
+        actorUserId: full.submitterUserId,
+        metadata: { category: full.template.category, templateName: full.template.name },
+      };
+      await publishEvent({ type: "Workflow.Completed", ...base }).catch(() => undefined);
+      if (full.template.category === "application") {
+        await publishEvent({ type: "Application.Approved", ...base }).catch(() => undefined);
+      } else if (full.template.category === "training") {
+        await publishEvent({ type: "Training.Completed", ...base }).catch(() => undefined);
+      }
+    }
+  }
   return { status };
 }
 

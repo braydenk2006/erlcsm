@@ -229,6 +229,9 @@ model Organization {
   websitePages          WebsitePage[]
   mediaAssets           MediaAsset[]
   websiteVisits         WebsiteVisit[]
+  automations           Automation[]
+  automationRuns        AutomationRun[]
+  automationEvents      AutomationEventLog[]
 
   @@index([status])
   @@map("organizations")
@@ -1734,6 +1737,82 @@ model WebsiteVisit {
   @@unique([organizationId, path, day])
   @@index([organizationId, day])
   @@map("website_visits")
+}
+
+// =============================================================================
+// Automation Platform — the event-driven backbone. Modules publish standardized
+// events; automations match a trigger, evaluate conditions, and run actions via
+// a durable queue. No module embeds its own automation logic.
+// =============================================================================
+
+// Immutable log of published events (audit + replay).
+model AutomationEventLog {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  type           String
+  resourceId     String?  @map("resource_id")
+  actorUserId    String?  @map("actor_user_id")
+  correlationId  String   @map("correlation_id")
+  metadata       Json     @default("{}")
+  version        Int      @default(1)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, type])
+  @@index([correlationId])
+  @@map("automation_events")
+}
+
+model Automation {
+  id              String   @id @default(cuid())
+  publicId        String   @unique @map("public_id")
+  organizationId  String   @map("organization_id")
+  name            String
+  description     String?
+  trigger         String
+  conditions      Json     @default("{}")
+  actions         Json     @default("[]")
+  enabled         Boolean  @default(true)
+  isBuiltIn       Boolean  @default(false) @map("is_built_in")
+  version         Int      @default(1)
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  runs         AutomationRun[]
+
+  @@index([organizationId, trigger, enabled])
+  @@map("automations")
+}
+
+model AutomationRun {
+  id             String    @id @default(cuid())
+  publicId       String    @unique @map("public_id")
+  organizationId String    @map("organization_id")
+  automationId   String    @map("automation_id")
+  eventType      String    @map("event_type")
+  correlationId  String    @map("correlation_id")
+  status         String    @default("QUEUED")
+  attempts       Int       @default(0)
+  error          String?
+  log            Json      @default("[]")
+  eventPayload   Json      @default("{}") @map("event_payload")
+  startedAt      DateTime? @map("started_at")
+  finishedAt     DateTime? @map("finished_at")
+  nextRetryAt    DateTime? @map("next_retry_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  automation   Automation   @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  // Idempotency: one run per (automation, event correlation) — no duplicate execution.
+  @@unique([automationId, correlationId])
+  @@index([organizationId, status])
+  @@map("automation_runs")
 }
 
 // =============================================================================

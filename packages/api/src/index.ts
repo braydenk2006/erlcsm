@@ -147,6 +147,22 @@ export {
   type WorkflowAnalytics,
 } from "./workflow/service";
 export {
+  publishEvent,
+  runAutomation,
+  processQueuedRuns,
+  ensureBuiltInAutomations,
+  listAutomations,
+  createAutomation,
+  setAutomationEnabled,
+  deleteAutomation,
+  listRuns,
+  getAutomationAnalytics,
+  type AutomationView,
+  type RunView,
+  type AutomationAnalytics,
+} from "./automation/service";
+export { getCommandCenter, type CommandCenterSnapshot } from "./command-center/service";
+export {
   ensureDefaultSite,
   getWebsiteSettings,
   updateWebsiteSettings,

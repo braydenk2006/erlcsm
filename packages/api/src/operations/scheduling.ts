@@ -19,6 +19,7 @@ import {
   createPublicId,
 } from "@commandry/shared";
 import { createNotification, notifyUsers } from "../notifications/service";
+import { publishEvent } from "../automation/service";
 import { recordAttendance } from "./attendance";
 import { recordParticipationEvent } from "./participation";
 import {
@@ -1019,6 +1020,14 @@ export async function completeScheduledShift(input: {
     resourceId: shift.id,
     source: "WEB",
     metadata: { durationMinutes },
+  }).catch(() => undefined);
+
+  await publishEvent({
+    type: "Shift.Completed",
+    organizationId: input.organizationId,
+    resourceId: shift.id,
+    actorUserId: input.actor.userId,
+    metadata: { title: shift.title, loggedMinutes: durationMinutes },
   }).catch(() => undefined);
 }
 

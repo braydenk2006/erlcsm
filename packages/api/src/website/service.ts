@@ -26,6 +26,7 @@ import {
   type Visibility,
   type WebsiteSettingsDef,
 } from "@commandry/website";
+import { publishEvent } from "../automation/service";
 
 function requirePerm(actor: Actor, organizationId: string, action: Action): void {
   if (!authorize({ actor, organizationId, action }).allowed)
@@ -137,6 +138,13 @@ export async function updateWebsiteSettings(input: {
     source: "WEB",
     metadata: { published: input.published },
   }).catch(() => undefined);
+  if (input.published === true) {
+    await publishEvent({
+      type: "Website.Published",
+      organizationId: input.organizationId,
+      actorUserId: input.actor.userId,
+    }).catch(() => undefined);
+  }
 }
 
 // ---------------------------------------------------------------------------

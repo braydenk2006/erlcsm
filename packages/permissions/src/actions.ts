@@ -65,6 +65,17 @@ export const ACTIONS = [
   "shifts.integration.manage",
   "shifts.analytics.view",
 
+  // Automation Platform
+  "automation.view",
+  "automation.create",
+  "automation.edit",
+  "automation.delete",
+  "automation.execute",
+  "automation.pause",
+  "automation.resume",
+  "automation.logs",
+  "automation.templates",
+
   // Moderation
   "moderation:read",
   "moderation:create",

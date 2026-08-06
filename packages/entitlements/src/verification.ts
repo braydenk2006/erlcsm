@@ -76,6 +76,8 @@ const OVERRIDES: Partial<Record<CapabilityKey, VerificationStatus>> = {
   // Community Experience Platform (Phase 6)
   "website.builder": "verified",
   "website.public_staff": "verified",
+  // Automation Platform (Phase 7) — event-driven backbone
+  "automations.builder": "verified",
   // Support commitments (operational, delivered via onboarding — not code)
   "support.priority": "coming_soon",
   "support.migration": "coming_soon",

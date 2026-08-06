@@ -3,6 +3,7 @@ import { prisma } from "@commandry/database";
 import { authorize, type Action, type Actor } from "@commandry/permissions";
 import { ForbiddenError, NotFoundError, ValidationError, createPublicId } from "@commandry/shared";
 import { notifyUsers } from "../notifications/service";
+import { publishEvent } from "../automation/service";
 
 export type AnnouncementView = {
   id: string;
@@ -193,6 +194,14 @@ export async function publishAnnouncement(input: {
     resourceId: announcement.id,
     source: "WEB",
     metadata: { action: "publish", recipients: recipients.length },
+  }).catch(() => undefined);
+
+  await publishEvent({
+    type: "Announcement.Published",
+    organizationId: input.organizationId,
+    resourceId: announcement.id,
+    actorUserId: input.actor.userId,
+    metadata: { title: announcement.title },
   }).catch(() => undefined);
 }
 
