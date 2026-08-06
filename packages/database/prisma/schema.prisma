@@ -36,6 +36,7 @@ model User {
   notifications         Notification[]
   announcements         Announcement[]
   robloxVerification    RobloxVerification?
+  dashboardPreferences  DashboardPreference[]
 
   @@map("users")
 }
@@ -232,6 +233,8 @@ model Organization {
   automations           Automation[]
   automationRuns        AutomationRun[]
   automationEvents      AutomationEventLog[]
+  dashboardPreferences  DashboardPreference[]
+  healthSnapshots       HealthSnapshot[]
 
   @@index([status])
   @@map("organizations")
@@ -1813,6 +1816,40 @@ model AutomationRun {
   @@unique([automationId, correlationId])
   @@index([organizationId, status])
   @@map("automation_runs")
+}
+
+// =============================================================================
+// Command Center — personalized dashboard layout + deterministic health trend
+// =============================================================================
+
+model DashboardPreference {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  layout         Json     @default("[]")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("dashboard_preferences")
+}
+
+// One row per organization per day; powers deterministic Community Health trend.
+model HealthSnapshot {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  day            String
+  overall        Int
+  factors        Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, day])
+  @@map("health_snapshots")
 }
 
 // =============================================================================

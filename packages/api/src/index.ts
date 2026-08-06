@@ -163,6 +163,15 @@ export {
 } from "./automation/service";
 export { getCommandCenter, type CommandCenterSnapshot } from "./command-center/service";
 export {
+  getDashboard,
+  saveDashboardLayout,
+  resetDashboardLayout,
+  searchCommandPalette,
+  getPaletteContext,
+  type DashboardPayload,
+  type PaletteResult,
+} from "./command-center/dashboard";
+export {
   ensureDefaultSite,
   getWebsiteSettings,
   updateWebsiteSettings,

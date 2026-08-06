@@ -20,6 +20,7 @@
   "dependencies": {
     "@commandry/audit": "workspace:*",
     "@commandry/automation": "workspace:*",
+    "@commandry/command-center": "workspace:*",
     "@commandry/database": "workspace:*",
     "@commandry/entitlements": "workspace:*",
     "@commandry/integrations": "workspace:*",

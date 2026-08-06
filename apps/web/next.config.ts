@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     "@commandry/auth",
     "@commandry/cad",
     "@commandry/automation",
+    "@commandry/command-center",
     "@commandry/database",
     "@commandry/entitlements",
     "@commandry/erlc",

@@ -15,7 +15,6 @@ import {
   Menu,
   Plus,
   Radio,
-  Search,
   Settings,
   Shield,
   Users,
@@ -28,8 +27,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Badge, Button, cn } from "@commandry/ui";
+import { Button, cn } from "@commandry/ui";
 import { BrandLockup } from "@/components/brand-mark";
+import { CommandPalette } from "@/components/command-center/command-palette";
 import { OrganizationSwitcher } from "@/components/organization-switcher";
 import { NotificationBell } from "@/components/org/notification-bell";
 import type { NavItem } from "@/lib/nav-registry";
@@ -150,15 +150,7 @@ export function AppShell({
             >
               <Menu className="h-4 w-4" />
             </Button>
-            <button
-              type="button"
-              className="cmd-glass hidden items-center gap-2 rounded-[var(--cmd-radius-pill)] px-4 py-2.5 text-sm text-[var(--cmd-fg-muted)] md:inline-flex"
-              aria-label="Open command palette"
-            >
-              <Search className="h-4 w-4" />
-              <span>Search or jump…</span>
-              <Badge tone="accent">⌘K</Badge>
-            </button>
+            <CommandPalette />
           </div>
           <div className="flex items-center gap-3 text-sm">
             <NotificationBell />
