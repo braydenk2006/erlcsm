@@ -73,8 +73,9 @@ const OVERRIDES: Partial<Record<CapabilityKey, VerificationStatus>> = {
   "cad.multi_agency": "partial",
   // Documents (partial — basic storage schema only)
   "documents.basic": "partial",
-  // Website (partial — public staff directory surface exists as scaffold)
-  "website.public_staff": "partial",
+  // Community Experience Platform (Phase 6)
+  "website.builder": "verified",
+  "website.public_staff": "verified",
   // Support commitments (operational, delivered via onboarding — not code)
   "support.priority": "coming_soon",
   "support.migration": "coming_soon",

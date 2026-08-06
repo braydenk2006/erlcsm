@@ -225,6 +225,10 @@ model Organization {
   workflowComments      WorkflowComment[]
   workflowAssignments   WorkflowAssignment[]
   workflowAttachments   WorkflowAttachment[]
+  websiteSettings       WebsiteSettings?
+  websitePages          WebsitePage[]
+  mediaAssets           MediaAsset[]
+  websiteVisits         WebsiteVisit[]
 
   @@index([status])
   @@map("organizations")
@@ -1649,6 +1653,87 @@ model WorkflowAttachment {
 
   @@index([submissionId])
   @@map("workflow_attachments")
+}
+
+// =============================================================================
+// Community Experience Platform — a public website that CONSUMES existing
+// Ordinex data (announcements, members, departments, shifts, applications,
+// server status). Pages store block layouts; dynamic blocks resolve live data.
+// =============================================================================
+
+model WebsiteSettings {
+  id             String   @id @default(cuid())
+  organizationId String   @unique @map("organization_id")
+  branding       Json     @default("{}")
+  theme          Json     @default("{}")
+  nav            Json     @default("[]")
+  seo            Json     @default("{}")
+  publicToggles  Json     @default("{}") @map("public_toggles")
+  published      Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("website_settings")
+}
+
+model WebsitePage {
+  id              String    @id @default(cuid())
+  publicId        String    @unique @map("public_id")
+  organizationId  String    @map("organization_id")
+  slug            String
+  title           String
+  status          String    @default("DRAFT")
+  visibility      String    @default("PUBLIC")
+  blocks          Json      @default("[]")
+  seo             Json      @default("{}")
+  publishAt       DateTime? @map("publish_at")
+  system          Boolean   @default(false)
+  version         Int       @default(1)
+  createdByUserId String?   @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, status])
+  @@map("website_pages")
+}
+
+model MediaAsset {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  kind           String   @default("image")
+  url            String
+  alt            String?
+  folder         String?
+  sizeBytes      Int?     @map("size_bytes")
+  uploaderUserId String?  @map("uploader_user_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, folder])
+  @@map("media_assets")
+}
+
+// Privacy-preserving aggregate page-view counter (no PII, no per-visitor rows).
+model WebsiteVisit {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  path           String
+  day            String
+  count          Int      @default(0)
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, path, day])
+  @@index([organizationId, day])
+  @@map("website_visits")
 }
 
 // =============================================================================

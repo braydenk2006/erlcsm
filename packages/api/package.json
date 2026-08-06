@@ -27,6 +27,7 @@
     "@commandry/roblox": "workspace:*",
     "@commandry/shared": "workspace:*",
     "@commandry/validation": "workspace:*",
+    "@commandry/website": "workspace:*",
     "@commandry/workflow": "workspace:*"
   },
   "devDependencies": {
