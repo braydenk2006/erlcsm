@@ -163,6 +163,31 @@ export {
 } from "./automation/service";
 export { getCommandCenter, type CommandCenterSnapshot } from "./command-center/service";
 export {
+  listArticles,
+  searchKnowledge,
+  getArticle,
+  getRelated,
+  createArticle,
+  updateArticle,
+  transitionArticle,
+  rollbackArticle,
+  deleteArticle,
+  type ArticleView,
+  type KnowledgeSearchHit,
+} from "./knowledge/service";
+export {
+  askOrdinex,
+  listConversations,
+  getConversation,
+  updateConversation,
+  deleteConversation,
+  getAiAnalytics,
+  type AskResult,
+  type ConversationView,
+  type MessageView,
+  type AiAnalytics,
+} from "./ai/service";
+export {
   getInsightsBundle,
   listGoals,
   createGoal,

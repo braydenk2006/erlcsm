@@ -132,6 +132,12 @@ const INSIGHTS_VIEW: Action[] = [
 ];
 const INSIGHTS_MANAGE: Action[] = [...INSIGHTS_VIEW, "goals.manage", "alerts.manage"];
 
+// Knowledge + AI — reading knowledge and using the assistant are broad;
+// authoring/publishing is staff-level; provider admin is owner/admin.
+const KNOWLEDGE_VIEW: Action[] = ["knowledge.view", "ai.use"];
+const KNOWLEDGE_MANAGE: Action[] = [...KNOWLEDGE_VIEW, "knowledge.manage", "knowledge.publish"];
+const AI_ADMIN: Action[] = ["ai.admin"];
+
 // Full automation management (owners/admins).
 const AUTOMATION_ALL: Action[] = [
   "automation.view",
@@ -211,6 +217,8 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...SHIFTS_ALL,
     ...AUTOMATION_ALL,
     ...INSIGHTS_MANAGE,
+    ...KNOWLEDGE_MANAGE,
+    ...AI_ADMIN,
     "erlc:view",
     "erlc:command",
     "erlc:manage",
@@ -267,6 +275,8 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...SHIFTS_ALL,
     ...AUTOMATION_ALL,
     ...INSIGHTS_MANAGE,
+    ...KNOWLEDGE_MANAGE,
+    ...AI_ADMIN,
     "erlc:view",
     "erlc:command",
     "erlc:manage",
@@ -285,6 +295,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...CAD_V2_OFFICER,
     ...SHIFTS_STAFF,
     ...INSIGHTS_VIEW,
+    ...KNOWLEDGE_VIEW,
     "erlc:view",
     "document:read",
   ],
@@ -303,6 +314,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...CAD_V2_OFFICER,
     ...SHIFTS_STAFF,
     ...INSIGHTS_VIEW,
+    ...KNOWLEDGE_VIEW,
     "erlc:view",
   ],
   // Baseline members do NOT get CAD access — CAD (law-enforcement) records must be

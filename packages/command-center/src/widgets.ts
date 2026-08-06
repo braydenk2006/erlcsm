@@ -203,6 +203,17 @@ export const WIDGETS: WidgetDef[] = [
     mobilePriority: 8,
     defaultVisible: true,
   },
+  // Knowledge Platform + AI Assistant (Phase 10)
+  {
+    key: "ai_assistant",
+    title: "Ask Ordinex",
+    category: "overview",
+    feature: null,
+    permission: "ai.use",
+    defaultSize: "md",
+    mobilePriority: 1,
+    defaultVisible: true,
+  },
 ];
 
 export function widgetByKey(key: string): WidgetDef | undefined {

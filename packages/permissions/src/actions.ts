@@ -84,6 +84,13 @@ export const ACTIONS = [
   "alerts.manage",
   "department.insights",
 
+  // Knowledge Platform + AI Assistant
+  "knowledge.view",
+  "knowledge.manage",
+  "knowledge.publish",
+  "ai.use",
+  "ai.admin",
+
   // Moderation
   "moderation:read",
   "moderation:create",

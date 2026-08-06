@@ -188,6 +188,9 @@ importers:
 
   packages/api:
     dependencies:
+      '@commandry/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@commandry/audit':
         specifier: workspace:*
         version: link:../audit
@@ -209,6 +212,9 @@ importers:
       '@commandry/integrations':
         specifier: workspace:*
         version: link:../integrations
+      '@commandry/knowledge':
+        specifier: workspace:*
+        version: link:../knowledge
       '@commandry/operations':
         specifier: workspace:*
         version: link:../operations
@@ -373,6 +379,12 @@ importers:
       '@commandry/shared':
         specifier: workspace:*
         version: link:../shared
+    devDependencies:
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@26.1.2)(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))
+
+  packages/knowledge:
     devDependencies:
       vitest:
         specifier: ^4.1.10

@@ -37,6 +37,7 @@ model User {
   announcements         Announcement[]
   robloxVerification    RobloxVerification?
   dashboardPreferences  DashboardPreference[]
+  aiConversations       AiConversation[]
 
   @@map("users")
 }
@@ -239,6 +240,11 @@ model Organization {
   alerts                Alert[]
   insightRecords        InsightRecord[]
   kpiSnapshots          KpiSnapshot[]
+  knowledgeArticles     KnowledgeArticle[]
+  knowledgeVersions     KnowledgeVersion[]
+  aiConversations       AiConversation[]
+  aiMessages            AiMessage[]
+  aiQueryLogs           AiQueryLog[]
 
   @@index([status])
   @@map("organizations")
@@ -1950,6 +1956,129 @@ model Alert {
   @@unique([organizationId, insightKey, day])
   @@index([organizationId, status])
   @@map("alerts")
+}
+
+// =============================================================================
+// Knowledge Platform — organizational knowledge with version history + lifecycle.
+// =============================================================================
+
+model KnowledgeArticle {
+  id              String    @id @default(cuid())
+  publicId        String    @unique @map("public_id")
+  organizationId  String    @map("organization_id")
+  title           String
+  slug            String
+  category        String    @default("article")
+  status          String    @default("draft")
+  visibility      String    @default("organization")
+  body            String    @default("")
+  excerpt         String    @default("")
+  tags            String[]  @default([])
+  keywords        String[]  @default([])
+  relatedIds      String[]  @default([]) @map("related_ids")
+  departmentId    String?   @map("department_id")
+  version         Int       @default(1)
+  authorUserId    String?   @map("author_user_id")
+  approverUserId  String?   @map("approver_user_id")
+  effectiveAt     DateTime? @map("effective_at")
+  expiresAt       DateTime? @map("expires_at")
+  publishedAt     DateTime? @map("published_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  versions     KnowledgeVersion[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, status, visibility])
+  @@index([organizationId, category])
+  @@map("knowledge_articles")
+}
+
+// Append-only version history; supports rollback + compare.
+model KnowledgeVersion {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  articleId      String   @map("article_id")
+  version        Int
+  title          String
+  body           String   @default("")
+  changeSummary  String?  @map("change_summary")
+  status         String
+  createdByUserId String? @map("created_by_user_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  article      KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, version])
+  @@index([organizationId, articleId])
+  @@map("knowledge_versions")
+}
+
+// =============================================================================
+// AI Platform — grounded assistant. Conversations + messages carry the citations
+// and evidence used; query log powers analytics + knowledge-gap detection.
+// =============================================================================
+
+model AiConversation {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  title          String
+  pinned         Boolean  @default(false)
+  shared         Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages     AiMessage[]
+
+  @@index([organizationId, userId])
+  @@map("ai_conversations")
+}
+
+model AiMessage {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  conversationId String   @map("conversation_id")
+  role           String
+  mode           String?
+  intent         String?
+  content        String
+  citations      Json     @default("[]")
+  evidence       Json     @default("[]")
+  actions        Json     @default("[]")
+  confidence     String?
+  usedLLM        Boolean  @default(false) @map("used_llm")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("ai_messages")
+}
+
+// Lightweight analytics — question + whether it was answered + top citation.
+model AiQueryLog {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  mode           String
+  intent         String
+  answered       Boolean  @default(false)
+  confidence     String?
+  topCitation    String?  @map("top_citation")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, answered])
+  @@index([organizationId, intent])
+  @@map("ai_query_logs")
 }
 
 // =============================================================================

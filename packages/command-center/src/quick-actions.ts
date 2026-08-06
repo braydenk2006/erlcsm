@@ -194,6 +194,22 @@ export const PALETTE_DESTINATIONS: QuickAction[] = [
     icon: "Radio",
   },
   {
+    key: "nav_assistant",
+    label: "Ask Ordinex (AI)",
+    href: "/app/assistant",
+    feature: null,
+    permission: "ai.use",
+    icon: "Bot",
+  },
+  {
+    key: "nav_knowledge",
+    label: "Knowledge",
+    href: "/app/knowledge",
+    feature: null,
+    permission: "knowledge.view",
+    icon: "Library",
+  },
+  {
     key: "nav_settings",
     label: "Settings",
     href: "/app/settings",

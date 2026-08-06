@@ -648,6 +648,30 @@ function Widget({
         </ul>
       );
     }
+    case "ai_assistant": {
+      const examples = [
+        "Why is Community Health low?",
+        "Find the pursuit policy",
+        "What should I do next?",
+      ];
+      return (
+        <div>
+          <p className="text-sm text-[var(--cmd-fg-muted)]">
+            Ask a grounded question — every answer is cited from your platform data and knowledge.
+          </p>
+          <div className="mt-2 flex flex-col gap-1.5">
+            {examples.map((ex) => (
+              <Button key={ex} size="sm" variant="outline" asChild className="justify-start">
+                <Link href={`/app/assistant?q=${encodeURIComponent(ex)}`}>{ex}</Link>
+              </Button>
+            ))}
+          </div>
+          <Button size="sm" className="mt-2" asChild>
+            <Link href="/app/assistant">Open Ask Ordinex</Link>
+          </Button>
+        </div>
+      );
+    }
     default:
       return <p className="text-sm text-[var(--cmd-fg-muted)]">—</p>;
   }
