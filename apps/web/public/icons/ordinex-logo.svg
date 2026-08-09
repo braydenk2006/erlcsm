@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" role="img" aria-label="Ordinex">
+  <defs>
+    <radialGradient id="oxField" cx="50%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="#12151F"/>
+      <stop offset="60%" stop-color="#090B12"/>
+      <stop offset="100%" stop-color="#040509"/>
+    </radialGradient>
+    <linearGradient id="oxSteel" x1="40" y1="40" x2="216" y2="216" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4F7FF"/>
+      <stop offset="0.45" stop-color="#C3CBDD"/>
+      <stop offset="0.7" stop-color="#8B94A9"/>
+      <stop offset="1" stop-color="#5A6274"/>
+    </linearGradient>
+    <linearGradient id="oxSteelSoft" x1="40" y1="40" x2="216" y2="216" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D8DEEC"/>
+      <stop offset="1" stop-color="#6C7488"/>
+    </linearGradient>
+    <linearGradient id="oxBlade" x1="128" y1="24" x2="128" y2="232" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4CB6FF"/>
+      <stop offset="0.42" stop-color="#3B6CFF"/>
+      <stop offset="0.72" stop-color="#6D4BF6"/>
+      <stop offset="1" stop-color="#9A3AF0"/>
+    </linearGradient>
+    <linearGradient id="oxBladeEdge" x1="128" y1="24" x2="128" y2="232" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#BFE2FF"/>
+      <stop offset="1" stop-color="#D9B6FF"/>
+    </linearGradient>
+    <radialGradient id="oxGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5B8CFF" stop-opacity="0.35"/>
+      <stop offset="65%" stop-color="#7C3AED" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <circle cx="128" cy="128" r="126" fill="url(#oxField)"/>
+  <circle cx="128" cy="128" r="96" fill="url(#oxGlow)"/>
+
+  <!-- Reticle ring (metallic), broken top and bottom for the blade -->
+  <g stroke="url(#oxSteel)" fill="none" stroke-linecap="round">
+    <path d="M 145 51 A 82 82 0 0 1 205 128" stroke-width="12"/>
+    <path d="M 205 128 A 82 82 0 0 1 145 205" stroke-width="12"/>
+    <path d="M 111 205 A 82 82 0 0 1 51 128" stroke-width="12"/>
+    <path d="M 51 128 A 82 82 0 0 1 111 51" stroke-width="12"/>
+  </g>
+
+  <!-- Crosshair ticks (E / W) -->
+  <g fill="url(#oxSteelSoft)">
+    <rect x="176" y="121.5" width="34" height="13" rx="6"/>
+    <rect x="46" y="121.5" width="34" height="13" rx="6"/>
+  </g>
+
+  <!-- Inner reticle ring around the core -->
+  <g stroke="url(#oxSteelSoft)" fill="none">
+    <path d="M 150 108 A 34 34 0 0 1 150 148" stroke-width="7" stroke-linecap="round"/>
+    <path d="M 106 148 A 34 34 0 0 1 106 108" stroke-width="7" stroke-linecap="round"/>
+  </g>
+
+  <!-- Blade: vertical double-edged with hollow hexagon core (evenodd) -->
+  <path fill-rule="evenodd" fill="url(#oxBlade)"
+        d="M 128 22
+           L 143 70 L 152 106 L 152 150 L 143 186 L 128 234
+           L 113 186 L 104 150 L 104 106 L 113 70 Z
+           M 128 104 L 147 116 L 147 140 L 128 152 L 109 140 L 109 116 Z"/>
+  <!-- Bright edge highlight down the spine -->
+  <path fill="url(#oxBladeEdge)" opacity="0.9"
+        d="M 128 22 L 132 70 L 133 106 L 128 108 L 123 106 L 124 70 Z"/>
+  <path fill="url(#oxBladeEdge)" opacity="0.55"
+        d="M 128 234 L 132 186 L 133 150 L 128 148 L 123 150 L 124 186 Z"/>
+</svg>

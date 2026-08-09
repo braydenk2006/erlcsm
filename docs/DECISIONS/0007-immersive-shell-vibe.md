@@ -10,7 +10,7 @@ Stakeholders preferred a music/entertainment-app aesthetic over the earlier oper
 
 ## Decision
 
-Rework the Commandry UI system around an immersive shell:
+Rework the Ordinex UI system around an immersive shell:
 
 - Background: deep navy/slate with aurora-like neon washes (red/magenta/violet/teal)
 - Primary CTA: signal-red → magenta → violet gradient, pill-shaped

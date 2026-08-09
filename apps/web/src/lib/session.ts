@@ -1,9 +1,9 @@
 import { headers } from "next/headers";
-import { auth } from "@commandry/auth/server";
+import { getAuth } from "@commandry/auth/server";
 import { UnauthorizedError } from "@commandry/shared";
 
 export async function getSession() {
-  return auth.api.getSession({
+  return getAuth().api.getSession({
     headers: await headers(),
   });
 }

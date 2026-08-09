@@ -7,6 +7,8 @@ export {
   ValidationError,
   ConflictError,
   RateLimitError,
+  EntitlementError,
+  LimitExceededError,
 } from "./errors";
 export { MODULES, type ModuleKey } from "./modules";
 export type { Result } from "./result";

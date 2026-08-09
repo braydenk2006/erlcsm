@@ -21,19 +21,19 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Commandry",
-    template: "%s · Commandry",
+    default: "Ordinex",
+    template: "%s · Ordinex",
   },
   description: "The operating system for ER:LC communities.",
-  applicationName: "Commandry",
+  applicationName: "Ordinex",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [{ url: "/icons/icon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/icons/commandry-logo.png" }],
+    apple: [{ url: "/icons/ordinex-logo.png" }],
   },
   appleWebApp: {
     capable: true,
-    title: "Commandry",
+    title: "Ordinex",
     statusBarStyle: "black-translucent",
   },
 };

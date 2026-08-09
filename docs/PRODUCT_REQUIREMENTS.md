@@ -2,7 +2,7 @@
 
 ## Vision
 
-Commandry is the operating system for ER:LC communities: one place to connect Discord, Roblox identity, and the live ER:LC server, then run staff, sessions, moderation, CAD, training, documents, and automations under clear tenant boundaries.
+Ordinex is the operating system for ER:LC communities: one place to connect Discord, Roblox identity, and the live ER:LC server, then run staff, sessions, moderation, CAD, training, documents, and automations under clear tenant boundaries.
 
 Communities should connect once and operate everything from a fast, secure, intelligent workspace — without stitching together spreadsheets, Discord bots, and ad-hoc scripts.
 

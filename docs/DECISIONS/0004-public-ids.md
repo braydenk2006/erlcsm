@@ -5,7 +5,7 @@ Status: Accepted
 
 ## Context
 
-Exposing sequential or raw internal database IDs in URLs and APIs aids scraping, accidental leakage correlation, and IDOR probing. Commandry APIs need stable external identifiers that are unique and opaque.
+Exposing sequential or raw internal database IDs in URLs and APIs aids scraping, accidental leakage correlation, and IDOR probing. Ordinex APIs need stable external identifiers that are unique and opaque.
 
 ## Decision
 

@@ -13,7 +13,7 @@ export default async function OnboardingPage() {
       <div>
         <p className="text-sm uppercase tracking-[0.18em] text-[var(--cmd-fg-muted)]">Onboarding</p>
         <h1 className="mt-2 font-[family-name:var(--cmd-font-display)] text-4xl">
-          Launch a Commandry workspace
+          Launch an Ordinex workspace
         </h1>
         <p className="mt-2 text-[var(--cmd-fg-muted)]">
           Progress is saved per organization. Optional integrations can be skipped and completed

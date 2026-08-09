@@ -33,7 +33,7 @@ const SYSTEM_ROLES = [
 async function main() {
   // Seed is intentionally minimal and development-oriented.
   // No fabricated production organizations are created.
-  console.warn("Commandry seed: ensuring reference integrity helpers are available.");
+  console.warn("Ordinex seed: ensuring reference integrity helpers are available.");
 
   const count = await prisma.organization.count();
   console.warn(`Organizations currently in database: ${count}`);

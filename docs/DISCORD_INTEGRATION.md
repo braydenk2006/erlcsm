@@ -45,7 +45,7 @@ Before accepting Discord Interactions HTTP requests:
 1. Verify `X-Signature-Ed25519` + `X-Signature-Timestamp` with the application public key (official Discord verification).
 2. Reject expired timestamps / replays.
 3. Respond to ping challenges correctly.
-4. Authorize Commandry-side actions through `authorize()` using the linked membership — never trust Discord role names alone without a sync policy.
+4. Authorize Ordinex-side actions through `authorize()` using the linked membership — never trust Discord role names alone without a sync policy.
 5. Audit mutations with `source: DISCORD`.
 
 Inbound webhooks/interactions are **not** mounted in the web app yet.
@@ -56,4 +56,4 @@ Guild bot tokens / integration secrets for tenants will use `IntegrationCredenti
 
 ## Rank mapping
 
-`Rank.discordRoleId` is reserved for future Discord ↔ Commandry rank sync. No sync jobs run in R0/R1.
+`Rank.discordRoleId` is reserved for future Discord ↔ Ordinex rank sync. No sync jobs run in R0/R1.

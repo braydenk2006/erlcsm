@@ -15,72 +15,97 @@ import {
   Menu,
   Plus,
   Radio,
-  Search,
   Settings,
   Shield,
   Users,
   Workflow,
   X,
   CalendarRange,
+  CalendarClock,
   Briefcase,
+  Megaphone,
+  Sparkles,
+  Bot,
+  Library,
+  FolderKanban,
+  LifeBuoy,
 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Badge, Button, cn } from "@commandry/ui";
+import { useState } from "react";
+import type { LucideIcon } from "lucide-react";
+import { Button, cn } from "@commandry/ui";
 import { BrandLockup } from "@/components/brand-mark";
+import { CommandPalette } from "@/components/command-center/command-palette";
 import { OrganizationSwitcher } from "@/components/organization-switcher";
+import { NotificationBell } from "@/components/org/notification-bell";
+import type { WorkspaceNav } from "@/lib/nav-registry";
 
-const NAV_ITEMS = [
-  { href: "/app", label: "Home", icon: Home, module: "home" },
-  { href: "/app/live", label: "Live Server", icon: Radio, module: "live_server" },
-  { href: "/app/people", label: "People", icon: Users, module: "people" },
-  { href: "/app/staff", label: "Staff", icon: Briefcase, module: "staff" },
-  { href: "/app/departments", label: "Departments", icon: Building2, module: "departments" },
-  { href: "/app/moderation", label: "Moderation", icon: Shield, module: "moderation" },
-  { href: "/app/sessions", label: "Sessions", icon: CalendarRange, module: "sessions" },
-  { href: "/app/activity", label: "Activity", icon: Activity, module: "activity" },
-  { href: "/app/applications", label: "Applications", icon: FormInput, module: "applications" },
-  { href: "/app/training", label: "Training", icon: BookOpen, module: "training" },
-  { href: "/app/cad", label: "CAD", icon: Gauge, module: "cad" },
-  { href: "/app/documents", label: "Documents", icon: FileText, module: "documents" },
-  { href: "/app/forms", label: "Forms", icon: FormInput, module: "forms" },
-  { href: "/app/automations", label: "Automations", icon: Workflow, module: "automations" },
-  { href: "/app/analytics", label: "Analytics", icon: Gauge, module: "analytics" },
-  { href: "/app/website", label: "Website", icon: Globe, module: "website" },
-  { href: "/app/integrations", label: "Integrations", icon: Link2, module: "integrations" },
-  { href: "/app/settings", label: "Settings", icon: Settings, module: "settings" },
-] as const;
+const ICONS: Record<string, LucideIcon> = {
+  Home,
+  Radio,
+  Gauge,
+  Users,
+  Briefcase,
+  Building2,
+  Shield,
+  CalendarRange,
+  Activity,
+  FormInput,
+  BookOpen,
+  FileText,
+  Workflow,
+  Globe,
+  Link2,
+  Settings,
+  Megaphone,
+  CalendarClock,
+  Sparkles,
+  Bot,
+  Library,
+  FolderKanban,
+  LifeBuoy,
+};
 
 type OrgSummary = {
   id: string;
   publicId: string;
   name: string;
   slug: string;
-  enabledModules?: string[];
 };
 
 export function AppShell({
   user,
   organizations,
   activeOrganization,
+  workspaces,
+  canAssistant,
   children,
 }: {
   user: { id: string; name: string; email: string };
   organizations: Array<{ id: string; publicId: string; name: string; slug: string }>;
   activeOrganization: OrgSummary | null;
+  workspaces: WorkspaceNav[];
+  canAssistant: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const enabledModules = useMemo(
-    () => new Set(activeOrganization?.enabledModules ?? ["home", "people", "staff", "settings"]),
-    [activeOrganization],
-  );
-
-  const visibleNav = NAV_ITEMS.filter(
-    (item) =>
-      item.module === "home" || item.module === "settings" || enabledModules.has(item.module),
-  );
+  const childMatches = (href: string) =>
+    href === "/app" ? pathname === "/app" : pathname.startsWith(href);
+  // The active workspace owns the deepest-matching child route.
+  const activeWorkspace =
+    workspaces.find((ws) =>
+      ws.children.some((c) => c.href !== "/app" && pathname.startsWith(c.href)),
+    ) ??
+    workspaces.find((ws) => ws.children.some((c) => childMatches(c.href))) ??
+    workspaces[0];
+  const activeChild = activeWorkspace?.children.find((c) => childMatches(c.href));
+  const breadcrumbs = [
+    ...(activeWorkspace ? [{ label: activeWorkspace.label, href: activeWorkspace.href }] : []),
+    ...(activeChild && activeChild.href !== activeWorkspace?.href
+      ? [{ label: activeChild.label, href: activeChild.href }]
+      : []),
+  ];
 
   return (
     <div className="min-h-screen md:grid md:grid-cols-[272px_1fr] md:gap-4 md:p-4">
@@ -116,25 +141,50 @@ export function AppShell({
         </Button>
 
         <nav aria-label="Primary" className="mt-5 min-h-0 flex-1 space-y-1 overflow-y-auto pb-8">
-          {visibleNav.map((item) => {
-            const Icon = item.icon;
-            const active =
-              item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
+          {workspaces.map((ws) => {
+            const Icon = ICONS[ws.iconName] ?? Home;
+            const isActive = ws.key === activeWorkspace?.key;
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-[var(--cmd-radius-pill)] px-3.5 py-2.5 text-sm transition",
-                  active
-                    ? "cmd-nav-active"
-                    : "text-[var(--cmd-fg-muted)] hover:bg-[var(--cmd-bg-muted)] hover:text-[var(--cmd-fg)]",
-                )}
-                onClick={() => setMobileOpen(false)}
-              >
-                <Icon className="h-4 w-4" aria-hidden="true" />
-                <span>{item.label}</span>
-              </Link>
+              <div key={ws.key}>
+                <Link
+                  href={ws.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-3 rounded-[var(--cmd-radius-pill)] px-3.5 py-2.5 text-sm transition",
+                    isActive
+                      ? "cmd-nav-active"
+                      : "text-[var(--cmd-fg-muted)] hover:bg-[var(--cmd-bg-muted)] hover:text-[var(--cmd-fg)]",
+                  )}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  <span>{ws.label}</span>
+                </Link>
+                {/* Secondary navigation for the active workspace. */}
+                {isActive && ws.children.length > 1 ? (
+                  <div className="ml-4 mt-1 space-y-0.5 border-l border-[var(--cmd-border)] pl-3">
+                    {ws.children.map((item) => {
+                      const active = childMatches(item.href) && item.key === activeChild?.key;
+                      return (
+                        <Link
+                          key={item.key}
+                          href={item.href}
+                          aria-current={active ? "page" : undefined}
+                          className={cn(
+                            "block rounded-[var(--cmd-radius)] px-3 py-1.5 text-sm transition",
+                            active
+                              ? "text-[var(--cmd-fg)]"
+                              : "text-[var(--cmd-fg-muted)] hover:text-[var(--cmd-fg)]",
+                          )}
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
             );
           })}
         </nav>
@@ -152,17 +202,18 @@ export function AppShell({
             >
               <Menu className="h-4 w-4" />
             </Button>
-            <button
-              type="button"
-              className="cmd-glass hidden items-center gap-2 rounded-[var(--cmd-radius-pill)] px-4 py-2.5 text-sm text-[var(--cmd-fg-muted)] md:inline-flex"
-              aria-label="Open command palette"
-            >
-              <Search className="h-4 w-4" />
-              <span>Search or jump…</span>
-              <Badge tone="accent">⌘K</Badge>
-            </button>
+            <CommandPalette />
           </div>
           <div className="flex items-center gap-3 text-sm">
+            {canAssistant ? (
+              <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
+                <Link href="/app/assistant" aria-label="Ask Ordinex">
+                  <Bot className="h-4 w-4" aria-hidden="true" />
+                  <span className="hidden md:inline">Ask Ordinex</span>
+                </Link>
+              </Button>
+            ) : null}
+            <NotificationBell />
             <div className="hidden text-right sm:block">
               <p className="font-medium">{user.name}</p>
               <p className="text-xs text-[var(--cmd-fg-muted)]">{user.email}</p>
@@ -176,6 +227,21 @@ export function AppShell({
           </div>
         </header>
         <main id="main" className="flex-1 px-4 py-6 pb-28 md:px-8 md:pb-8">
+          {breadcrumbs.length > 0 ? (
+            <nav
+              aria-label="Breadcrumb"
+              className="mb-4 flex items-center gap-1.5 text-xs text-[var(--cmd-fg-muted)]"
+            >
+              {breadcrumbs.map((crumb, i) => (
+                <span key={crumb.href} className="flex items-center gap-1.5">
+                  {i > 0 ? <span aria-hidden="true">/</span> : null}
+                  <Link href={crumb.href} className="hover:text-[var(--cmd-fg)]">
+                    {crumb.label}
+                  </Link>
+                </span>
+              ))}
+            </nav>
+          ) : null}
           {children}
         </main>
       </div>
@@ -184,14 +250,13 @@ export function AppShell({
         aria-label="Mobile"
         className="cmd-glass-strong fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-[var(--cmd-radius-pill)] px-2 py-2 md:hidden"
       >
-        {visibleNav.slice(0, 5).map((item) => {
-          const Icon = item.icon;
-          const active =
-            item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
+        {workspaces.slice(0, 4).map((ws) => {
+          const Icon = ICONS[ws.iconName] ?? Home;
+          const active = ws.key === activeWorkspace?.key;
           return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={ws.key}
+              href={ws.href}
               className={cn(
                 "flex flex-col items-center gap-1 rounded-[var(--cmd-radius-pill)] px-1 py-2 text-[11px]",
                 active ? "text-[var(--cmd-accent)]" : "text-[var(--cmd-fg-muted)]",
@@ -205,10 +270,20 @@ export function AppShell({
               >
                 <Icon className="h-4 w-4" aria-hidden="true" />
               </span>
-              <span>{item.label.split(" ")[0]}</span>
+              <span>{ws.label.split(" ")[0]}</span>
             </Link>
           );
         })}
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="flex flex-col items-center gap-1 rounded-[var(--cmd-radius-pill)] px-1 py-2 text-[11px] text-[var(--cmd-fg-muted)]"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-full">
+            <Menu className="h-4 w-4" aria-hidden="true" />
+          </span>
+          <span>More</span>
+        </button>
       </nav>
     </div>
   );

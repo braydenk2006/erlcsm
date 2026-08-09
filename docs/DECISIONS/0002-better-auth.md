@@ -5,7 +5,7 @@ Status: Accepted
 
 ## Context
 
-Commandry needs session-based web authentication, magic-link onboarding for communities, and optional Discord OAuth — without maintaining a bespoke auth stack. Password auth is undesirable for the initial security posture.
+Ordinex needs session-based web authentication, magic-link onboarding for communities, and optional Discord OAuth — without maintaining a bespoke auth stack. Password auth is undesirable for the initial security posture.
 
 ## Decision
 

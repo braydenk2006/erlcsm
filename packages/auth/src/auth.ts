@@ -14,7 +14,7 @@ export function createAuth() {
   const discordClientSecret = process.env.DISCORD_CLIENT_SECRET;
 
   const instance = betterAuth({
-    appName: process.env.APP_NAME ?? "Commandry",
+    appName: process.env.APP_NAME ?? "Ordinex",
     baseURL: process.env.BETTER_AUTH_URL ?? process.env.APP_URL,
     secret: getAuthSecret(),
     database: prismaAdapter(prisma, {

@@ -19,10 +19,22 @@
   },
   "dependencies": {
     "@commandry/audit": "workspace:*",
+    "@commandry/automation": "workspace:*",
+    "@commandry/command-center": "workspace:*",
+    "@commandry/ai": "workspace:*",
     "@commandry/database": "workspace:*",
+    "@commandry/insights": "workspace:*",
+    "@commandry/knowledge": "workspace:*",
+    "@commandry/rms": "workspace:*",
+    "@commandry/entitlements": "workspace:*",
+    "@commandry/integrations": "workspace:*",
+    "@commandry/operations": "workspace:*",
     "@commandry/permissions": "workspace:*",
+    "@commandry/roblox": "workspace:*",
     "@commandry/shared": "workspace:*",
-    "@commandry/validation": "workspace:*"
+    "@commandry/validation": "workspace:*",
+    "@commandry/website": "workspace:*",
+    "@commandry/workflow": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^4.1.10"

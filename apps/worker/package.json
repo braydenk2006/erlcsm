@@ -13,7 +13,10 @@
     "generate": "node -e \"process.exit(0)\""
   },
   "dependencies": {
+    "@commandry/api": "workspace:*",
+    "@commandry/cad": "workspace:*",
     "@commandry/database": "workspace:*",
+    "@commandry/integrations": "workspace:*",
     "@commandry/observability": "workspace:*",
     "@commandry/shared": "workspace:*",
     "bullmq": "^6.0.5",

@@ -64,3 +64,29 @@ export class RateLimitError extends AppError {
     this.name = "RateLimitError";
   }
 }
+
+/** The organization's plan does not entitle it to the requested feature. */
+export class EntitlementError extends AppError {
+  constructor(feature: string, requiredPlan: string | null) {
+    super("This feature is not available for the organization's current plan.", {
+      code: "FEATURE_NOT_ENTITLED",
+      status: 402,
+      details: { feature, requiredPlan },
+      expose: true,
+    });
+    this.name = "EntitlementError";
+  }
+}
+
+/** The organization has reached a plan usage limit. */
+export class LimitExceededError extends AppError {
+  constructor(limit: string, max: number) {
+    super(`You have reached your plan limit for ${limit}.`, {
+      code: "LIMIT_EXCEEDED",
+      status: 402,
+      details: { limit, max },
+      expose: true,
+    });
+    this.name = "LimitExceededError";
+  }
+}

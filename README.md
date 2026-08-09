@@ -1,6 +1,6 @@
-# Commandry
+# Ordinex
 
-**Commandry** is a multi-tenant SaaS operating system for Emergency Response: Liberty County (ER:LC) communities. It unifies staff, sessions, moderation, CAD, training, Discord, and live-server operations under tenant-isolated controls.
+**Ordinex** is a multi-tenant SaaS operating system for Emergency Response: Liberty County (ER:LC) communities. It unifies staff, sessions, moderation, CAD, training, Discord, and live-server operations under tenant-isolated controls.
 
 This repository is a greenfield **modular monolith** (pnpm workspaces + Turborepo). Release 0 and early Release 1 focus on foundations: identity, organizations, permissions, audit, schema, and developer tooling. Domain modules are scaffolded and labeled as foundation-only — they are not claimed as complete product features.
 
@@ -118,6 +118,7 @@ docs/             Product, architecture, ADRs, status
 | [docs/TESTING.md](docs/TESTING.md)                             | Vitest / Playwright strategy            |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)                       | Env, Docker, staging/prod               |
 | [docs/ERLC_INTEGRATION.md](docs/ERLC_INTEGRATION.md)           | ER:LC interface & simulator             |
+| [docs/CAD.md](docs/CAD.md)                                     | CAD/MDT dispatch, records, penal code   |
 | [docs/DISCORD_INTEGRATION.md](docs/DISCORD_INTEGRATION.md)     | OAuth & bot plans                       |
 | [docs/AI_SAFETY.md](docs/AI_SAFETY.md)                         | Human-in-the-loop AI policy             |
 | [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) | Honest done vs planned matrix           |

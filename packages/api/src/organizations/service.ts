@@ -7,9 +7,11 @@ import {
   type Prisma,
 } from "@commandry/database";
 import { authorize, type Actor } from "@commandry/permissions";
+import { computeUsage, getOrganizationManifest } from "../subscriptions/service";
 import {
   ConflictError,
   ForbiddenError,
+  LimitExceededError,
   NotFoundError,
   ValidationError,
   createPublicId,
@@ -307,6 +309,13 @@ export async function inviteMember(input: {
   });
   if (!decision.allowed) {
     throw new ForbiddenError(decision.reason);
+  }
+
+  // Enforce the plan's member limit (active members + this pending invite).
+  const manifest = await getOrganizationManifest(input.organizationId);
+  const memberUsage = await computeUsage(input.organizationId, "members.max");
+  if (memberUsage + 1 > manifest.getLimit("members.max")) {
+    throw new LimitExceededError("members.max", manifest.getLimit("members.max"));
   }
 
   const token = randomBytes(32).toString("base64url");

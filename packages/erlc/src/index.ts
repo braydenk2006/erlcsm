@@ -1,19 +1,38 @@
-export type ErlcMode = "simulator" | "live";
+export type {
+  ErlcMode,
+  ErlcTeam,
+  ErlcPermission,
+  ErlcLocation,
+  ErlcPlayer,
+  ErlcServerStatus,
+  ErlcVehicle,
+  ErlcJoinLeaveLog,
+  ErlcKillLog,
+  ErlcCommandLog,
+  ErlcCallStatus,
+  ErlcCallLog,
+  ErlcTeamCount,
+  ErlcSnapshot,
+  ErlcRunCommandResult,
+  ErlcRateLimit,
+  ErlcHealthStatus,
+  ErlcHealthResult,
+  ErlcClient,
+} from "./types";
+export { ERLC_TEAMS } from "./types";
 
-export type ErlcClient = {
-  mode: ErlcMode;
-  getServerStatus(): Promise<{ connected: boolean; players?: number; message: string }>;
-};
+export {
+  ErlcError,
+  ErlcNotConfiguredError,
+  ErlcAuthError,
+  ErlcRateLimitError,
+  ErlcOutageError,
+  isErlcError,
+  type ErlcErrorCode,
+} from "./errors";
 
-/** Development simulator — never claims a production ER:LC connection. */
-export function createErlcSimulator(): ErlcClient {
-  return {
-    mode: "simulator",
-    async getServerStatus() {
-      return {
-        connected: false,
-        message: "ER:LC simulator mode active. Connect encrypted credentials to enable live mode.",
-      };
-    },
-  };
-}
+export { createErlcSimulator, type SimulatorOptions } from "./simulator";
+export { createLiveErlcClient, type LiveClientOptions } from "./live-client";
+export { createErlcClient, resolveErlcMode, type ErlcClientConfig } from "./factory";
+export { signErlcWebhook, verifyErlcWebhook, parseCallWebhook } from "./webhook";
+export { TokenBucket, parseRateLimitHeaders, retryAfterFromResponse } from "./rate-limit";

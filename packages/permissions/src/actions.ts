@@ -44,6 +44,78 @@ export const ACTIONS = [
   "session:manage",
   "session:launch",
 
+  // Announcements
+  "announcement:read",
+  "announcement:manage",
+
+  // Scheduled shifts (Operational Time Platform)
+  "shifts.schedule",
+  "shifts.schedule.recurring",
+  "shifts.edit",
+  "shifts.cancel",
+  "shifts.claim",
+  "shifts.claim.approve",
+  "shifts.assign_host",
+  "shifts.publish_discord",
+  "shifts.start",
+  "shifts.complete",
+  "shifts.attendance.view",
+  "shifts.attendance.manage",
+  "shifts.attendance.override",
+  "shifts.integration.manage",
+  "shifts.analytics.view",
+
+  // Automation Platform
+  "automation.view",
+  "automation.create",
+  "automation.edit",
+  "automation.delete",
+  "automation.execute",
+  "automation.pause",
+  "automation.resume",
+  "automation.logs",
+  "automation.templates",
+
+  // Insights & Recommendations Engine
+  "insights.view",
+  "kpis.view",
+  "recommendations.view",
+  "goals.manage",
+  "alerts.manage",
+  "department.insights",
+
+  // Knowledge Platform + AI Assistant
+  "knowledge.view",
+  "knowledge.manage",
+  "knowledge.publish",
+  "ai.use",
+  "ai.admin",
+
+  // Enterprise Records Management System (RMS)
+  "rms.view",
+  "cases.view",
+  "cases.create",
+  "cases.edit",
+  "cases.archive",
+  "evidence.manage",
+  "records.manage",
+  "court.manage",
+  "jail.manage",
+  "detective.manage",
+  "internal_affairs.manage",
+  "fleet.manage",
+  "fire.manage",
+  "ems.manage",
+  "civilian_portal.manage",
+
+  // Integration Hub
+  "integrations.view",
+  "integrations.manage",
+  "integrations.credentials",
+  "integrations.webhooks",
+  "integrations.logs",
+  "integrations.test",
+
   // Moderation
   "moderation:read",
   "moderation:create",
@@ -60,11 +132,39 @@ export const ACTIONS = [
   "document:manage",
   "document:publish",
 
-  // CAD
+  // CAD (legacy coarse actions — retained for backward compatibility)
   "cad:dispatch",
   "cad:unit",
   "cad:records",
   "cad:manage",
+
+  // CAD/MDT v2 — granular, server-enforced actions
+  "cad.access",
+  "cad.dispatch.view",
+  "cad.dispatch.manage",
+  "cad.calls.create",
+  "cad.calls.assign",
+  "cad.calls.close",
+  "cad.units.manage",
+  "cad.mdt.access",
+  "cad.people.view",
+  "cad.people.manage",
+  "cad.vehicles.view",
+  "cad.vehicles.manage",
+  "cad.records.create",
+  "cad.records.review",
+  "cad.records.approve",
+  "cad.records.lock",
+  "cad.warrants.create",
+  "cad.warrants.review",
+  "cad.warrants.approve",
+  "cad.bolos.manage",
+  "cad.evidence.manage",
+  "cad.court.access",
+  "cad.fireems.access",
+  "cad.civilian.access",
+  "cad.analytics.view",
+  "cad.configuration.manage",
 
   // Live server / ER:LC
   "erlc:view",
