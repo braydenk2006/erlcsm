@@ -11,6 +11,7 @@ import { authorize, type Action, type Actor } from "@commandry/permissions";
 import { ForbiddenError, NotFoundError, createPublicId } from "@commandry/shared";
 import { getInsightsBundle, listGoals } from "../insights/service";
 import { searchKnowledge } from "../knowledge/service";
+import { searchRms } from "../rms/service";
 
 function can(actor: Actor, organizationId: string, action: Action): boolean {
   return authorize({ actor, organizationId, action }).allowed;
@@ -82,8 +83,20 @@ async function assembleContext(
     input.knowledge = await searchKnowledge({ actor, organizationId, query: question, limit: 6 });
   }
 
-  // 8-11 (workflow/operational/CAD/website) are represented via the deterministic
-  // insight summary facts above; deeper module retrieval plugs in here next.
+  // 8-11: operational RMS records (cases/evidence/persons/vehicles/…), permission-scoped.
+  if (can(actor, organizationId, "rms.view")) {
+    const hits = await searchRms({ actor, organizationId, query: question }).catch(() => []);
+    if (hits.length > 0) {
+      input.records = hits.slice(0, 6).map((h) => ({
+        type: h.type,
+        number: h.number,
+        title: h.title,
+        href: h.href,
+        snippet: h.snippet,
+      }));
+    }
+  }
+
   return input;
 }
 

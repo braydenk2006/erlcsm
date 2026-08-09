@@ -214,6 +214,17 @@ export const WIDGETS: WidgetDef[] = [
     mobilePriority: 1,
     defaultVisible: true,
   },
+  // Enterprise RMS (Phase 11)
+  {
+    key: "rms_overview",
+    title: "Records (RMS)",
+    category: "operations",
+    feature: null,
+    permission: "rms.view",
+    defaultSize: "md",
+    mobilePriority: 5,
+    defaultVisible: true,
+  },
 ];
 
 export function widgetByKey(key: string): WidgetDef | undefined {

@@ -27,6 +27,7 @@ import {
   Sparkles,
   Bot,
   Library,
+  FolderKanban,
 } from "lucide-react";
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
@@ -59,6 +60,7 @@ const ICONS: Record<string, LucideIcon> = {
   Sparkles,
   Bot,
   Library,
+  FolderKanban,
 };
 
 type OrgSummary = {

@@ -672,6 +672,34 @@ function Widget({
         </div>
       );
     }
+    case "rms_overview": {
+      const m = d as {
+        openCases: number;
+        evidenceAwaitingReview: number;
+        courtBacklog: number;
+        jailPopulation: number;
+        internalAffairsCases: number;
+        avgInvestigationDays: number | null;
+      };
+      return (
+        <div>
+          <div className="grid grid-cols-3 gap-2">
+            <Stat label="Open cases" value={num(m.openCases)} />
+            <Stat label="Evidence queue" value={num(m.evidenceAwaitingReview)} />
+            <Stat label="Court backlog" value={num(m.courtBacklog)} />
+            <Stat label="Jail pop." value={num(m.jailPopulation)} />
+            <Stat label="IA cases" value={num(m.internalAffairsCases)} />
+            <Stat
+              label="Avg inv."
+              value={m.avgInvestigationDays === null ? "—" : `${m.avgInvestigationDays}d`}
+            />
+          </div>
+          <Button size="sm" variant="outline" className="mt-3" asChild>
+            <Link href="/app/rms">Open RMS</Link>
+          </Button>
+        </div>
+      );
+    }
     default:
       return <p className="text-sm text-[var(--cmd-fg-muted)]">—</p>;
   }

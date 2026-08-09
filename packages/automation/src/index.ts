@@ -37,6 +37,12 @@ export const EVENT_TYPES = [
   "Server.PlayerLeft",
   "CAD.CallCreated",
   "CAD.ReportApproved",
+  "Case.Created",
+  "Case.Closed",
+  "Evidence.Collected",
+  "Evidence.CheckedOut",
+  "Evidence.Returned",
+  "Court.Scheduled",
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -53,7 +59,8 @@ export type TriggerCategory =
   | "attendance"
   | "website"
   | "server"
-  | "cad";
+  | "cad"
+  | "rms";
 
 /** Fields each event exposes to conditions/actions (`metadata.*`). */
 export const TRIGGERS: Record<
@@ -136,6 +143,16 @@ export const TRIGGERS: Record<
   },
   "CAD.CallCreated": { category: "cad", label: "CAD call created", fields: ["priority"] },
   "CAD.ReportApproved": { category: "cad", label: "CAD report approved", fields: ["type"] },
+  "Case.Created": { category: "rms", label: "RMS case created", fields: ["number", "title"] },
+  "Case.Closed": { category: "rms", label: "RMS case closed", fields: ["number"] },
+  "Evidence.Collected": {
+    category: "rms",
+    label: "Evidence collected",
+    fields: ["number", "type"],
+  },
+  "Evidence.CheckedOut": { category: "rms", label: "Evidence checked out", fields: ["number"] },
+  "Evidence.Returned": { category: "rms", label: "Evidence returned", fields: ["number"] },
+  "Court.Scheduled": { category: "rms", label: "Court date scheduled", fields: ["number"] },
 };
 
 export function isEventType(value: string): value is EventType {

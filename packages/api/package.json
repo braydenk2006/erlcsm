@@ -25,6 +25,7 @@
     "@commandry/database": "workspace:*",
     "@commandry/insights": "workspace:*",
     "@commandry/knowledge": "workspace:*",
+    "@commandry/rms": "workspace:*",
     "@commandry/entitlements": "workspace:*",
     "@commandry/integrations": "workspace:*",
     "@commandry/operations": "workspace:*",

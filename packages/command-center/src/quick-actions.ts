@@ -210,6 +210,14 @@ export const PALETTE_DESTINATIONS: QuickAction[] = [
     icon: "Library",
   },
   {
+    key: "nav_rms",
+    label: "RMS (Records)",
+    href: "/app/rms",
+    feature: null,
+    permission: "rms.view",
+    icon: "FolderKanban",
+  },
+  {
     key: "nav_settings",
     label: "Settings",
     href: "/app/settings",

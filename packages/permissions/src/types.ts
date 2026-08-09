@@ -138,6 +138,28 @@ const KNOWLEDGE_VIEW: Action[] = ["knowledge.view", "ai.use"];
 const KNOWLEDGE_MANAGE: Action[] = [...KNOWLEDGE_VIEW, "knowledge.manage", "knowledge.publish"];
 const AI_ADMIN: Action[] = ["ai.admin"];
 
+// Enterprise RMS — officers get core records; owners/admins get every module.
+const RMS_OFFICER: Action[] = [
+  "rms.view",
+  "cases.view",
+  "cases.create",
+  "cases.edit",
+  "evidence.manage",
+  "records.manage",
+  "detective.manage",
+];
+const RMS_ALL: Action[] = [
+  ...RMS_OFFICER,
+  "cases.archive",
+  "court.manage",
+  "jail.manage",
+  "internal_affairs.manage",
+  "fleet.manage",
+  "fire.manage",
+  "ems.manage",
+  "civilian_portal.manage",
+];
+
 // Full automation management (owners/admins).
 const AUTOMATION_ALL: Action[] = [
   "automation.view",
@@ -218,6 +240,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...AUTOMATION_ALL,
     ...INSIGHTS_MANAGE,
     ...KNOWLEDGE_MANAGE,
+    ...RMS_ALL,
     ...AI_ADMIN,
     "erlc:view",
     "erlc:command",
@@ -276,6 +299,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...AUTOMATION_ALL,
     ...INSIGHTS_MANAGE,
     ...KNOWLEDGE_MANAGE,
+    ...RMS_ALL,
     ...AI_ADMIN,
     "erlc:view",
     "erlc:command",
@@ -296,6 +320,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...SHIFTS_STAFF,
     ...INSIGHTS_VIEW,
     ...KNOWLEDGE_VIEW,
+    ...RMS_OFFICER,
     "erlc:view",
     "document:read",
   ],
@@ -315,6 +340,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...SHIFTS_STAFF,
     ...INSIGHTS_VIEW,
     ...KNOWLEDGE_VIEW,
+    ...RMS_OFFICER,
     "erlc:view",
   ],
   // Baseline members do NOT get CAD access — CAD (law-enforcement) records must be

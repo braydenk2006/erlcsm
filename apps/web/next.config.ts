@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     "@commandry/entitlements",
     "@commandry/insights",
     "@commandry/knowledge",
+    "@commandry/rms",
     "@commandry/erlc",
     "@commandry/operations",
     "@commandry/roblox",

@@ -51,6 +51,15 @@ export const NAV_REGISTRY: NavRegistryEntry[] = [
     permission: "cad.access",
   },
   {
+    key: "rms",
+    label: "RMS",
+    href: "/app/rms",
+    iconName: "FolderKanban",
+    group: "operations",
+    feature: null,
+    permission: "rms.view",
+  },
+  {
     key: "people",
     label: "People",
     href: "/app/people",

@@ -221,6 +221,9 @@ importers:
       '@commandry/permissions':
         specifier: workspace:*
         version: link:../permissions
+      '@commandry/rms':
+        specifier: workspace:*
+        version: link:../rms
       '@commandry/roblox':
         specifier: workspace:*
         version: link:../roblox
@@ -417,6 +420,12 @@ importers:
       '@commandry/shared':
         specifier: workspace:*
         version: link:../shared
+    devDependencies:
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@26.1.2)(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))
+
+  packages/rms:
     devDependencies:
       vitest:
         specifier: ^4.1.10

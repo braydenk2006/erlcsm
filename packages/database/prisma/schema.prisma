@@ -245,6 +245,16 @@ model Organization {
   aiConversations       AiConversation[]
   aiMessages            AiMessage[]
   aiQueryLogs           AiQueryLog[]
+  rmsCases              RmsCase[]
+  rmsEvidence           RmsEvidence[]
+  rmsCustodyEvents      RmsCustodyEvent[]
+  rmsPersons            RmsPerson[]
+  rmsVehicles           RmsVehicle[]
+  rmsProperties         RmsProperty[]
+  rmsRecords            RmsRecord[]
+  rmsLinks              RmsLink[]
+  rmsTimelineEvents     RmsTimelineEvent[]
+  rmsSequences          RmsSequence[]
 
   @@index([status])
   @@map("organizations")
@@ -2081,6 +2091,219 @@ model AiQueryLog {
   @@index([organizationId, answered])
   @@index([organizationId, intent])
   @@map("ai_query_logs")
+}
+
+// =============================================================================
+// Enterprise Records Management System (RMS) — the unified operational record
+// layer. Every record participates in the Relationship Engine (RmsLink) and the
+// Timeline Engine (RmsTimelineEvent). Evidence chain of custody is append-only.
+// =============================================================================
+
+// Per-organization monotonic sequences for record numbers (e.g. CASE-2026-000123).
+model RmsSequence {
+  id             String @id @default(cuid())
+  organizationId String @map("organization_id")
+  key            String
+  value          Int    @default(0)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, key])
+  @@map("rms_sequences")
+}
+
+model RmsCase {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  number         String
+  title          String
+  status         String   @default("OPEN")
+  priority       String   @default("normal")
+  narrative      String   @default("")
+  leadUserId     String?  @map("lead_user_id")
+  createdByUserId String? @map("created_by_user_id")
+  closedAt       DateTime? @map("closed_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, number])
+  @@index([organizationId, status])
+  @@map("rms_cases")
+}
+
+model RmsEvidence {
+  id                String    @id @default(cuid())
+  publicId          String    @unique @map("public_id")
+  organizationId    String    @map("organization_id")
+  number            String
+  type              String    @default("item")
+  description       String    @default("")
+  status            String    @default("COLLECTED")
+  storageLocation   String?   @map("storage_location")
+  location          String?
+  collectedByUserId String?   @map("collected_by_user_id")
+  collectedAt       DateTime  @default(now()) @map("collected_at")
+  caseId            String?   @map("case_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  organization  Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  custodyEvents RmsCustodyEvent[]
+
+  @@unique([organizationId, number])
+  @@index([organizationId, status])
+  @@map("rms_evidence")
+}
+
+// Append-only chain of custody — never updated or deleted.
+model RmsCustodyEvent {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  evidenceId     String   @map("evidence_id")
+  sequence       Int
+  action         String
+  fromUserId     String?  @map("from_user_id")
+  toUserId       String?  @map("to_user_id")
+  reason         String?
+  condition      String?
+  signature      String?
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  evidence     RmsEvidence  @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+
+  @@unique([evidenceId, sequence])
+  @@index([organizationId, evidenceId])
+  @@map("rms_custody_events")
+}
+
+model RmsPerson {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  number         String
+  name           String
+  aliases        String[] @default([])
+  dob            String?
+  data           Json     @default("{}")
+  flags          Json     @default("{}")
+  notes          String   @default("")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, number])
+  @@index([organizationId, name])
+  @@map("rms_persons")
+}
+
+model RmsVehicle {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  number         String
+  plate          String
+  make           String?
+  model          String?
+  color          String?
+  ownerPersonId  String?  @map("owner_person_id")
+  data           Json     @default("{}")
+  flags          Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, number])
+  @@index([organizationId, plate])
+  @@map("rms_vehicles")
+}
+
+model RmsProperty {
+  id              String   @id @default(cuid())
+  publicId        String   @unique @map("public_id")
+  organizationId  String   @map("organization_id")
+  number          String
+  type            String   @default("item")
+  description     String   @default("")
+  status          String   @default("IN_STORAGE")
+  storageLocation String?  @map("storage_location")
+  ownerPersonId   String?  @map("owner_person_id")
+  disposition     String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, number])
+  @@map("rms_properties")
+}
+
+// Generic record for the remaining RMS modules (court/jail/detective/IA/fleet/
+// fire/EMS/address/business). Uniform participation in relationships + timeline.
+model RmsRecord {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  type           String
+  number         String
+  title          String
+  status         String   @default("open")
+  data           Json     @default("{}")
+  workflowSubmissionId String? @map("workflow_submission_id")
+  createdByUserId String? @map("created_by_user_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, number])
+  @@index([organizationId, type, status])
+  @@map("rms_records")
+}
+
+// Relationship Engine — links any record to any other record.
+model RmsLink {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  fromType        String   @map("from_type")
+  fromId          String   @map("from_id")
+  toType          String   @map("to_type")
+  toId            String   @map("to_id")
+  relation        String
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, fromType, fromId, toType, toId, relation])
+  @@index([organizationId, fromType, fromId])
+  @@index([organizationId, toType, toId])
+  @@map("rms_links")
+}
+
+// Timeline Engine — every subsystem contributes chronological events per record.
+model RmsTimelineEvent {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  recordType     String   @map("record_type")
+  recordId       String   @map("record_id")
+  type           String
+  title          String
+  actorUserId    String?  @map("actor_user_id")
+  metadata       Json     @default("{}")
+  occurredAt     DateTime @default(now()) @map("occurred_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, recordType, recordId])
+  @@map("rms_timeline_events")
 }
 
 // =============================================================================

@@ -37,7 +37,8 @@ export type Citation = {
     | "goal"
     | "recommendation"
     | "workflow"
-    | "website";
+    | "website"
+    | "record";
   label: string;
   href?: string;
 };
@@ -77,6 +78,8 @@ export type ComposeInput = {
   recommendations?: { text: string; reason: string; severity: string }[];
   goals?: { name: string; progress: number; recommendation: string }[];
   knowledge: KnowledgeHit[];
+  /** RMS operational records surfaced for the question (permission-scoped). */
+  records?: { type: string; number: string; title: string; href: string; snippet: string }[];
   summaryFacts?: string[];
 };
 
@@ -205,6 +208,10 @@ function renderEvidenceForPrompt(input: ComposeInput): string {
     parts.push(
       `[Knowledge] ${input.knowledge.map((k) => `${k.title} v${k.version}: ${k.excerpt}`).join("\n")}`,
     );
+  if (input.records?.length)
+    parts.push(
+      `[Records] ${input.records.map((r) => `${r.number} ${r.title} (${r.type})`).join("; ")}`,
+    );
   if (input.summaryFacts?.length) parts.push(`[Facts] ${input.summaryFacts.join("; ")}`);
   return parts.length ? parts.join("\n") : "(no evidence retrieved)";
 }
@@ -303,6 +310,25 @@ export function composeAnswer(input: ComposeInput): AiAnswer {
     }
     case "knowledge_search": {
       if (input.knowledge.length === 0) {
+        // No knowledge article — but operational RMS records may answer it (cited).
+        const records = input.records ?? [];
+        if (records.length > 0) {
+          const top = records[0]!;
+          return {
+            ...base,
+            text: `No published document matches, but ${records.length} operational record(s) do. Top match: ${top.number} — ${top.title} (${top.type.replace(/_/g, " ")}).`,
+            citations: records.slice(0, 5).map((r) => ({
+              kind: "record" as const,
+              label: `${r.number} — ${r.title}`,
+              href: r.href,
+            })),
+            evidence: records
+              .slice(0, 5)
+              .map((r) => ({ kind: "record" as const, label: r.number, detail: r.title })),
+            confidence: "high",
+            suggestedActions: [{ label: `Open ${top.number}`, href: top.href }],
+          };
+        }
         return {
           ...base,
           text: "No published document currently answers this question. I won't guess. Would you like to draft a new article?",

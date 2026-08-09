@@ -91,6 +91,23 @@ export const ACTIONS = [
   "ai.use",
   "ai.admin",
 
+  // Enterprise Records Management System (RMS)
+  "rms.view",
+  "cases.view",
+  "cases.create",
+  "cases.edit",
+  "cases.archive",
+  "evidence.manage",
+  "records.manage",
+  "court.manage",
+  "jail.manage",
+  "detective.manage",
+  "internal_affairs.manage",
+  "fleet.manage",
+  "fire.manage",
+  "ems.manage",
+  "civilian_portal.manage",
+
   // Moderation
   "moderation:read",
   "moderation:create",

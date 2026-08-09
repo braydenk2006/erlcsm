@@ -20,6 +20,7 @@ import { ForbiddenError } from "@commandry/shared";
 import { getOrganizationManifest } from "../subscriptions/service";
 import { listNotifications, unreadNotificationCount } from "../notifications/service";
 import { getInsightsBundle, listGoals } from "../insights/service";
+import { getRmsMetrics } from "../rms/service";
 
 function dayKey(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -373,6 +374,15 @@ export async function getDashboard(input: {
       data.goals = goals;
     } catch {
       // Insights are additive; never break the core dashboard.
+    }
+  }
+
+  // Enterprise RMS overview widget (Phase 11).
+  if (canDo("rms.view")) {
+    try {
+      data.rms_overview = await getRmsMetrics({ actor, organizationId: org });
+    } catch {
+      // additive
     }
   }
 
