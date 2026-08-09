@@ -28,6 +28,7 @@ import {
   Bot,
   Library,
   FolderKanban,
+  LifeBuoy,
 } from "lucide-react";
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
@@ -61,6 +62,7 @@ const ICONS: Record<string, LucideIcon> = {
   Bot,
   Library,
   FolderKanban,
+  LifeBuoy,
 };
 
 type OrgSummary = {

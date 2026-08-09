@@ -72,6 +72,7 @@ export const WORKSPACE_OF: Record<string, WorkspaceKey> = {
   documents: "content",
   settings: "administration",
   integrations: "administration",
+  support: "administration",
 };
 
 export type WorkspaceNav = {
@@ -309,6 +310,15 @@ export const NAV_REGISTRY: NavRegistryEntry[] = [
     label: "Settings",
     href: "/app/settings",
     iconName: "Settings",
+    group: "system",
+    feature: null,
+    permission: null,
+  },
+  {
+    key: "support",
+    label: "Support",
+    href: "/app/support",
+    iconName: "LifeBuoy",
     group: "system",
     feature: null,
     permission: null,

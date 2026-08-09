@@ -17,29 +17,36 @@ The product breadth is large and tested, and the navigation is now consolidated 
 experience. But the Final Platform Completion Program's launch-critical operational systems are not
 yet implemented. Closed beta should not begin until the blockers below are done and verified.
 
-## Beta blockers (prioritized, must-do before closed beta)
+## Completed since the last assessment
 
-1. **Billing & subscription operations (§2)** — payment provider (Stripe) abstraction, checkout,
-   activation, upgrade/downgrade (downgrade-safe entitlement behavior already exists), cancellation,
-   customer portal, invoices, signature-verified idempotent webhooks + reconciliation. _Without this
-   there is no way to take money or drive Growth/Enterprise entitlements from real payments._
-2. **Ordinex Staff Panel + isolation (§3, §21)** — `/staff` gated by server-verified `platformRole`
-   (customers, org owners, and enterprise owners must be blocked), overview, customer/org lookup with a
-   sensitive-content boundary. Foundation exists (`platformRole`, `platform:*`, `SupportAccessSession`).
-   _Without this the team cannot operate or support the platform._
-3. **Customer support ticket system (§4)** — categories, priority, status, assignment, internal notes
-   (never customer-visible), timeline, macros, SLA. _Beta customers need a real support channel._
-4. **Controlled support sessions (§6)** — start-with-reason/scope/duration, read-only default, visible
-   banner, auto-expiry, full audit; no silent impersonation. Builds on `SupportAccessSession`.
-5. **Transactional email (§11)** — provider abstraction + queued delivery + dev capture, wired to magic
-   link, invitations, application/shift/training/billing/support notifications.
-6. **Data export / deletion / retention (§12)** — user + org export, deletion lifecycle with grace
-   period + audit. _Privacy baseline for onboarding real customers._
-7. **Security attack-test pass (§9.1)** — the explicit cross-tenant IDOR/BOLA, staff-privilege-escalation,
-   CSRF/XSS/SSRF/injection, webhook/billing replay, API-key, and AI/knowledge/RMS retrieval tests, with
-   documented findings + fixes.
-8. **Tested deployment + backup/restore (§20)** — deployment/rollback/backup/restore/incident/launch
-   docs, with an actually-executed backup + restore (not just written).
+- ✅ **Ordinex Staff Panel + isolation (Blocker 2)** — `/staff` gated by server-verified `platformRole`
+  (org owners / enterprise owners denied), overview, customer/org search + support profiles (safe
+  fields only), user profiles (no secrets). Tested + prod-verified.
+- ✅ **Customer support ticket system (Blocker 3)** — categories/priority/status/assignment, customer
+  replies, **internal notes never shown to customers**, macros, a staff console + a customer
+  `/app/support` page (under Administration, not a new global workspace). Tested.
+- ✅ **Controlled support sessions (Blocker 4)** — reason/scope/duration, **read-only default**, elevated
+  gated to ADMIN+, auto-expiry, revocation, full audit (`PLATFORM_SUPPORT`), tenant-scoped, customer
+  access history. Tested.
+- ✅ **Security attack-test pass (Blocker 7) — partial** — platform-staff isolation, support-session
+  escalation, internal-note isolation, and cross-tenant IDOR checks are automated + passing (see
+  `docs/security/PRE_BETA_SECURITY_REVIEW.md`). Remaining: automated CSRF/XSS/SQLi suite + rate-limit
+  sweep.
+
+## Remaining beta blockers (prioritized)
+
+1. **Billing & subscription operations (Blocker 1)** — Stripe provider abstraction, checkout, activation,
+   upgrade/downgrade (downgrade-safe entitlement behavior already exists), cancellation, customer
+   portal, invoices, signature-verified idempotent webhooks + reconciliation. _Requires live Stripe
+   keys not available in this environment._
+2. **Transactional email (Blocker 5)** — provider abstraction + queued delivery + dev capture, wired to
+   magic link, invitations, application/shift/training/billing/support notifications.
+3. **Data export / deletion / retention (Blocker 6)** — user + org export, deletion lifecycle with grace
+   period + audit.
+4. **Security attack-test pass — finish (Blocker 7)** — the outstanding automated CSRF/XSS/SQLi/
+   mass-assignment suite + rate-limit/race sweep, plus billing-webhook-replay once billing exists.
+5. **Tested deployment + backup/restore (Blocker 8)** — deployment/rollback/backup/restore/incident/
+   launch docs, with an actually-executed backup + restore.
 
 ## Should-do (strongly recommended before or shortly after beta)
 

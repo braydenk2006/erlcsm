@@ -258,6 +258,8 @@ model Organization {
   webhookEndpoints      WebhookEndpoint[]
   webhookDeliveries     WebhookDelivery[]
   apiKeys               ApiKey[]
+  supportTickets        SupportTicket[]
+  supportTicketMessages SupportTicketMessage[]
 
   @@index([status])
   @@map("organizations")
@@ -1063,21 +1065,90 @@ model CadPenalCharge {
 }
 
 model SupportAccessSession {
-  id             String   @id @default(cuid())
-  publicId       String   @unique @map("public_id")
-  organizationId String   @map("organization_id")
-  actorUserId    String   @map("actor_user_id")
+  id             String    @id @default(cuid())
+  publicId       String    @unique @map("public_id")
+  organizationId String    @map("organization_id")
+  actorUserId    String    @map("actor_user_id")
   reason         String
-  startsAt       DateTime @default(now()) @map("starts_at")
-  endsAt         DateTime @map("ends_at")
+  scope          String    @default("VIEW_CONFIGURATION")
+  mode           String    @default("read_only")
+  ticketId       String?   @map("ticket_id")
+  startsAt       DateTime  @default(now()) @map("starts_at")
+  endsAt         DateTime  @map("ends_at")
   revokedAt      DateTime? @map("revoked_at")
-  createdAt      DateTime @default(now()) @map("created_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   actor        User         @relation("SupportActor", fields: [actorUserId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, endsAt])
   @@map("support_access_sessions")
+}
+
+// =============================================================================
+// Customer Support — tickets + threaded messages (internal notes never shown to
+// customers) + reusable staff macros. Reuses users/orgs/audit; not a new pillar.
+// =============================================================================
+
+model SupportTicket {
+  id                 String    @id @default(cuid())
+  publicId           String    @unique @map("public_id")
+  organizationId     String    @map("organization_id")
+  number             String
+  subject            String
+  category           String    @default("general")
+  priority           String    @default("NORMAL")
+  status             String    @default("OPEN")
+  requesterUserId    String    @map("requester_user_id")
+  assigneeUserId     String?   @map("assignee_user_id")
+  team               String?
+  tags               String[]  @default([])
+  relatedIntegration String?   @map("related_integration")
+  relatedFeature     String?   @map("related_feature")
+  firstResponseAt    DateTime? @map("first_response_at")
+  resolvedAt         DateTime? @map("resolved_at")
+  closedAt           DateTime? @map("closed_at")
+  satisfaction       Int?
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  organization Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  messages     SupportTicketMessage[]
+
+  @@unique([organizationId, number])
+  @@index([organizationId, status])
+  @@index([assigneeUserId, status])
+  @@map("support_tickets")
+}
+
+model SupportTicketMessage {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  ticketId       String   @map("ticket_id")
+  authorUserId   String?  @map("author_user_id")
+  authorType     String   @map("author_type")
+  internal       Boolean  @default(false)
+  body           String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  ticket       SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+  @@map("support_ticket_messages")
+}
+
+model SupportMacro {
+  id              String   @id @default(cuid())
+  publicId        String   @unique @map("public_id")
+  name            String
+  category        String   @default("general")
+  body            String
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("support_macros")
 }
 
 model NotificationPreference {
