@@ -227,8 +227,8 @@ export const NAV_REGISTRY: NavRegistryEntry[] = [
     href: "/app/integrations",
     iconName: "Link2",
     group: "system",
-    feature: "server.health_monitoring",
-    permission: "organization:manage_integrations",
+    feature: null,
+    permission: "integrations.view",
   },
   {
     key: "settings",

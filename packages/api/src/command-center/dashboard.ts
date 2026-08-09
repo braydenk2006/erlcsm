@@ -21,6 +21,7 @@ import { getOrganizationManifest } from "../subscriptions/service";
 import { listNotifications, unreadNotificationCount } from "../notifications/service";
 import { getInsightsBundle, listGoals } from "../insights/service";
 import { getRmsMetrics } from "../rms/service";
+import { getIntegrationHub } from "../integrations/hub";
 
 function dayKey(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -381,6 +382,24 @@ export async function getDashboard(input: {
   if (canDo("rms.view")) {
     try {
       data.rms_overview = await getRmsMetrics({ actor, organizationId: org });
+    } catch {
+      // additive
+    }
+  }
+
+  // Integration Hub health widget (Phase 12).
+  if (canDo("integrations.view")) {
+    try {
+      const hub = await getIntegrationHub({ actor, organizationId: org });
+      data.integration_health = {
+        overall: hub.overall,
+        cards: hub.cards.map((c) => ({
+          key: c.key,
+          name: c.name,
+          status: c.status,
+          health: c.health,
+        })),
+      };
     } catch {
       // additive
     }

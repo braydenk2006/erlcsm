@@ -138,6 +138,16 @@ const KNOWLEDGE_VIEW: Action[] = ["knowledge.view", "ai.use"];
 const KNOWLEDGE_MANAGE: Action[] = [...KNOWLEDGE_VIEW, "knowledge.manage", "knowledge.publish"];
 const AI_ADMIN: Action[] = ["ai.admin"];
 
+// Integration Hub — owners/admins manage connections, webhooks, and API keys.
+const INTEGRATIONS_ALL: Action[] = [
+  "integrations.view",
+  "integrations.manage",
+  "integrations.credentials",
+  "integrations.webhooks",
+  "integrations.logs",
+  "integrations.test",
+];
+
 // Enterprise RMS — officers get core records; owners/admins get every module.
 const RMS_OFFICER: Action[] = [
   "rms.view",
@@ -241,6 +251,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...INSIGHTS_MANAGE,
     ...KNOWLEDGE_MANAGE,
     ...RMS_ALL,
+    ...INTEGRATIONS_ALL,
     ...AI_ADMIN,
     "erlc:view",
     "erlc:command",
@@ -300,6 +311,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, Action[]> = {
     ...INSIGHTS_MANAGE,
     ...KNOWLEDGE_MANAGE,
     ...RMS_ALL,
+    ...INTEGRATIONS_ALL,
     ...AI_ADMIN,
     "erlc:view",
     "erlc:command",

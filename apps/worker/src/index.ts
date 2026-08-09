@@ -8,6 +8,7 @@ import { runCadExpiration } from "./cad-maintenance";
 import { runOperationsMaintenance } from "./operations-maintenance";
 import { runSchedulingMaintenance } from "./scheduling-maintenance";
 import { runAutomationDispatch } from "./automation-dispatch";
+import { runWebhookDispatch } from "./webhook-dispatch";
 
 const log = createLogger({ service: "worker" });
 
@@ -90,6 +91,9 @@ async function main() {
       if (job.name === "automation.dispatch") {
         return runAutomationDispatch();
       }
+      if (job.name === "webhook.dispatch") {
+        return runWebhookDispatch();
+      }
       throw new Error(`Unknown job: ${job.name}`);
     },
     { connection },
@@ -120,6 +124,7 @@ async function main() {
     {},
     { removeOnComplete: 50, removeOnFail: 50 },
   );
+  await integrationsQueue.add("webhook.dispatch", {}, { removeOnComplete: 50, removeOnFail: 50 });
   const maintenanceTimer = setInterval(() => {
     void integrationsQueue
       .add("erlc.maintenance", {}, { removeOnComplete: 50, removeOnFail: 50 })
@@ -153,6 +158,13 @@ async function main() {
       .add("automation.dispatch", {}, { removeOnComplete: 50, removeOnFail: 50 })
       .catch((error) => {
         log.error("Failed to enqueue automation dispatch", {
+          error: error instanceof Error ? error.message : "unknown",
+        });
+      });
+    void integrationsQueue
+      .add("webhook.dispatch", {}, { removeOnComplete: 50, removeOnFail: 50 })
+      .catch((error) => {
+        log.error("Failed to enqueue webhook dispatch", {
           error: error instanceof Error ? error.message : "unknown",
         });
       });

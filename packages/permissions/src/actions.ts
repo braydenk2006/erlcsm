@@ -108,6 +108,14 @@ export const ACTIONS = [
   "ems.manage",
   "civilian_portal.manage",
 
+  // Integration Hub
+  "integrations.view",
+  "integrations.manage",
+  "integrations.credentials",
+  "integrations.webhooks",
+  "integrations.logs",
+  "integrations.test",
+
   // Moderation
   "moderation:read",
   "moderation:create",

@@ -255,6 +255,9 @@ model Organization {
   rmsLinks              RmsLink[]
   rmsTimelineEvents     RmsTimelineEvent[]
   rmsSequences          RmsSequence[]
+  webhookEndpoints      WebhookEndpoint[]
+  webhookDeliveries     WebhookDelivery[]
+  apiKeys               ApiKey[]
 
   @@index([status])
   @@map("organizations")
@@ -2304,6 +2307,88 @@ model RmsTimelineEvent {
 
   @@index([organizationId, recordType, recordId])
   @@map("rms_timeline_events")
+}
+
+// =============================================================================
+// Integration Hub (Phase 12) — outgoing webhook endpoints, their delivery log,
+// and Ordinex API keys. Reuses the encrypted-credential pattern, the event bus,
+// and the audit system; does not replace any existing integration.
+// =============================================================================
+
+model WebhookEndpoint {
+  id             String   @id @default(cuid())
+  publicId       String   @unique @map("public_id")
+  organizationId String   @map("organization_id")
+  name           String
+  url            String
+  // Signing secret (AES-256-GCM); never returned after creation/rotation.
+  ciphertext     String
+  iv             String
+  authTag        String   @map("auth_tag")
+  secretPrefix   String   @map("secret_prefix")
+  events         String[] @default([])
+  enabled        Boolean  @default(true)
+  status         String   @default("active")
+  consecutiveFailures Int  @default(0) @map("consecutive_failures")
+  disabledReason String?  @map("disabled_reason")
+  lastDeliveryAt DateTime? @map("last_delivery_at")
+  createdByUserId String? @map("created_by_user_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deliveries   WebhookDelivery[]
+
+  @@index([organizationId, enabled])
+  @@map("webhook_endpoints")
+}
+
+model WebhookDelivery {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  endpointId     String    @map("endpoint_id")
+  eventType      String    @map("event_type")
+  correlationId  String    @map("correlation_id")
+  status         String    @default("PENDING")
+  attempts       Int       @default(0)
+  httpStatus     Int?      @map("http_status")
+  durationMs     Int?      @map("duration_ms")
+  error          String?
+  payload        Json      @default("{}")
+  nextRetryAt    DateTime? @map("next_retry_at")
+  deliveredAt    DateTime? @map("delivered_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  endpoint     WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  // Idempotency: one delivery per (endpoint, event correlation).
+  @@unique([endpointId, correlationId])
+  @@index([organizationId, status])
+  @@index([endpointId])
+  @@map("webhook_deliveries")
+}
+
+model ApiKey {
+  id             String    @id @default(cuid())
+  publicId       String    @unique @map("public_id")
+  organizationId String    @map("organization_id")
+  name           String
+  // SHA-256 hash of the full key; the plaintext is shown once and never stored.
+  hashedKey      String    @unique @map("hashed_key")
+  prefix         String
+  scopes         String[]  @default([])
+  status         String    @default("active")
+  expiresAt      DateTime? @map("expires_at")
+  lastUsedAt     DateTime? @map("last_used_at")
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("api_keys")
 }
 
 // =============================================================================

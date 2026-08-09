@@ -14,10 +14,14 @@ import {
   type EventType,
 } from "@commandry/automation";
 import { prisma } from "@commandry/database";
-import { getErlcClientForOrganization } from "@commandry/integrations";
+import {
+  getDiscordClientForOrganization,
+  getErlcClientForOrganization,
+} from "@commandry/integrations";
 import { authorize, type Action, type Actor } from "@commandry/permissions";
 import { ForbiddenError, NotFoundError, ValidationError, createPublicId } from "@commandry/shared";
 import { notifyUsers } from "../notifications/service";
+import { enqueueWebhookDeliveries } from "../integrations/webhooks";
 
 function requirePerm(actor: Actor, organizationId: string, action: Action): void {
   if (!authorize({ actor, organizationId, action }).allowed)
@@ -73,6 +77,15 @@ export async function publishEvent(input: {
   const automations = await prisma.automation.findMany({
     where: { organizationId: input.organizationId, trigger: event.type, enabled: true },
   });
+
+  // Fan the event out to subscribed outgoing webhook endpoints (Integration Hub).
+  await enqueueWebhookDeliveries({
+    type: event.type,
+    organizationId: event.organizationId,
+    resourceId: event.resourceId,
+    correlationId,
+    metadata: event.metadata,
+  }).catch(() => undefined);
 
   const context = { ...event, metadata: event.metadata } as unknown as Record<string, unknown>;
   let queued = 0;
@@ -155,6 +168,14 @@ async function executeAction(
       const { client } = await getErlcClientForOrganization(organizationId);
       await client.runCommand(command);
       return { action: action.type, ok: true, detail: `ran ${command}`, at };
+    }
+    case "send_discord_message": {
+      // Reuse the existing Discord bot service — do not duplicate Discord logic.
+      const content = (typeof cfg.message === "string" ? cfg.message : "") || title;
+      const channelId = typeof cfg.channelId === "string" ? cfg.channelId : "announcements";
+      const discord = await getDiscordClientForOrganization(organizationId);
+      await discord.postAnnouncement(channelId, content);
+      return { action: action.type, ok: true, detail: `discord (${discord.mode})`, at };
     }
     case "assign_department": {
       const departmentId = typeof cfg.departmentId === "string" ? cfg.departmentId : "";

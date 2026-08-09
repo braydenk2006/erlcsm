@@ -106,6 +106,8 @@ export async function computeUsage(
       return prisma.integrationCredential.count({ where: { organizationId, provider: "erlc" } });
     case "discord_servers.max":
       return prisma.integrationCredential.count({ where: { organizationId, provider: "discord" } });
+    case "webhooks.max":
+      return prisma.webhookEndpoint.count({ where: { organizationId } });
     case "ai_requests.monthly":
     case "api_requests.monthly": {
       const row = await prisma.usageCounter.findUnique({

@@ -700,6 +700,56 @@ function Widget({
         </div>
       );
     }
+    case "integration_health": {
+      const h = d as {
+        overall: string;
+        cards: { key: string; name: string; status: string; health: string }[];
+      };
+      const overallTone =
+        h.overall === "HEALTHY"
+          ? "success"
+          : h.overall === "DEGRADED"
+            ? "accent"
+            : h.overall === "ACTION_REQUIRED"
+              ? "warning"
+              : "danger";
+      const cardTone = (s: string) =>
+        s === "CONNECTED"
+          ? "success"
+          : s === "DEGRADED"
+            ? "accent"
+            : s === "CONFIGURATION_REQUIRED"
+              ? "warning"
+              : s === "ERROR"
+                ? "danger"
+                : "neutral";
+      return (
+        <div>
+          <div className="flex items-center gap-2">
+            <Badge tone={overallTone}>{(h.overall ?? "").replace(/_/g, " ").toLowerCase()}</Badge>
+            <span className="text-xs text-[var(--cmd-fg-muted)]">overall integration health</span>
+          </div>
+          <ul className="mt-2 space-y-1">
+            {(h.cards ?? []).map((c) => (
+              <li key={c.key}>
+                <Link
+                  href={`/app/integrations?open=${c.key}`}
+                  className="flex items-center justify-between rounded-[var(--cmd-radius)] bg-[var(--cmd-bg-muted)] px-2.5 py-1.5 text-sm hover:bg-[var(--cmd-accent)]/10"
+                >
+                  <span>{c.name}</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-xs text-[var(--cmd-fg-muted)]">{c.health}</span>
+                    <Badge tone={cardTone(c.status)}>
+                      {c.status.replace(/_/g, " ").toLowerCase()}
+                    </Badge>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
     default:
       return <p className="text-sm text-[var(--cmd-fg-muted)]">—</p>;
   }

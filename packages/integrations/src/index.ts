@@ -1,3 +1,5 @@
+export * from "./hub";
+
 export type IntegrationProvider =
   "erlc" | "discord" | "roblox" | "stripe" | "email" | "storage" | "webhook";
 

@@ -181,6 +181,40 @@ export {
   type VersionCompare,
 } from "./knowledge/service";
 export {
+  getIntegrationHub,
+  getDiscordConfig,
+  connectDiscordIntegration,
+  updateDiscordConfig,
+  testDiscord,
+  getIntegrationActivity,
+  type IntegrationHub,
+  type IntegrationCard,
+  type DiscordConfig,
+  type DiscordDiagnostics,
+  type ActivityEntry,
+} from "./integrations/hub";
+export {
+  listWebhooks,
+  createWebhook,
+  rotateWebhookSecret,
+  setWebhookEnabled,
+  deleteWebhook,
+  listWebhookDeliveries,
+  testWebhook,
+  enqueueWebhookDeliveries,
+  processWebhookDeliveries,
+  type WebhookView,
+  type DeliveryView,
+} from "./integrations/webhooks";
+export {
+  listApiKeys,
+  createApiKey,
+  revokeApiKey,
+  authenticateApiKey,
+  type ApiKeyView,
+  type ApiKeyAuth,
+} from "./integrations/api-keys";
+export {
   link,
   unlink,
   getRelationships,

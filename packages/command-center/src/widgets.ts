@@ -225,6 +225,17 @@ export const WIDGETS: WidgetDef[] = [
     mobilePriority: 5,
     defaultVisible: true,
   },
+  // Integration Hub (Phase 12)
+  {
+    key: "integration_health",
+    title: "Integration Health",
+    category: "platform",
+    feature: null,
+    permission: "integrations.view",
+    defaultSize: "md",
+    mobilePriority: 4,
+    defaultVisible: true,
+  },
 ];
 
 export function widgetByKey(key: string): WidgetDef | undefined {
