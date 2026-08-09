@@ -22,6 +22,80 @@ export type NavRegistryEntry = {
 /** Serializable nav entry passed to the client shell. */
 export type NavItem = { key: string; label: string; href: string; iconName: string };
 
+// ---------------------------------------------------------------------------
+// Workspace consolidation — the ~20 feature routes are grouped into a handful of
+// coherent workspaces so Ordinex reads as one platform, not twenty tools. This
+// is purely a navigation grouping; no route is removed and no backend changes.
+// ---------------------------------------------------------------------------
+
+export type WorkspaceKey =
+  | "command"
+  | "community"
+  | "operations"
+  | "public_safety"
+  | "workflows"
+  | "content"
+  | "administration";
+
+export const WORKSPACES: { key: WorkspaceKey; label: string; iconName: string }[] = [
+  { key: "command", label: "Command Center", iconName: "Home" },
+  { key: "community", label: "Community", iconName: "Users" },
+  { key: "operations", label: "Operations", iconName: "CalendarClock" },
+  { key: "public_safety", label: "Public Safety", iconName: "Shield" },
+  { key: "workflows", label: "Workflows", iconName: "Workflow" },
+  { key: "content", label: "Content", iconName: "Globe" },
+  { key: "administration", label: "Administration", iconName: "Settings" },
+];
+
+/** Which workspace each nav entry belongs to. `assistant` is a global launcher. */
+export const WORKSPACE_OF: Record<string, WorkspaceKey> = {
+  home: "command",
+  insights: "command",
+  analytics: "command",
+  people: "community",
+  staff: "community",
+  departments: "community",
+  moderation: "community",
+  announcements: "community",
+  live_server: "operations",
+  schedule: "operations",
+  sessions: "operations",
+  activity: "operations",
+  training: "operations",
+  cad: "public_safety",
+  rms: "public_safety",
+  applications: "workflows",
+  forms: "workflows",
+  automations: "workflows",
+  website: "content",
+  knowledge: "content",
+  documents: "content",
+  settings: "administration",
+  integrations: "administration",
+};
+
+export type WorkspaceNav = {
+  key: WorkspaceKey;
+  label: string;
+  iconName: string;
+  href: string;
+  children: NavItem[];
+};
+
+/** Group the entitlement/permission-filtered nav items into visible workspaces. */
+export function buildWorkspaceNav(filtered: NavItem[]): WorkspaceNav[] {
+  return WORKSPACES.map((ws) => {
+    const children = filtered.filter((item) => WORKSPACE_OF[item.key] === ws.key);
+    return {
+      key: ws.key,
+      label: ws.label,
+      iconName: ws.iconName,
+      href: children[0]?.href ?? "/app",
+      children,
+    };
+  }).filter((ws) => ws.children.length > 0);
+}
+
 export const NAV_REGISTRY: NavRegistryEntry[] = [
   {
     key: "home",

@@ -3,7 +3,7 @@ import { buildActorForUser, listMembershipsForUser } from "@commandry/api";
 import { authorize } from "@commandry/permissions";
 import { getSession } from "@/lib/session";
 import { getManifest } from "@/lib/entitlements";
-import { NAV_REGISTRY, type NavItem } from "@/lib/nav-registry";
+import { NAV_REGISTRY, buildWorkspaceNav, type NavItem } from "@/lib/nav-registry";
 import { AppShell } from "@/components/app-shell";
 
 // Every route under /app is authenticated and renders per-user, per-organization
@@ -51,6 +51,9 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     }));
   }
 
+  const workspaces = buildWorkspaceNav(nav);
+  const canAssistant = nav.some((item) => item.key === "assistant");
+
   return (
     <AppShell
       user={{
@@ -74,7 +77,8 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
             }
           : null
       }
-      nav={nav}
+      workspaces={workspaces}
+      canAssistant={canAssistant}
     >
       {children}
     </AppShell>
